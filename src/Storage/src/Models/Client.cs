@@ -116,12 +116,12 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Specifies allowed URIs to return tokens or authorization codes to
         /// </summary>
-        public ICollection<string> RedirectUris { get; set; } = new HashSet<string>();
+        public ICollection<Uri> RedirectUris { get; set; } = new HashSet<Uri>();
 
         /// <summary>
         /// Specifies allowed URIs to redirect to after logout
         /// </summary>
-        public ICollection<string> PostLogoutRedirectUris { get; set; } = new HashSet<string>();
+        public ICollection<Uri> PostLogoutRedirectUris { get; set; } = new HashSet<Uri>();
 
         /// <summary>
         /// Specifies logout URI at client for HTTP front-channel based logout.

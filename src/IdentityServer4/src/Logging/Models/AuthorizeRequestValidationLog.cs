@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using IdentityModel;
@@ -15,7 +16,7 @@ namespace IdentityServer4.Logging.Models
         public string ClientId { get; set; }
         public string ClientName { get; set; }
         public string RedirectUri { get; set; }
-        public IEnumerable<string> AllowedRedirectUris { get; set; }
+        public IEnumerable<Uri> AllowedRedirectUris { get; set; }
         public string SubjectId { get; set; }
 
         public string ResponseType { get; set; }

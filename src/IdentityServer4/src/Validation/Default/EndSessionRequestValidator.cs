@@ -156,7 +156,7 @@ namespace IdentityServer4.Validation
                 else if (validatedRequest.Client.PostLogoutRedirectUris.Count == 1)
                 {
                     // todo: reconsider/remove?
-                    validatedRequest.PostLogOutUri = validatedRequest.Client.PostLogoutRedirectUris.First();
+                    validatedRequest.PostLogOutUri = validatedRequest.Client.PostLogoutRedirectUris.First().AbsoluteUri;
                 }
 
                 if (validatedRequest.PostLogOutUri != null)

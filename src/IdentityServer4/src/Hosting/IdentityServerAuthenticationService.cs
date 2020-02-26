@@ -110,7 +110,27 @@ namespace IdentityServer4.Hosting
         {
             // for now, we don't allow more than one identity in the principal/cookie
             if (principal.Identities.Count() != 1) throw new InvalidOperationException("only a single identity supported");
-            if (principal.FindFirst(JwtClaimTypes.Subject) == null) throw new InvalidOperationException("sub claim is missing");
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Email);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Name);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.GivenName);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.NameIdentifier);
+            if (principal.FindFirst(JwtClaimTypes.Subject) == null)
+            {
+                throw new InvalidOperationException("sub claim is missing");
+            }
+        }
+
+        private void SetClaimByExistName(ClaimsPrincipal principal, string claimName, params string[] existsClaimNames)
+        {
+            if (principal.FindFirst(claimName) == null)
+            {
+                var resultClaim = principal.Claims.Join(existsClaimNames, x => x.Type, x => x, (claim, _) => claim).FirstOrDefault();
+                if (resultClaim != null)
+                {
+                    var identity = principal.Identities.First();
+                    identity.AddClaim(new Claim(claimName, resultClaim.Value));
+                }
+            }
         }
 
         private void AugmentMissingClaims(ClaimsPrincipal principal, DateTime authTime)
