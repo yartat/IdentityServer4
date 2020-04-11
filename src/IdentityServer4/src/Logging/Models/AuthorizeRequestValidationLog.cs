@@ -76,7 +76,7 @@ namespace IdentityServer4.Logging.Models
             Nonce = request.Nonce;
 
             DisplayMode = request.DisplayMode;
-            PromptMode = request.PromptMode;
+            PromptMode = request.PromptModes.ToSpaceSeparatedString();
             LoginHint = request.LoginHint;
             MaxAge = request.MaxAge;
             SessionId = request.SessionId;

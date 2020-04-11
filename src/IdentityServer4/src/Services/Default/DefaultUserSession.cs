@@ -140,7 +140,7 @@ namespace IdentityServer4.Services
         /// or
         /// properties
         /// </exception>
-        public virtual async Task CreateSessionIdAsync(ClaimsPrincipal principal, AuthenticationProperties properties)
+        public virtual async Task<string> CreateSessionIdAsync(ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             if (principal == null) throw new ArgumentNullException(nameof(principal));
             if (properties == null) throw new ArgumentNullException(nameof(properties));
@@ -150,13 +150,15 @@ namespace IdentityServer4.Services
 
             if (!properties.Items.ContainsKey(SessionIdKey) || currentSubjectId != newSubjectId)
             {
-                properties.Items[SessionIdKey] = CryptoRandom.CreateUniqueId(16);
+                properties.Items[SessionIdKey] = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex);
             }
 
             IssueSessionIdCookie(properties.Items[SessionIdKey]);
 
             Principal = principal;
             Properties = properties;
+
+            return properties.Items[SessionIdKey];
         }
 
         /// <summary>

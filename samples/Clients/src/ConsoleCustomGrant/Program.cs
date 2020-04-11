@@ -49,7 +49,7 @@ namespace ConsoleCustomGrant
 
                 Parameters =
                 {
-                    { "scope", "api1" },
+                    { "scope", "scope1" },
                     { "custom_credential", "custom credential"}
                 }
             });

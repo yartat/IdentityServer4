@@ -146,17 +146,11 @@ namespace IdentityServer4.Validation
                     if (await UriValidator.IsPostLogoutRedirectUriValidAsync(redirectUri, validatedRequest.Client))
                     {
                         validatedRequest.PostLogOutUri = redirectUri;
-                        //return Invalid("Invalid post logout URI", validatedRequest);
                     }
                     else
                     {
                         Logger.LogWarning("Invalid PostLogoutRedirectUri: {postLogoutRedirectUri}", redirectUri);
                     }
-                }
-                else if (validatedRequest.Client.PostLogoutRedirectUris.Count == 1)
-                {
-                    // todo: reconsider/remove?
-                    validatedRequest.PostLogOutUri = validatedRequest.Client.PostLogoutRedirectUris.First().AbsoluteUri;
                 }
 
                 if (validatedRequest.PostLogOutUri != null)

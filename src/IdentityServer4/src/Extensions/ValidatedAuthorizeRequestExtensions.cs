@@ -18,7 +18,7 @@ namespace IdentityServer4.Validation
     {
         public static void RemovePrompt(this ValidatedAuthorizeRequest request)
         {
-            request.PromptMode = null;
+            request.PromptModes = null;
             request.Raw.Remove(OidcConstants.AuthorizeRequest.Prompt);
         }
 
@@ -108,7 +108,7 @@ namespace IdentityServer4.Validation
 
             var clientId = request.ClientId;
             var sessionId = request.SessionId;
-            var salt = CryptoRandom.CreateUniqueId(16);
+            var salt = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex);
 
             var uri = new Uri(request.RedirectUri);
             var origin = uri.Scheme + "://" + uri.Host;

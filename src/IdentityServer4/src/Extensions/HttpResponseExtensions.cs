@@ -109,7 +109,7 @@ namespace IdentityServer4.Extensions
             AddCspHeaders(response.Headers, options, cspHeader);
         }
 
-        public static void AddCspHeaders(IHeaderDictionary headers, CspOptions options, string cspHeader)
+        public static void AddCspHeaders(this IHeaderDictionary headers, CspOptions options, string cspHeader)
         {
             if (!headers.ContainsKey("Content-Security-Policy"))
             {

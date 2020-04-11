@@ -54,6 +54,7 @@ namespace IdentityServer.UnitTests.ResponseHandling.AuthorizeInteractionResponse
             {
                 ClientId = "foo",
                 Client = new Client(),
+                ValidatedResources = new ResourceValidationResult(),
                 Subject = new IdentityServerUser("123")
                 {
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider
@@ -226,7 +227,7 @@ namespace IdentityServer.UnitTests.ResponseHandling.AuthorizeInteractionResponse
             {
                 ClientId = "foo",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                PromptMode = OidcConstants.PromptModes.Login,
+                PromptModes = new[] { OidcConstants.PromptModes.Login },
                 Raw = new NameValueCollection()
             };
 
@@ -242,7 +243,7 @@ namespace IdentityServer.UnitTests.ResponseHandling.AuthorizeInteractionResponse
             {
                 ClientId = "foo",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                PromptMode = OidcConstants.PromptModes.SelectAccount,
+                PromptModes = new[] { OidcConstants.PromptModes.SelectAccount },
                 Raw = new NameValueCollection()
             };
 
@@ -258,7 +259,7 @@ namespace IdentityServer.UnitTests.ResponseHandling.AuthorizeInteractionResponse
             {
                 ClientId = "foo",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                PromptMode = OidcConstants.PromptModes.Login,
+                PromptModes = new[] { OidcConstants.PromptModes.Login },
                 Raw = new NameValueCollection
                 {
                     { OidcConstants.AuthorizeRequest.Prompt, OidcConstants.PromptModes.Login }

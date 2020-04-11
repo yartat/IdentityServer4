@@ -209,3 +209,6 @@ tempkey.rsa
 samples/KeyManagement/FileSystem/dataprotectionkeys/
 samples/KeyManagement/FileSystem/signingkeys/
 workspace.xml
+
+src/IdentityServer4/host/identityserver.db
+src/IdentityServer4/host/tempkey.jwk

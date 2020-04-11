@@ -7,6 +7,7 @@ using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.Validation
@@ -19,8 +20,8 @@ namespace IdentityServer4.Validation
         private readonly ILogger _logger;
         private readonly IResourceStore _resources;
         private readonly IEventService _events;
-        private readonly SecretParser _parser;
-        private readonly SecretValidator _validator;
+        private readonly ISecretsListParser _parser;
+        private readonly ISecretsListValidator _validator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiSecretValidator"/> class.
@@ -30,7 +31,7 @@ namespace IdentityServer4.Validation
         /// <param name="validator">The validator.</param>
         /// <param name="events">The events.</param>
         /// <param name="logger">The logger.</param>
-        public ApiSecretValidator(IResourceStore resources, SecretParser parsers, SecretValidator validator, IEventService events, ILogger<ApiSecretValidator> logger)
+        public ApiSecretValidator(IResourceStore resources, ISecretsListParser parsers, ISecretsListValidator validator, IEventService events, ILogger<ApiSecretValidator> logger)
         {
             _resources = resources;
             _parser = parsers;
@@ -63,14 +64,24 @@ namespace IdentityServer4.Validation
             }
 
             // load API resource
-            var api = await _resources.FindApiResourceAsync(parsedSecret.Id);
-            if (api == null)
+            var apis = await _resources.FindApiResourcesByNameAsync(new[] { parsedSecret.Id });
+            if (apis == null || !apis.Any())
             {
                 await RaiseFailureEventAsync(parsedSecret.Id, "Unknown API resource");
 
                 _logger.LogError("No API resource with that name found. aborting");
                 return fail;
             }
+
+            if (apis.Count() > 1)
+            {
+                await RaiseFailureEventAsync(parsedSecret.Id, "Invalid API resource");
+
+                _logger.LogError("More than one API resource with that name found. aborting");
+                return fail;
+            }
+
+            var api = apis.Single();
 
             if (api.Enabled == false)
             {
@@ -80,7 +91,7 @@ namespace IdentityServer4.Validation
                 return fail;
             }
 
-            var result = await _validator.ValidateAsync(parsedSecret, api.ApiSecrets);
+            var result = await _validator.ValidateAsync(api.ApiSecrets, parsedSecret);
             if (result.Success)
             {
                 _logger.LogDebug("API resource validation success");

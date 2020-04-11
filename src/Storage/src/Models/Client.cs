@@ -105,6 +105,11 @@ namespace IdentityServer4.Models
         public bool AllowPlainTextPkce { get; set; } = false;
 
         /// <summary>
+        /// Specifies whether the client must use a request object on authorize requests (defaults to <c>false</c>.)
+        /// </summary>
+        public bool RequireRequestObject { get; set; } = false;
+        
+        /// <summary>
         /// Controls whether access tokens are transmitted via the browser for this client (defaults to <c>false</c>).
         /// This can prevent accidental leakage of access tokens when multiple response types are allowed.
         /// </summary>
@@ -154,7 +159,7 @@ namespace IdentityServer4.Models
         public ICollection<string> AllowedScopes { get; set; } = new HashSet<string>();
 
         /// <summary>
-        /// When requesting both an id token and access token, should the user claims always be added to the id token instead of requring the client to use the userinfo endpoint.
+        /// When requesting both an id token and access token, should the user claims always be added to the id token instead of requiring the client to use the userinfo endpoint.
         /// Defaults to <c>false</c>.
         /// </summary>
         public bool AlwaysIncludeUserClaimsInIdToken { get; set; } = false;

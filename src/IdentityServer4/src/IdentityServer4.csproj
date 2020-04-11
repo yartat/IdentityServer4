@@ -39,6 +39,7 @@
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.3.2" />
 
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
 
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
