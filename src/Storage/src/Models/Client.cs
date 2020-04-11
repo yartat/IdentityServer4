@@ -18,6 +18,69 @@ namespace IdentityServer4.Models
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     public class Client
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Client"/> class.
+        /// </summary>
+        public Client()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Client"/> class.
+        /// </summary>
+        /// <param name="client">The client.</param>
+        public Client(Client client)
+        {
+            ClientId = client.ClientId;
+            AbsoluteRefreshTokenLifetime = client.AbsoluteRefreshTokenLifetime;
+            AccessTokenLifetime = client.AccessTokenLifetime;
+            AccessTokenType = client.AccessTokenType;
+            AllowAccessTokensViaBrowser = client.AllowAccessTokensViaBrowser;
+            AllowedCorsOrigins = client.AllowedCorsOrigins;
+            AllowedGrantTypes = client.AllowedGrantTypes;
+            AllowedIdentityTokenSigningAlgorithms = client.AllowedIdentityTokenSigningAlgorithms;
+            AllowedScopes = client.AllowedScopes;
+            AllowOfflineAccess = client.AllowOfflineAccess;
+            AllowPlainTextPkce = client.AllowPlainTextPkce;
+            AllowRememberConsent = client.AllowRememberConsent;
+            AlwaysIncludeUserClaimsInIdToken = client.AlwaysIncludeUserClaimsInIdToken;
+            AlwaysSendClientClaims = client.AlwaysSendClientClaims;
+            AuthorizationCodeLifetime = client.AuthorizationCodeLifetime;
+            BackChannelLogoutSessionRequired = client.BackChannelLogoutSessionRequired;
+            BackChannelLogoutUri = client.BackChannelLogoutUri;
+            Claims = client.Claims;
+            ClientClaimsPrefix = client.ClientClaimsPrefix;
+            ClientName = client.ClientName;
+            ClientSecrets = client.ClientSecrets;
+            ClientUri = client.ClientUri;
+            ConsentLifetime = client.ConsentLifetime;
+            Description = client.Description;
+            DeviceCodeLifetime = client.DeviceCodeLifetime;
+            Enabled = client.Enabled;
+            EnableLocalLogin = client.EnableLocalLogin;
+            FrontChannelLogoutSessionRequired = client.FrontChannelLogoutSessionRequired;
+            FrontChannelLogoutUri = client.FrontChannelLogoutUri;
+            IdentityProviderRestrictions = client.IdentityProviderRestrictions;
+            IdentityTokenLifetime = client.IdentityTokenLifetime;
+            IncludeJwtId = client.IncludeJwtId;
+            LogoUri = client.LogoUri;
+            PairWiseSubjectSalt = client.PairWiseSubjectSalt;
+            PostLogoutRedirectUris = client.PostLogoutRedirectUris;
+            Properties = client.Properties;
+            ProtocolType = client.ProtocolType;
+            RedirectUris = client.RedirectUris;
+            RefreshTokenExpiration = client.RefreshTokenExpiration;
+            RefreshTokenUsage = client.RefreshTokenUsage;
+            RequireClientSecret = client.RequireClientSecret;
+            RequireConsent = client.RequireConsent;
+            RequirePkce = client.RequirePkce;
+            RequireRequestObject = client.RequireRequestObject;
+            SlidingRefreshTokenLifetime = client.SlidingRefreshTokenLifetime;
+            UpdateAccessTokenClaimsOnRefresh = client.UpdateAccessTokenClaimsOnRefresh;
+            UserCodeType = client.UserCodeType;
+            UserSsoLifetime = client.UserSsoLifetime;
+        }
+
         // setting grant types should be atomic
         private ICollection<string> _allowedGrantTypes = new GrantTypeValidatingHashSet();
 
