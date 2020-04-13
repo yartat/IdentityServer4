@@ -127,29 +127,51 @@ namespace IdentityServer4.Validation
                 }
                 else
                 {
-                    var apiScope = resourcesFromStore.FindApiScope(requestedScope.Name);
-                    if (apiScope != null)
+                    var apiResources = resourcesFromStore.FindApiResourcesByScope(requestedScope.Name);
+                    if (apiResources != null)
                     {
-                        if (await IsClientAllowedApiScopeAsync(client, apiScope))
+                        var allowed = false;
+                        foreach (var apiResource in apiResources)
                         {
-                            result.ParsedScopes.Add(requestedScope);
-                            result.Resources.ApiScopes.Add(apiScope);
-
-                            var apis = resourcesFromStore.FindApiResourcesByScope(apiScope.Name);
-                            foreach (var api in apis)
+                            if (await IsClientAllowedApiResourceAsync(client, apiResource))
                             {
-                                result.Resources.ApiResources.Add(api);
+                                result.ParsedScopes.Add(requestedScope);
+                                result.Resources.ApiResources.Add(apiResource);
+                                allowed = true;
                             }
                         }
-                        else
+
+                        if (!allowed)
                         {
                             result.InvalidScopes.Add(requestedScope.Value);
                         }
                     }
                     else
                     {
-                        _logger.LogError("Scope {scope} not found in store.", requestedScope.Name);
-                        result.InvalidScopes.Add(requestedScope.Value);
+                        var apiScope = resourcesFromStore.FindApiScope(requestedScope.Name);
+                        if (apiScope != null)
+                        {
+                            if (await IsClientAllowedApiScopeAsync(client, apiScope))
+                            {
+                                result.ParsedScopes.Add(requestedScope);
+                                result.Resources.ApiScopes.Add(apiScope);
+
+                                var apis = resourcesFromStore.FindApiResourcesByScope(apiScope.Name);
+                                foreach (var api in apis)
+                                {
+                                    result.Resources.ApiResources.Add(api);
+                                }
+                            }
+                            else
+                            {
+                                result.InvalidScopes.Add(requestedScope.Value);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogError("Scope {scope} not found in store.", requestedScope.Name);
+                            result.InvalidScopes.Add(requestedScope.Value);
+                        }
                     }
                 }
             }
@@ -168,6 +190,24 @@ namespace IdentityServer4.Validation
             {
                 _logger.LogError("Client {client} is not allowed access to scope {scope}.", client.ClientId, identity.Name);
             }
+
+            return Task.FromResult(allowed);
+        }
+
+        /// <summary>
+        /// Determines if client is allowed access to the API resource.
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="resource"></param>
+        /// <returns></returns>
+        protected virtual Task<bool> IsClientAllowedApiResourceAsync(Client client, ApiResource resource)
+        {
+            var allowed = client.AllowedScopes.Intersect(resource.Scopes).Any();
+            if (!allowed)
+            {
+                _logger.LogError("Client {client} is not allowed access to scope {scope}.", client.ClientId, resource.Name);
+            }
+
             return Task.FromResult(allowed);
         }
 
@@ -184,6 +224,7 @@ namespace IdentityServer4.Validation
             {
                 _logger.LogError("Client {client} is not allowed access to scope {scope}.", client.ClientId, apiScope.Name);
             }
+
             return Task.FromResult(allowed);
         }
 
@@ -199,6 +240,7 @@ namespace IdentityServer4.Validation
             {
                 _logger.LogError("Client {client} is not allowed access to scope offline_access (via AllowOfflineAccess setting).", client.ClientId);
             }
+
             return Task.FromResult(allowed);
         }
     }
