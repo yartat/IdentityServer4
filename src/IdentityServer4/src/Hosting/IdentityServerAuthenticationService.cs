@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -30,7 +29,6 @@ namespace IdentityServer4.Hosting
         private readonly IAuthenticationSchemeProvider _schemes;
         private readonly ISystemClock _clock;
         private readonly IUserSession _session;
-        private readonly IdentityServerOptions _options;
         private readonly ILogger<IdentityServerAuthenticationService> _logger;
 
         public IdentityServerAuthenticationService(
@@ -38,7 +36,6 @@ namespace IdentityServer4.Hosting
             IAuthenticationSchemeProvider schemes,
             ISystemClock clock,
             IUserSession session,
-            IdentityServerOptions options,
             ILogger<IdentityServerAuthenticationService> logger)
         {
             _inner = decorator.Instance;
@@ -46,7 +43,6 @@ namespace IdentityServer4.Hosting
             _schemes = schemes;
             _clock = clock;
             _session = session;
-            _options = options;
             _logger = logger;
         }
 

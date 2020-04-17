@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System.Threading.Tasks;
 using IdentityServer4.Configuration.DependencyInjection;
 using Microsoft.AspNetCore.Authentication;
@@ -21,7 +20,7 @@ namespace IdentityServer4.Hosting.FederatedSignOut
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public FederatedSignoutAuthenticationHandlerProvider(
-            Decorator<IAuthenticationHandlerProvider> decorator, 
+            Decorator<IAuthenticationHandlerProvider> decorator,
             IHttpContextAccessor httpContextAccessor)
         {
             _provider = decorator.Instance;
