@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddRequiredPlatformServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();            
+            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddOptions();
             builder.Services.AddSingleton(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value);
@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // optional
             builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
             builder.Services.TryAddTransient<ICustomAuthorizeRequestValidator, DefaultCustomAuthorizeRequestValidator>();
-            
+
             return builder;
         }
 
@@ -273,6 +273,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new InvalidOperationException("Service type: " + typeof(TService).Name + " not registered.");
             }
+
             if (services.Any(x => x.ServiceType == typeof(Decorator<TService>)))
             {
                 throw new InvalidOperationException("Decorator already registered for type: " + typeof(TService).Name + ".");
@@ -289,10 +290,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else if (registration.ImplementationFactory != null)
             {
-                services.Add(new ServiceDescriptor(typeof(Decorator<TService>), provider =>
-                {
-                    return new DisposableDecorator<TService>((TService)registration.ImplementationFactory(provider));
-                }, registration.Lifetime));
+                services.Add(new ServiceDescriptor(
+                    typeof(Decorator<TService>),
+                    provider => new DisposableDecorator<TService>((TService)registration.ImplementationFactory(provider)),
+                    registration.Lifetime));
             }
             else
             {

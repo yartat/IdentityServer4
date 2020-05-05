@@ -99,16 +99,6 @@ namespace IdentityServer4.Extensions
         }
 
         /// <summary>
-        /// Gets the public base URL for IdentityServer.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        public static string GetIdentityServerBaseUrl(this HttpContext context)
-        {
-            return context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
-        }
-
-        /// <summary>
         /// Gets the identity server relative URL.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -122,7 +112,7 @@ namespace IdentityServer4.Extensions
             }
 
             if (path.StartsWith("~/")) path = path.Substring(1);
-            path = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + path.RemoveLeadingSlash();
+            path = context.GetIdentityServerBaseUri() + path.RemoveLeadingSlash();
             return path;
         }
 
@@ -130,7 +120,7 @@ namespace IdentityServer4.Extensions
         /// Gets the identity server issuer URI.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
+        /// <returns>Returns issuer URI.</returns>
         /// <exception cref="System.ArgumentNullException">context</exception>
         public static string GetIdentityServerIssuerUri(this HttpContext context)
         {
@@ -151,6 +141,36 @@ namespace IdentityServer4.Extensions
             }
 
             return uri;
+        }
+
+        /// <summary>
+        /// Gets the identity server base URI.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>Returns base URI</returns>
+        /// <exception cref="System.ArgumentNullException">context</exception>
+        public static string GetIdentityServerBaseUri(this HttpContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // if they've explicitly configured a URI then use it,
+            // otherwise dynamically calculate it
+            var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            var uri = options.BaseUri;
+            if (uri.IsMissing())
+            {
+                uri = context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
+            }
+
+            if (options.LowerCaseIssuerUri)
+            {
+                uri = uri?.ToLower();
+            }
+
+            return uri?.EnsureTrailingSlash();
         }
 
         internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null)
@@ -203,7 +223,7 @@ namespace IdentityServer4.Extensions
                 var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<EndSession>>();
                 var id = await endSessionMessageStore.WriteAsync(msg);
 
-                var signoutIframeUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
+                var signoutIframeUrl = context.GetIdentityServerBaseUri() + Constants.ProtocolRoutePaths.EndSessionCallback;
                 signoutIframeUrl = signoutIframeUrl.AddQueryString(Constants.UIConstants.DefaultRoutePathParams.EndSessionCallback, id);
 
                 return signoutIframeUrl;

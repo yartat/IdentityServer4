@@ -10,6 +10,18 @@ namespace IdentityServer4.Configuration
     public class IdentityServerOptions
     {
         /// <summary>
+        /// Set to false to preserve the original casing of the <see cref="BaseUri"/>. Defaults to true.
+        /// </summary>
+        public bool LowerCaseBaseUri { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the base URI name of this server instance, e.g. https://mysso.com.
+        /// If not set, the base URI is inferred from the request
+        /// </summary>
+        /// <value>The base URI.</value>
+        public string BaseUri { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique name of this server instance, e.g. https://myissuer.com.
         /// If not set, the issuer name is inferred from the request
         /// </summary>
@@ -19,7 +31,7 @@ namespace IdentityServer4.Configuration
         public string IssuerUri { get; set; }
 
         /// <summary>
-        /// Set to false to preserve the original casing of the IssuerUri. Defaults to true.
+        /// Set to false to preserve the original casing of the <see cref="IssuerUri"/>. Defaults to true.
         /// </summary>
         public bool LowerCaseIssuerUri { get; set; } = true;
 

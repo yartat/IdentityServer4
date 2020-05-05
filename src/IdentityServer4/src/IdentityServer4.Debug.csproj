@@ -2,6 +2,7 @@
   
   <PropertyGroup>
     <PackageId>IdentityServer4</PackageId>
+    <AssemblyName>IdentityServer4</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
     <Authors>Brock Allen;Dominick Baier</Authors>
@@ -38,7 +39,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="IdentityModel" Version="4.2.0" />
 
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.5.0" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.3.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.3" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>

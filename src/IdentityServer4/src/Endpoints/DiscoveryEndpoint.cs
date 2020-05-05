@@ -50,7 +50,7 @@ namespace IdentityServer4.Endpoints
                 return new StatusCodeResult(HttpStatusCode.NotFound);
             }
 
-            var baseUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash();
+            var baseUrl = context.GetIdentityServerBaseUri();
             var issuerUri = context.GetIdentityServerIssuerUri();
 
             // generate response
