@@ -47,6 +47,11 @@ namespace IdentityServer4.Hosting.FederatedSignOut
                 await ProcessFederatedSignOutRequestAsync();
             }
 
+            if (_context.Response.StatusCode == (int)System.Net.HttpStatusCode.Redirect)
+            {
+                _logger.LogDebug("Redirect to {location}", _context.Response.Headers["location"]);
+            }
+
             return result;
         }
 

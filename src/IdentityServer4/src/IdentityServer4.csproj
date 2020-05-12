@@ -39,7 +39,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="IdentityModel" Version="4.2.0" />
-    <PackageReference Include="IdentityServer4.Storage" Version="4.0.0-preview-4.9" />
+    <PackageReference Include="IdentityServer4.Storage" Version="4.0.1" />
 
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.3.3" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.5.0" />
