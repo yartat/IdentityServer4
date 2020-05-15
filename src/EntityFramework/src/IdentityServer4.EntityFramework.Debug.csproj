@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EntityFramework.Storage\src\IdentityServer4.EntityFramework.Storage.csproj" />
+    <ProjectReference Include="..\..\EntityFramework.Storage\src\IdentityServer4.EntityFramework.Storage.Debug.csproj" />
     <ProjectReference Include="..\..\IdentityServer4\src\IdentityServer4.Debug.csproj" />
   </ItemGroup>
 </Project>
