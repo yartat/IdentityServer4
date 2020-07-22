@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdentityServer4.EntityFramework.Storage" Version="4.0.1" />
-    <PackageReference Include="IdentityServer4" Version="4.0.1" />
+    <PackageReference Include="IdentityServer4.EntityFramework.Storage" Version="4.0.3-ideals" />
+    <PackageReference Include="IdentityServer4" Version="4.0.3-ideals" />
   </ItemGroup>
 
 </Project>
