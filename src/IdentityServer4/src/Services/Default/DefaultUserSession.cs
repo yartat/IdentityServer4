@@ -64,14 +64,22 @@ namespace IdentityServer4.Services
         protected string CheckSessionCookieName => Options.Authentication.CheckSessionCookieName;
 
         /// <summary>
+        /// Gets the domain of the check session cookie.
+        /// </summary>
+        /// <value>
+        /// The domain of the check session cookie.
+        /// </value>
+        private string CheckSessionCookieDomain => Options.Authentication.CheckSessionCookieDomain;
+
+        /// <summary>
         /// The principal
         /// </summary>
-        protected ClaimsPrincipal Principal;
+        private ClaimsPrincipal Principal;
 
         /// <summary>
         /// The properties
         /// </summary>
-        protected AuthenticationProperties Properties;
+        private AuthenticationProperties Properties;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultUserSession"/> class.
@@ -228,15 +236,15 @@ namespace IdentityServer4.Services
         /// </summary>
         public virtual CookieOptions CreateSessionIdCookieOptions()
         {
-            var secure = HttpContext.Request.IsHttps;
             var path = HttpContext.GetIdentityServerBasePath().CleanUrlPath();
 
             var options = new CookieOptions
             {
                 HttpOnly = false,
-                Secure = secure,
+                Secure = true,
                 Path = path,
                 IsEssential = true,
+                Domain = CheckSessionCookieDomain,
                 SameSite = SameSiteMode.None
             };
 
