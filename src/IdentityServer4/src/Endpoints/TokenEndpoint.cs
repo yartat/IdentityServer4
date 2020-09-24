@@ -93,6 +93,9 @@ namespace IdentityServer4.Endpoints
                 return Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
             }
 
+            requestResult.ValidatedRequest.ClientIp = context.GetRequestIp();
+            requestResult.ValidatedRequest.ClientAgent = context.GetHeaderValueAs<string>("User-Agent");
+
             // create response
             _logger.LogTrace("Calling into token request response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.ProcessAsync(requestResult);

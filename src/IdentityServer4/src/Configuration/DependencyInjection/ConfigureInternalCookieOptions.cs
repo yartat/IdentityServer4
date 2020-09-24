@@ -32,6 +32,10 @@ namespace IdentityServer4.Configuration
                 options.Cookie.Name = IdentityServerConstants.DefaultCookieAuthenticationScheme;
                 options.Cookie.IsEssential = true;
                 options.Cookie.SameSite = _idsrv.Authentication.CookieSameSiteMode;
+                if (_idsrv.Authentication.SecureCookies != null)
+                {
+                    options.Cookie.SecurePolicy = _idsrv.Authentication.SecureCookies == true ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+                }
 
                 options.LoginPath = ExtractLocalUrl(_idsrv.UserInteraction.LoginUrl);
                 options.LogoutPath = ExtractLocalUrl(_idsrv.UserInteraction.LogoutUrl);
@@ -52,6 +56,10 @@ namespace IdentityServer4.Configuration
                 // hold onto them and send on the next redirect to the callback page.
                 // see: https://brockallen.com/2019/01/11/same-site-cookies-asp-net-core-and-external-authentication-providers/
                 options.Cookie.SameSite = _idsrv.Authentication.CookieSameSiteMode;
+                if (_idsrv.Authentication.SecureCookies != null)
+                {
+                    options.Cookie.SecurePolicy = _idsrv.Authentication.SecureCookies == true ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+                }
             }
         }
 

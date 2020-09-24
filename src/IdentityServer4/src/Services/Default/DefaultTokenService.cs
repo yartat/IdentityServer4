@@ -202,6 +202,11 @@ namespace IdentityServer4.Services
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
 
+            if (request.ValidatedRequest.ClientIp.IsPresent())
+            {
+                claims.Add(new Claim("ip", request.ValidatedRequest.ClientIp));
+            }
+
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
             var token = new Token(OidcConstants.TokenTypes.AccessToken)
             {

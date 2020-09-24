@@ -109,6 +109,18 @@ namespace IdentityServer4.Validation
         public string ClientId { get; set; }
 
         /// <summary>
+        /// Gets or sets the client IP address.
+        /// </summary>
+        /// <value>The client IP address.</value>
+        public string ClientIp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client agent.
+        /// </summary>
+        /// <value>The client agent.</value>
+        public string ClientAgent { get; set; }
+
+        /// <summary>
         /// Sets the client and the appropriate request specific settings.
         /// </summary>
         /// <param name="client">The client.</param>

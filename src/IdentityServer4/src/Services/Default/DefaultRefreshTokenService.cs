@@ -83,8 +83,7 @@ namespace IdentityServer4.Services
                 AccessToken = accessToken
             };
 
-            var handle = await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);
-            return handle;
+            return await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);
         }
 
         /// <summary>

@@ -29,6 +29,12 @@ namespace IdentityServer4.Configuration
         public bool CookieSlidingExpiration { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether [secure cookies].
+        /// </summary>
+        /// <value><c>null</c> if [secure cookies] contains no value, <c>true</c> if [secure cookies]; otherwise, <c>false</c>.</value>
+        public bool? SecureCookies { get; set; }
+
+        /// <summary>
         /// Specifies the SameSite mode for the internal authentication and temp cookie
         /// </summary>
         public SameSiteMode CookieSameSiteMode { get; set; } = SameSiteMode.None;

@@ -29,5 +29,11 @@ namespace IdentityServer4.Services
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
         Task SetAsync(string key, T item, TimeSpan expiration);
+
+        /// <summary>
+        /// Removes the cached data by a key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        Task RemoveAsync(string key);
     }
 }
