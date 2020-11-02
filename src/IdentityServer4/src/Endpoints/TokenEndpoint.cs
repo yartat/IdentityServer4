@@ -1,7 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using DeviceDetectorNET;
+using DeviceDetectorNET.Parser;
 using IdentityModel;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
@@ -38,10 +39,10 @@ namespace IdentityServer4.Endpoints
         /// <param name="events">The events.</param>
         /// <param name="logger">The logger.</param>
         public TokenEndpoint(
-            IClientSecretValidator clientValidator, 
-            ITokenRequestValidator requestValidator, 
-            ITokenResponseGenerator responseGenerator, 
-            IEventService events, 
+            IClientSecretValidator clientValidator,
+            ITokenRequestValidator requestValidator,
+            ITokenResponseGenerator responseGenerator,
+            IEventService events,
             ILogger<TokenEndpoint> logger)
         {
             _clientValidator = clientValidator;
@@ -94,7 +95,11 @@ namespace IdentityServer4.Endpoints
             }
 
             requestResult.ValidatedRequest.ClientIp = context.GetRequestIp();
-            requestResult.ValidatedRequest.ClientAgent = context.GetHeaderValueAs<string>("User-Agent");
+            var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
+            if (userDevice != null)
+            {
+                requestResult.ValidatedRequest.Device = userDevice.GetDeviceName();
+            }
 
             // create response
             _logger.LogTrace("Calling into token request response generator: {type}", _responseGenerator.GetType().FullName);

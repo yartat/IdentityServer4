@@ -1,7 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using DeviceDetectorNET;
+using DeviceDetectorNET.Cache;
 using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,21 @@ namespace IdentityServer4.Extensions
 {
     internal static class StringExtensions
     {
+        private static readonly DictionaryCache _cache = new DictionaryCache();
+
+        public static DeviceDetector GetDevice(this string userAgent)
+        {
+            if (string.IsNullOrEmpty(userAgent))
+            {
+                return null;
+            }
+
+            var result = new DeviceDetector(userAgent);
+            result.SetCache(_cache);
+            result.Parse();
+            return result;
+        }
+
         [DebuggerStepThrough]
         public static string ToSpaceSeparatedString(this IEnumerable<string> list)
         {

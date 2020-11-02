@@ -19,8 +19,8 @@ namespace IdentityServer4
         public static readonly TimeSpan DefaultCookieTimeSpan = TimeSpan.FromHours(10);
         public static readonly TimeSpan DefaultCacheDuration  = TimeSpan.FromMinutes(60);
 
-        public static readonly List<string> SupportedResponseTypes = new List<string> 
-        { 
+        public static readonly List<string> SupportedResponseTypes = new List<string>
+        {
             OidcConstants.ResponseTypes.Code,
             OidcConstants.ResponseTypes.Token,
             OidcConstants.ResponseTypes.IdToken,
@@ -56,8 +56,8 @@ namespace IdentityServer4
 
         public enum ScopeRequirement
         {
-            None, 
-            ResourceOnly, 
+            None,
+            ResourceOnly,
             IdentityOnly,
             Identity
         }
@@ -128,11 +128,11 @@ namespace IdentityServer4
             { OidcConstants.ProtectedResourceErrors.InvalidRequest,    400 },
             { OidcConstants.ProtectedResourceErrors.InsufficientScope, 403 }
         };
-        
+
         public static readonly Dictionary<string, IEnumerable<string>> ScopeToClaimsMapping = new Dictionary<string, IEnumerable<string>>
         {
             { IdentityServerConstants.StandardScopes.Profile, new[]
-                            { 
+                            {
                                 JwtClaimTypes.Name,
                                 JwtClaimTypes.FamilyName,
                                 JwtClaimTypes.GivenName,
@@ -146,12 +146,12 @@ namespace IdentityServer4
                                 JwtClaimTypes.BirthDate,
                                 JwtClaimTypes.ZoneInfo,
                                 JwtClaimTypes.Locale,
-                                JwtClaimTypes.UpdatedAt 
+                                JwtClaimTypes.UpdatedAt
                             }},
             { IdentityServerConstants.StandardScopes.Email, new[]
-                            { 
+                            {
                                 JwtClaimTypes.Email,
-                                JwtClaimTypes.EmailVerified 
+                                JwtClaimTypes.EmailVerified
                             }},
             { IdentityServerConstants.StandardScopes.Address, new[]
                             {
@@ -335,6 +335,12 @@ namespace IdentityServer4
             public const string P256 = "1.2.840.10045.3.1.7";
             public const string P384 = "1.3.132.0.34";
             public const string P521 = "1.3.132.0.35";
+        }
+
+        public static class JwtClaims
+        {
+            public const string Device = "device";
+            public const string Ip = "ip";
         }
     }
 }

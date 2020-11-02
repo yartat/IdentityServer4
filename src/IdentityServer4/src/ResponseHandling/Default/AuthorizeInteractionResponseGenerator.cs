@@ -51,7 +51,7 @@ namespace IdentityServer4.ResponseHandling
         public AuthorizeInteractionResponseGenerator(
             ISystemClock clock,
             ILogger<AuthorizeInteractionResponseGenerator> logger,
-            IConsentService consent, 
+            IConsentService consent,
             IProfileService profile)
         {
             Clock = clock;
@@ -70,7 +70,7 @@ namespace IdentityServer4.ResponseHandling
         {
             Logger.LogTrace("ProcessInteractionAsync");
 
-            if (consent != null && consent.Granted == false && consent.Error.HasValue && request.Subject.IsAuthenticated() == false)
+            if (consent?.Granted == false && consent.Error.HasValue && !request.Subject.IsAuthenticated())
             {
                 // special case when anonymous user has issued an error prior to authenticating
                 Logger.LogInformation("Error: User consent result: {error}", consent.Error);
@@ -78,9 +78,9 @@ namespace IdentityServer4.ResponseHandling
                 var error = consent.Error == AuthorizationError.AccountSelectionRequired ? OidcConstants.AuthorizeErrors.AccountSelectionRequired :
                     consent.Error == AuthorizationError.ConsentRequired ? OidcConstants.AuthorizeErrors.ConsentRequired :
                     consent.Error == AuthorizationError.InteractionRequired ? OidcConstants.AuthorizeErrors.InteractionRequired :
-                    consent.Error == AuthorizationError.LoginRequired ? OidcConstants.AuthorizeErrors.LoginRequired : 
+                    consent.Error == AuthorizationError.LoginRequired ? OidcConstants.AuthorizeErrors.LoginRequired :
                         OidcConstants.AuthorizeErrors.AccessDenied;
-                
+
                 return new InteractionResponse
                 {
                     Error = error,
@@ -94,9 +94,7 @@ namespace IdentityServer4.ResponseHandling
                 return result;
             }
 
-            result = await ProcessConsentAsync(request, consent);
-
-            return result;
+            return await ProcessConsentAsync(request, consent);
         }
 
         /// <summary>
@@ -114,13 +112,13 @@ namespace IdentityServer4.ResponseHandling
                 // remove prompt so when we redirect back in from login page
                 // we won't think we need to force a prompt again
                 request.RemovePrompt();
-                
+
                 return new InteractionResponse { IsLogin = true };
             }
 
             // unauthenticated user
             var isAuthenticated = request.Subject.IsAuthenticated();
-            
+
             // user de-activated
             bool isActive = false;
 
@@ -128,7 +126,7 @@ namespace IdentityServer4.ResponseHandling
             {
                 var isActiveCtx = new IsActiveContext(request.Subject, request.Client, IdentityServerConstants.ProfileIsActiveCallers.AuthorizeEndpoint);
                 await Profile.IsActiveAsync(isActiveCtx);
-                
+
                 isActive = isActiveCtx.IsActive;
             }
 
@@ -200,8 +198,7 @@ namespace IdentityServer4.ResponseHandling
                 }
             }
             // check external idp restrictions if user not using local idp
-            else if (request.Client.IdentityProviderRestrictions != null && 
-                request.Client.IdentityProviderRestrictions.Any() &&
+            else if (request.Client.IdentityProviderRestrictions?.Any() == true &&
                 !request.Client.IdentityProviderRestrictions.Contains(currentIdp))
             {
                 Logger.LogInformation("Showing login: User is logged in with idp: {idp}, but idp not in client restriction list.", currentIdp);
@@ -274,19 +271,17 @@ namespace IdentityServer4.ResponseHandling
                     Logger.LogTrace("Consent was shown to user");
 
                     // user was shown consent -- did they say yes or no
-                    if (consent.Granted == false)
+                    if (!consent.Granted)
                     {
                         // no need to show consent screen again
                         // build error to return to client
                         Logger.LogInformation("Error: User consent result: {error}", consent.Error);
 
-                        var error = consent.Error == AuthorizationError.AccountSelectionRequired ? OidcConstants.AuthorizeErrors.AccountSelectionRequired :
+                        response.Error = consent.Error == AuthorizationError.AccountSelectionRequired ? OidcConstants.AuthorizeErrors.AccountSelectionRequired :
                             consent.Error == AuthorizationError.ConsentRequired ? OidcConstants.AuthorizeErrors.ConsentRequired :
                             consent.Error == AuthorizationError.InteractionRequired ? OidcConstants.AuthorizeErrors.InteractionRequired :
                             consent.Error == AuthorizationError.LoginRequired ? OidcConstants.AuthorizeErrors.LoginRequired :
                                 OidcConstants.AuthorizeErrors.AccessDenied;
-
-                        response.Error = error;
                         response.ErrorDescription = consent.ErrorDescription;
                     }
                     else
@@ -294,7 +289,7 @@ namespace IdentityServer4.ResponseHandling
                         // double check that required scopes are in the list of consented scopes
                         var requiredScopes = request.ValidatedResources.GetRequiredScopeValues();
                         var valid = requiredScopes.All(x => consent.ScopesValuesConsented.Contains(x));
-                        if (valid == false)
+                        if (!valid)
                         {
                             response.Error = OidcConstants.AuthorizeErrors.AccessDenied;
                             Logger.LogInformation("Error: User denied consent to required scopes");

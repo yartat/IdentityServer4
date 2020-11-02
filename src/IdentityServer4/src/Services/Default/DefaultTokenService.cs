@@ -202,9 +202,14 @@ namespace IdentityServer4.Services
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
 
-            if (request.ValidatedRequest.ClientIp.IsPresent())
+            if (request.IpAddress.IsPresent())
             {
-                claims.Add(new Claim("ip", request.ValidatedRequest.ClientIp));
+                claims.Add(new Claim(Constants.JwtClaims.Ip, request.IpAddress));
+            }
+
+            if (request.Device.IsPresent())
+            {
+                claims.Add(new Claim(Constants.JwtClaims.Device, request.Device));
             }
 
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
@@ -247,7 +252,7 @@ namespace IdentityServer4.Services
                     }
                 }
             }
-            
+
             return token;
         }
 

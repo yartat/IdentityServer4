@@ -115,10 +115,10 @@ namespace IdentityServer4.Validation
         public string ClientIp { get; set; }
 
         /// <summary>
-        /// Gets or sets the client agent.
+        /// Gets or sets the client device.
         /// </summary>
-        /// <value>The client agent.</value>
-        public string ClientAgent { get; set; }
+        /// <value>The client device.</value>
+        public string Device { get; set; }
 
         /// <summary>
         /// Sets the client and the appropriate request specific settings.

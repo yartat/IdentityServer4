@@ -182,12 +182,13 @@ namespace IdentityServer4.ResponseHandling
                     Nonce = request.ValidatedRequest.AuthorizationCode.Nonce,
                     AccessTokenToHash = response.AccessToken,
                     StateHash = request.ValidatedRequest.AuthorizationCode.StateHash,
-                    ValidatedRequest = request.ValidatedRequest
+                    ValidatedRequest = request.ValidatedRequest,
+                    IpAddress = request.ValidatedRequest.ClientIp,
+                    Device = request.ValidatedRequest.Device
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
-                var jwt = await TokenService.CreateSecurityTokenAsync(idToken);
-                response.IdentityToken = jwt;
+                response.IdentityToken = await TokenService.CreateSecurityTokenAsync(idToken);
             }
 
             return response;
@@ -217,7 +218,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = subject,
                     Description = request.ValidatedRequest.RefreshToken.Description,
                     ValidatedRequest = request.ValidatedRequest,
-                    ValidatedResources = validatedResources
+                    ValidatedResources = validatedResources,
+                    IpAddress = request.ValidatedRequest.RefreshToken.IpAddress,
+                    Device = request.ValidatedRequest.RefreshToken.Device,
                 };
 
                 var newAccessToken = await TokenService.CreateAccessTokenAsync(creationRequest);
@@ -291,13 +294,15 @@ namespace IdentityServer4.ResponseHandling
 
                 var parsedScopes = await ResourceValidator.ParseRequestedScopesAsync(request.ValidatedRequest.DeviceCode.AuthorizedScopes);
                 var validatedResources = await Resources.CreateResourceValidationResult(parsedScopes);
-                
+
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.DeviceCode.Subject,
                     ValidatedResources = validatedResources,
                     AccessTokenToHash = response.AccessToken,
-                    ValidatedRequest = request.ValidatedRequest
+                    ValidatedRequest = request.ValidatedRequest,
+                    IpAddress = request.ValidatedRequest.ClientIp,
+                    Device = request.ValidatedRequest.Device
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
@@ -378,7 +383,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = request.AuthorizationCode.Subject,
                     Description = request.AuthorizationCode.Description,
                     ValidatedResources = validatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
             else if (request.DeviceCode != null)
@@ -403,7 +410,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = request.DeviceCode.Subject,
                     Description = request.DeviceCode.Description,
                     ValidatedResources = validatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
             else
@@ -414,7 +423,9 @@ namespace IdentityServer4.ResponseHandling
                 {
                     Subject = request.Subject,
                     ValidatedResources = request.ValidatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
 
@@ -423,7 +434,7 @@ namespace IdentityServer4.ResponseHandling
 
             if (createRefreshToken)
             {
-                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client);
+                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client, request.ClientIp, request.Device);
                 return (accessToken, refreshToken);
             }
 
@@ -442,7 +453,7 @@ namespace IdentityServer4.ResponseHandling
             if (resources.IdentityResources.Any())
             {
                 var oldAccessToken = request.RefreshToken.AccessToken;
-                
+
                 var parsedScopes = await ResourceValidator.ParseRequestedScopesAsync(oldAccessToken.Scopes);
                 var validatedResources = await Resources.CreateResourceValidationResult(parsedScopes);
 

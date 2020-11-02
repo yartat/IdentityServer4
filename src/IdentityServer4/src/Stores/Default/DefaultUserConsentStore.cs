@@ -23,10 +23,10 @@ namespace IdentityServer4.Stores
         /// <param name="handleGenerationService">The handle generation service.</param>
         /// <param name="logger">The logger.</param>
         public DefaultUserConsentStore(
-            IPersistedGrantStore store, 
+            IPersistedGrantStore store,
             IPersistentGrantSerializer serializer,
             IHandleGenerationService handleGenerationService,
-            ILogger<DefaultUserConsentStore> logger) 
+            ILogger<DefaultUserConsentStore> logger)
             : base(IdentityServerConstants.PersistedGrantTypes.UserConsent, store, serializer, handleGenerationService, logger)
         {
         }

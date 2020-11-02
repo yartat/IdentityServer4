@@ -45,16 +45,8 @@ namespace IdentityServer4.Services
             RefreshTokenStore = refreshTokenStore;
         }
 
-        /// <summary>
-        /// Creates the refresh token.
-        /// </summary>
-        /// <param name="subject">The subject.</param>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="client">The client.</param>
-        /// <returns>
-        /// The refresh token handle
-        /// </returns>
-        public virtual async Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client)
+        /// <inheritdoc/>
+        public virtual async Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string ip, string device)
         {
             _logger.LogDebug("Creating refresh token");
 
@@ -80,21 +72,15 @@ namespace IdentityServer4.Services
             {
                 CreationTime = Clock.UtcNow.UtcDateTime,
                 Lifetime = lifetime,
-                AccessToken = accessToken
+                AccessToken = accessToken,
+                IpAddress = ip,
+                Device = device
             };
 
             return await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);
         }
 
-        /// <summary>
-        /// Updates the refresh token.
-        /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <param name="client">The client.</param>
-        /// <returns>
-        /// The refresh token handle
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, Client client)
         {
             _logger.LogDebug("Updating refresh token");
