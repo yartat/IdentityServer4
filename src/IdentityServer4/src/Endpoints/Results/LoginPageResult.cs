@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using IdentityServer4.Stores;
 using IdentityServer4.Models;
 using System.Collections.Specialized;
+using IdentityServer4.Debug.Services;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -24,22 +25,26 @@ namespace IdentityServer4.Endpoints.Results
     public class LoginPageResult : IEndpointResult
     {
         private readonly ValidatedAuthorizeRequest _request;
+        private readonly ILoginUrlProcessor _loginUrlProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPageResult"/> class.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="loginUrlProcessor">The login URL processor.</param>
         /// <exception cref="System.ArgumentNullException">request</exception>
-        public LoginPageResult(ValidatedAuthorizeRequest request)
+        public LoginPageResult(ValidatedAuthorizeRequest request, ILoginUrlProcessor loginUrlProcessor = null)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
+            _loginUrlProcessor = loginUrlProcessor;
         }
 
         internal LoginPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-            : this(request)
+            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null,
+            ILoginUrlProcessor loginUrlProcessor = null) 
+            : this(request, loginUrlProcessor)
         {
             _options = options;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
@@ -64,9 +69,10 @@ namespace IdentityServer4.Endpoints.Results
             Init(context);
 
             var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
+            var data = _request.Raw.ToFullDictionary();
             if (_authorizationParametersMessageStore != null)
             {
-                var msg = new Message<IDictionary<string, string[]>>(_request.Raw.ToFullDictionary());
+                var msg = new Message<IDictionary<string, string[]>>(data);
                 var id = await _authorizationParametersMessageStore.WriteAsync(msg);
                 returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
             }
@@ -83,7 +89,12 @@ namespace IdentityServer4.Endpoints.Results
                 returnUrl = _options.BaseUri.EnsureTrailingSlash() + returnUrl.RemoveLeadingSlash();
             }
 
-            var url = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
+            var url = loginUrl
+                .AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
+
+            if (_loginUrlProcessor != null)
+                url = _loginUrlProcessor.Process(url, data);
+
             context.Response.RedirectToAbsoluteUrl(url);
         }
     }
