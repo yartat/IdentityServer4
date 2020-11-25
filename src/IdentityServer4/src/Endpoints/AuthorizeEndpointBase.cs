@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityModel;
+using IdentityServer4.Debug.Services;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -30,13 +31,16 @@ namespace IdentityServer4.Endpoints
 
         private readonly IAuthorizeRequestValidator _validator;
 
+        private readonly ILoginUrlProcessor _loginUrlProcessor;
+
         protected AuthorizeEndpointBase(
             IEventService events,
             ILogger<AuthorizeEndpointBase> logger,
             IAuthorizeRequestValidator validator,
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
-            IUserSession userSession)
+            IUserSession userSession,
+            ILoginUrlProcessor loginUrlProcessor = null)
         {
             _events = events;
             Logger = logger;
@@ -44,6 +48,7 @@ namespace IdentityServer4.Endpoints
             _interactionGenerator = interactionGenerator;
             _authorizeResponseGenerator = authorizeResponseGenerator;
             UserSession = userSession;
+            _loginUrlProcessor = loginUrlProcessor;
         }
 
         protected ILogger Logger { get; private set; }
@@ -85,7 +90,7 @@ namespace IdentityServer4.Endpoints
             }
             if (interactionResult.IsLogin)
             {
-                return new LoginPageResult(request);
+                return new LoginPageResult(request, _loginUrlProcessor);
             }
             if (interactionResult.IsConsent)
             {

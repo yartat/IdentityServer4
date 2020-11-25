@@ -4,6 +4,7 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Threading.Tasks;
+using IdentityServer4.Debug.Services;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
@@ -30,8 +31,9 @@ namespace IdentityServer4.Endpoints
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
             IConsentMessageStore consentResponseStore,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
-            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null,
+            ILoginUrlProcessor loginUrlProcessor = null)
+            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession, loginUrlProcessor)
         {
             _consentResponseStore = consentResponseStore;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
