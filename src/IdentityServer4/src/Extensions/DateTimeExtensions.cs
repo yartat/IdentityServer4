@@ -7,41 +7,50 @@ using System.Diagnostics;
 
 namespace IdentityServer4.Extensions
 {
-    internal static class DateTimeExtensions
+    /// <summary>
+    /// Defines a date and time extension methods.
+    /// </summary>
+    public static class DateTimeExtensions
     {
+        /// <summary>
+        /// Determines whether the specified seconds has exceeded.
+        /// </summary>
+        /// <param name="creationTime">The creation time.</param>
+        /// <param name="seconds">The seconds.</param>
+        /// <param name="now">The now.</param>
+        /// <returns><c>true</c> if the specified seconds has exceeded; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool HasExceeded(this DateTime creationTime, int seconds, DateTime now)
-        {
-            return (now > creationTime.AddSeconds(seconds));
-        }
+        public static bool HasExceeded(this DateTime creationTime, int seconds, DateTime now) =>
+            now > creationTime.AddSeconds(seconds);
 
+        /// <summary>
+        /// Gets the lifetime in seconds.
+        /// </summary>
+        /// <param name="creationTime">The creation time.</param>
+        /// <param name="now">The now.</param>
+        /// <returns>System.Int32.</returns>
         [DebuggerStepThrough]
-        public static int GetLifetimeInSeconds(this DateTime creationTime, DateTime now)
-        {
-            return ((int)(now - creationTime).TotalSeconds);
-        }
+        public static int GetLifetimeInSeconds(this DateTime creationTime, DateTime now) =>
+            (int)(now - creationTime).TotalSeconds;
 
+        /// <summary>
+        /// Determines whether the specified now has expired.
+        /// </summary>
+        /// <param name="expirationTime">The expiration time.</param>
+        /// <param name="now">The now.</param>
+        /// <returns><c>true</c> if the specified now has expired; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool HasExpired(this DateTime? expirationTime, DateTime now)
-        {
-            if (expirationTime.HasValue &&
-                expirationTime.Value.HasExpired(now))
-            {
-                return true;
-            }
+        public static bool HasExpired(this DateTime? expirationTime, DateTime now) =>
+            expirationTime.HasValue && expirationTime.Value.HasExpired(now);
 
-            return false;
-        }
-
+        /// <summary>
+        /// Determines whether the specified now has expired.
+        /// </summary>
+        /// <param name="expirationTime">The expiration time.</param>
+        /// <param name="now">The now.</param>
+        /// <returns><c>true</c> if the specified now has expired; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool HasExpired(this DateTime expirationTime, DateTime now)
-        {
-            if (now > expirationTime)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static bool HasExpired(this DateTime expirationTime, DateTime now) =>
+            now > expirationTime;
     }
 }

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Configuration;
+using System.Security.Claims;
 
 namespace IdentityServer4.ResponseHandling
 {
@@ -171,7 +172,7 @@ namespace IdentityServer4.ResponseHandling
                 var accessToken = await TokenService.CreateAccessTokenAsync(tokenRequest);
                 accessTokenLifetime = accessToken.Lifetime;
 
-                accessTokenValue = await TokenService.CreateSecurityTokenAsync(accessToken);
+                accessTokenValue = await GetTokenValueAsync(request.Subject, accessToken, request.Client, request.ClientIp, request.Device);
             }
 
             string jwt = null;
@@ -203,7 +204,7 @@ namespace IdentityServer4.ResponseHandling
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
-                jwt = await TokenService.CreateSecurityTokenAsync(idToken);
+                jwt = await GetTokenValueAsync(request.Subject, idToken, request.Client, request.ClientIp, request.Device);
             }
 
             var response = new AuthorizeResponse
@@ -217,6 +218,18 @@ namespace IdentityServer4.ResponseHandling
 
             return response;
         }
+
+        /// <summary>
+        /// Gets the token value asynchronous.
+        /// </summary>
+        /// <param name="claimsPrincipal">The claims principal.</param>
+        /// <param name="token">The token instance.</param>
+        /// <param name="client">The client instance.</param>
+        /// <param name="ip">The IP address.</param>
+        /// <param name="device">The requested device.</param>
+        /// <returns>Returns string token value.</returns>
+        protected virtual Task<string> GetTokenValueAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device) =>
+            TokenService.CreateSecurityTokenAsync(token);
 
         /// <summary>
         /// Creates an authorization code

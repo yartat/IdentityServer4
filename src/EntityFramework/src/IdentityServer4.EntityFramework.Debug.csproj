@@ -38,4 +38,8 @@
     <ProjectReference Include="..\..\EntityFramework.Storage\src\IdentityServer4.EntityFramework.Storage.Debug.csproj" />
     <ProjectReference Include="..\..\IdentityServer4\src\IdentityServer4.Debug.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MinVer" Version="2.3.1" />
+  </ItemGroup>
 </Project>

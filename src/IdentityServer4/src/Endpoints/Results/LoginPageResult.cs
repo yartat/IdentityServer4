@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using IdentityServer4.Stores;
 using IdentityServer4.Models;
 using System.Collections.Specialized;
+using IdentityServer4.Services;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -24,6 +25,9 @@ namespace IdentityServer4.Endpoints.Results
     public class LoginPageResult : IEndpointResult
     {
         private readonly ValidatedAuthorizeRequest _request;
+
+        private IdentityServerOptions _options;
+        private IAuthorizationParametersProcessor _authorizationParametersProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPageResult"/> class.
@@ -38,20 +42,17 @@ namespace IdentityServer4.Endpoints.Results
         internal LoginPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
+            IAuthorizationParametersProcessor authorizationParametersProcessor = null) 
             : this(request)
         {
             _options = options;
-            _authorizationParametersMessageStore = authorizationParametersMessageStore;
+            _authorizationParametersProcessor = authorizationParametersProcessor;
         }
-
-        private IdentityServerOptions _options;
-        private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _authorizationParametersMessageStore = _authorizationParametersMessageStore ?? context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _authorizationParametersProcessor ??= context.RequestServices.GetService<IAuthorizationParametersProcessor>();
         }
 
         /// <summary>
@@ -63,28 +64,28 @@ namespace IdentityServer4.Endpoints.Results
         {
             Init(context);
 
-            var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
-            if (_authorizationParametersMessageStore != null)
-            {
-                var msg = new Message<IDictionary<string, string[]>>(_request.Raw.ToFullDictionary());
-                var id = await _authorizationParametersMessageStore.WriteAsync(msg);
-                returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
-            }
-            else
-            {
-                returnUrl = returnUrl.AddQueryString(_request.Raw.ToQueryString());
-            }
-
+            var (returnUrl, otherParameters) = await _authorizationParametersProcessor.StoreParametersAsync(_request);
             var loginUrl = _options.UserInteraction.LoginUrl;
-            if (!loginUrl.IsLocalUrl())
+            var resultUrl = loginUrl;
+            if (!string.IsNullOrEmpty(returnUrl))
             {
-                // this converts the relative redirect path to an absolute one if we're 
-                // redirecting to a different server
-                returnUrl = _options.BaseUri.EnsureTrailingSlash() + returnUrl.RemoveLeadingSlash();
+                returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + returnUrl;
+                if (!loginUrl.IsLocalUrl())
+                {
+                    // this converts the relative redirect path to an absolute one if we're 
+                    // redirecting to a different server
+                    returnUrl = _options.BaseUri.EnsureTrailingSlash() + returnUrl.RemoveLeadingSlash();
+                }
+
+                if (!string.IsNullOrEmpty(otherParameters))
+                {
+                    returnUrl += otherParameters;
+                }
+
+                resultUrl = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
             }
 
-            var url = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
-            context.Response.RedirectToAbsoluteUrl(url);
+            context.Response.RedirectToAbsoluteUrl(resultUrl);
         }
     }
 }

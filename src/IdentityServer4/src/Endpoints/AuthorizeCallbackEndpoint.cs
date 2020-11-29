@@ -68,7 +68,7 @@ namespace IdentityServer4.Endpoints
 
             try
             {
-                var result = await ProcessAuthorizeRequestAsync(parameters, user, consent?.Data);
+                var result = await ProcessAuthorizeRequestAsync(parameters, user, consent?.Data, context);
 
                 Logger.LogTrace("End Authorize Request. Result type: {0}", result?.GetType().ToString() ?? "-none-");
 

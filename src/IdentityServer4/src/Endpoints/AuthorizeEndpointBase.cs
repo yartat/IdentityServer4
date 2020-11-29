@@ -52,7 +52,7 @@ namespace IdentityServer4.Endpoints
 
         public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
 
-        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent)
+        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context)
         {
             if (user != null)
             {
@@ -94,6 +94,13 @@ namespace IdentityServer4.Endpoints
             if (interactionResult.IsRedirect)
             {
                 return new CustomRedirectResult(request, interactionResult.RedirectUrl);
+            }
+
+            request.ClientIp = context.GetRequestIp();
+            var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
+            if (userDevice != null)
+            {
+                request.Device = userDevice.GetDeviceName();
             }
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
