@@ -30,13 +30,16 @@ namespace IdentityServer4.Endpoints
 
         private readonly IAuthorizeRequestValidator _validator;
 
+        private readonly ILoginUrlProcessor _loginUrlProcessor;
+
         protected AuthorizeEndpointBase(
             IEventService events,
             ILogger<AuthorizeEndpointBase> logger,
             IAuthorizeRequestValidator validator,
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
-            IUserSession userSession)
+            IUserSession userSession,
+            ILoginUrlProcessor loginUrlProcessor = null)
         {
             _events = events;
             Logger = logger;
@@ -44,11 +47,12 @@ namespace IdentityServer4.Endpoints
             _interactionGenerator = interactionGenerator;
             _authorizeResponseGenerator = authorizeResponseGenerator;
             UserSession = userSession;
+            _loginUrlProcessor = loginUrlProcessor;
         }
 
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger { get; }
 
-        protected IUserSession UserSession { get; private set; }
+        protected IUserSession UserSession { get; }
 
         public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
 
@@ -85,7 +89,7 @@ namespace IdentityServer4.Endpoints
             }
             if (interactionResult.IsLogin)
             {
-                return new LoginPageResult(request);
+                return new LoginPageResult(request, _loginUrlProcessor);
             }
             if (interactionResult.IsConsent)
             {

@@ -26,8 +26,6 @@ using static IdentityServer4.Constants;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting.FederatedSignOut;
 using IdentityServer4.Services.Default;
-using IdentityServer4.Services;
-using IdentityServer4.Services.Default;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

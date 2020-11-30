@@ -23,8 +23,9 @@ namespace IdentityServer4.Endpoints
            IAuthorizeRequestValidator validator,
            IAuthorizeInteractionResponseGenerator interactionGenerator,
            IAuthorizeResponseGenerator authorizeResponseGenerator,
-           IUserSession userSession)
-            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+           IUserSession userSession,
+           ILoginUrlProcessor loginUrlProcessor = null)
+            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession, loginUrlProcessor)
         {
         }
 

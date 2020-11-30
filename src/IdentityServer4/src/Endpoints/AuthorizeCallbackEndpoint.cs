@@ -30,8 +30,9 @@ namespace IdentityServer4.Endpoints
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
             IConsentMessageStore consentResponseStore,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
-            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null,
+            ILoginUrlProcessor loginUrlProcessor = null)
+            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession, loginUrlProcessor)
         {
             _consentResponseStore = consentResponseStore;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;

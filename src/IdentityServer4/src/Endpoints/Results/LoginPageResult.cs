@@ -3,7 +3,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Hosting;
 using IdentityServer4.Validation;
@@ -11,9 +10,6 @@ using Microsoft.AspNetCore.Http;
 using IdentityServer4.Extensions;
 using IdentityServer4.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using IdentityServer4.Stores;
-using IdentityServer4.Models;
-using System.Collections.Specialized;
 using IdentityServer4.Services;
 
 namespace IdentityServer4.Endpoints.Results
@@ -28,22 +24,28 @@ namespace IdentityServer4.Endpoints.Results
 
         private IdentityServerOptions _options;
         private IAuthorizationParametersProcessor _authorizationParametersProcessor;
+        private readonly ILoginUrlProcessor _loginUrlProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPageResult"/> class.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <exception cref="System.ArgumentNullException">request</exception>
-        public LoginPageResult(ValidatedAuthorizeRequest request)
+        /// <param name="loginUrlProcessor">The login URL processor instance.</param>
+        /// <exception cref="ArgumentNullException">request</exception>
+        public LoginPageResult(
+            ValidatedAuthorizeRequest request,
+            ILoginUrlProcessor loginUrlProcessor = null)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
+            _loginUrlProcessor = loginUrlProcessor;
         }
 
         internal LoginPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
-            IAuthorizationParametersProcessor authorizationParametersProcessor = null) 
-            : this(request)
+            IAuthorizationParametersProcessor authorizationParametersProcessor = null,
+            ILoginUrlProcessor loginUrlProcessor = null)
+            : this(request, loginUrlProcessor)
         {
             _options = options;
             _authorizationParametersProcessor = authorizationParametersProcessor;
@@ -59,7 +61,6 @@ namespace IdentityServer4.Endpoints.Results
         /// Executes the result.
         /// </summary>
         /// <param name="context">The HTTP context.</param>
-        /// <returns></returns>
         public async Task ExecuteAsync(HttpContext context)
         {
             Init(context);
@@ -83,6 +84,11 @@ namespace IdentityServer4.Endpoints.Results
                 }
 
                 resultUrl = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
+            }
+
+            if (_loginUrlProcessor != null)
+            {
+                resultUrl = _loginUrlProcessor.Process(resultUrl, _request.Raw.ToFullDictionary());
             }
 
             context.Response.RedirectToAbsoluteUrl(resultUrl);
