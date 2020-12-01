@@ -16,7 +16,6 @@ using IdentityServer4.Stores;
 using IdentityServer4.ResponseHandling;
 using Microsoft.AspNetCore.Authentication;
 using System.Text.Encodings.Web;
-using System.Linq;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -50,10 +49,10 @@ namespace IdentityServer4.Endpoints.Results
 
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _userSession = _userSession ?? context.RequestServices.GetRequiredService<IUserSession>();
-            _errorMessageStore = _errorMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
-            _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
+            _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
+            _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
         public async Task ExecuteAsync(HttpContext context)

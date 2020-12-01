@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>IdentityServer4.EntityFramework.Storage</PackageId>
     <AssemblyName>IdentityServer4.EntityFramework.Storage</AssemblyName>
-    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;netcoreapp3.1</TargetFrameworks>
     
     <Description>EntityFramework persistence layer for IdentityServer4</Description>
     <Authors>Brock Allen;Dominick Baier;Scott Brady</Authors>

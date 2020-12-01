@@ -9,6 +9,28 @@ using System.Collections.Generic;
 
 namespace IdentityServer4
 {
+    /// <summary>
+    /// Defines a public identity constants.
+    /// </summary>
+    public static class IdentityConstants
+    {
+        /// <summary>
+        /// Defines a authentication properties name.
+        /// </summary>
+        public static class AuthenticationProperties
+        {
+            /// <summary>
+            /// The authentication item IP
+            /// </summary>
+            public const string Ip = "ip";
+
+            /// <summary>
+            /// The authentication item device
+            /// </summary>
+            public const string Device = "device";
+        }
+    }
+
     internal static class Constants
     {
         public const string IdentityServerName               = "IdentityServer4";

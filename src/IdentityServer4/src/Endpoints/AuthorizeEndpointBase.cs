@@ -23,13 +23,9 @@ namespace IdentityServer4.Endpoints
     internal abstract class AuthorizeEndpointBase : IEndpointHandler
     {
         private readonly IAuthorizeResponseGenerator _authorizeResponseGenerator;
-
         private readonly IEventService _events;
-
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
-
         private readonly IAuthorizeRequestValidator _validator;
-
         private readonly ILoginUrlProcessor _loginUrlProcessor;
 
         protected AuthorizeEndpointBase(
