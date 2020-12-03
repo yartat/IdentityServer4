@@ -4,7 +4,6 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Threading.Tasks;
-using IdentityServer4.Debug.Services;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
@@ -70,7 +69,7 @@ namespace IdentityServer4.Endpoints
 
             try
             {
-                var result = await ProcessAuthorizeRequestAsync(parameters, user, consent?.Data);
+                var result = await ProcessAuthorizeRequestAsync(parameters, user, consent?.Data, context);
 
                 Logger.LogTrace("End Authorize Request. Result type: {0}", result?.GetType().ToString() ?? "-none-");
 

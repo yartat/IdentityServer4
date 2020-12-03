@@ -57,9 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCookieAuthentication(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
-                .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
-                .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            builder.Services
+                .AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
+                    .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
+                    .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
 
             builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>();
             builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>();
@@ -172,6 +173,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IUserCodeGenerator, NumericUserCodeGenerator>();
             builder.Services.TryAddTransient<IBackChannelLogoutService, DefaultBackChannelLogoutService>();
             builder.Services.TryAddTransient<IResourceValidator, ResourceValidator>();
+            builder.Services.TryAddTransient<IAuthorizationParametersProcessor, DefaultAuthorizationParametersProcessor>();
 
             builder.AddJwtRequestUriHttpClient();
             builder.AddBackChannelLogoutHttpClient();

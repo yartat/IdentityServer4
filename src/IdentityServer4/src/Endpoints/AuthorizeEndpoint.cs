@@ -4,7 +4,6 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Threading.Tasks;
-using IdentityServer4.Debug.Services;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
@@ -54,9 +53,8 @@ namespace IdentityServer4.Endpoints
                 return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
-            var user = await UserSession.GetUserAsync();
-            var result = await ProcessAuthorizeRequestAsync(values, user, null);
-
+            var user = await UserSession.GetUserAsync(true);
+            var result = await ProcessAuthorizeRequestAsync(values, user, null, context);
             Logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
 
             return result;

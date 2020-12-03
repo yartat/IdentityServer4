@@ -13,13 +13,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace IdentityServer4.ResponseHandling
 {
     /// <summary>
     /// The default token response generator
     /// </summary>
-    /// <seealso cref="IdentityServer4.ResponseHandling.ITokenResponseGenerator" />
+    /// <seealso cref="ITokenResponseGenerator" />
     public class TokenResponseGenerator : ITokenResponseGenerator
     {
         /// <summary>
@@ -67,7 +68,14 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="resources">The resources.</param>
         /// <param name="clients">The clients.</param>
         /// <param name="logger">The logger.</param>
-        public TokenResponseGenerator(ISystemClock clock, ITokenService tokenService, IRefreshTokenService refreshTokenService, IResourceValidator resourceValidator, IResourceStore resources, IClientStore clients, ILogger<TokenResponseGenerator> logger)
+        public TokenResponseGenerator(
+            ISystemClock clock,
+            ITokenService tokenService,
+            IRefreshTokenService refreshTokenService,
+            IResourceValidator resourceValidator,
+            IResourceStore resources,
+            IClientStore clients,
+            ILogger<TokenResponseGenerator> logger)
         {
             Clock = clock;
             TokenService = tokenService;
@@ -430,11 +438,25 @@ namespace IdentityServer4.ResponseHandling
             }
 
             var at = await TokenService.CreateAccessTokenAsync(tokenRequest);
-            var accessToken = await TokenService.CreateSecurityTokenAsync(at);
+            return await GetTokenAsync(tokenRequest.Subject, at, request.Client, request.ClientIp, request.Device, createRefreshToken);
+        }
 
+        /// <summary>
+        /// Stores the access token asynchronous.
+        /// </summary>
+        /// <param name="claimsPrincipal">The claims principal.</param>
+        /// <param name="token">The access token.</param>
+        /// <param name="client">The client instance.</param>
+        /// <param name="ip">The IP address.</param>
+        /// <param name="device">The requested device.</param>
+        /// <param name="createRefreshToken">Indicates to create refresh token.</param>
+        /// <returns>Task.</returns>
+        protected virtual async Task<(string AccessToken, string RefreshToken)> GetTokenAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device, bool createRefreshToken)
+        {
+            var accessToken = await TokenService.CreateSecurityTokenAsync(token);
             if (createRefreshToken)
             {
-                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client, request.ClientIp, request.Device);
+                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(claimsPrincipal, token, client, ip, device);
                 return (accessToken, refreshToken);
             }
 

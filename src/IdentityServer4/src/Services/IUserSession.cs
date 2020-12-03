@@ -18,13 +18,16 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Gets the current authenticated user.
         /// </summary>
-        Task<ClaimsPrincipal> GetUserAsync();
+        /// <param name="recheck">Indicates should recheck session.</param>
+        /// <returns>Returns session user claims</returns>
+        Task<ClaimsPrincipal> GetUserAsync(bool recheck = false);
 
         /// <summary>
         /// Gets the current session identifier.
         /// </summary>
-        /// <returns></returns>
-        Task<string> GetSessionIdAsync();
+        /// <param name="recheck">Indicates should recheck session.</param>
+        /// <returns>Returns session id</returns>
+        Task<string> GetSessionIdAsync(bool recheck = false);
 
         /// <summary>
         /// Ensures the session identifier cookie asynchronous.

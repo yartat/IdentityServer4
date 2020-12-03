@@ -6,7 +6,6 @@ using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityModel;
-using IdentityServer4.Debug.Services;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -24,13 +23,9 @@ namespace IdentityServer4.Endpoints
     internal abstract class AuthorizeEndpointBase : IEndpointHandler
     {
         private readonly IAuthorizeResponseGenerator _authorizeResponseGenerator;
-
         private readonly IEventService _events;
-
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
-
         private readonly IAuthorizeRequestValidator _validator;
-
         private readonly ILoginUrlProcessor _loginUrlProcessor;
 
         protected AuthorizeEndpointBase(
@@ -51,13 +46,13 @@ namespace IdentityServer4.Endpoints
             _loginUrlProcessor = loginUrlProcessor;
         }
 
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger { get; }
 
-        protected IUserSession UserSession { get; private set; }
+        protected IUserSession UserSession { get; }
 
         public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
 
-        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent)
+        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context)
         {
             if (user != null)
             {
@@ -99,6 +94,13 @@ namespace IdentityServer4.Endpoints
             if (interactionResult.IsRedirect)
             {
                 return new CustomRedirectResult(request, interactionResult.RedirectUrl);
+            }
+
+            request.ClientIp = context.GetRequestIp();
+            var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
+            if (userDevice != null)
+            {
+                request.Device = userDevice.GetDeviceName();
             }
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>IdentityServer4.EntityFramework.Storage</PackageId>
     <AssemblyName>IdentityServer4.EntityFramework.Storage</AssemblyName>
-    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;netcoreapp3.1</TargetFrameworks>
     
     <Description>EntityFramework persistence layer for IdentityServer4</Description>
     <Authors>Brock Allen;Dominick Baier;Scott Brady</Authors>
@@ -29,16 +29,20 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.0.0" />
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
 
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.10" />
 
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\Storage\src\IdentityServer4.Storage.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Update="MinVer" Version="2.3.1" />
   </ItemGroup>
 
 </Project>

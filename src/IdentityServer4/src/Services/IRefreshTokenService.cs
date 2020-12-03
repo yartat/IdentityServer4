@@ -36,5 +36,18 @@ namespace IdentityServer4.Services
         /// The refresh token handle
         /// </returns>
         Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, Client client);
+
+        /// <summary>
+        /// Gets the refresh token.
+        /// </summary>
+        /// <param name="refreshTokenHandle">The refresh token handle.</param>
+        /// <returns>Returns refresh token in case token exists or <c>null</c></returns>
+        Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle);
+
+        /// <summary>
+        /// Removes the refresh token.
+        /// </summary>
+        /// <param name="refreshTokenHandle">The refresh token handle.</param>
+        Task RemoveRefreshTokenAsync(string refreshTokenHandle);
     }
 }

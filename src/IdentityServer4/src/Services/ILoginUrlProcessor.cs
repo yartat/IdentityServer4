@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IdentityServer4.Debug.Services
+namespace IdentityServer4.Services
 {
     /// <summary>
     /// Interface for the login URL processor

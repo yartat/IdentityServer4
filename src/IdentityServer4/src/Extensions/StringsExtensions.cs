@@ -14,10 +14,18 @@ using System.Text.Encodings.Web;
 
 namespace IdentityServer4.Extensions
 {
-    internal static class StringExtensions
+    /// <summary>
+    /// Defines a string extension methods.
+    /// </summary>
+    public static class StringExtensions
     {
         private static readonly DictionaryCache _cache = new DictionaryCache();
 
+        /// <summary>
+        /// Gets the device by user agent string.
+        /// </summary>
+        /// <param name="userAgent">The user agent string.</param>
+        /// <returns>Returns device name.</returns>
         public static DeviceDetector GetDevice(this string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent))
@@ -31,6 +39,11 @@ namespace IdentityServer4.Extensions
             return result;
         }
 
+        /// <summary>
+        /// Converts to space separated string.
+        /// </summary>
+        /// <param name="list">The list of strings.</param>
+        /// <returns>Returns the space separated string.</returns>
         [DebuggerStepThrough]
         public static string ToSpaceSeparatedString(this IEnumerable<string> list)
         {
@@ -49,6 +62,11 @@ namespace IdentityServer4.Extensions
             return sb.ToString().Trim();
         }
 
+        /// <summary>
+        /// Converts from the space separated string.
+        /// </summary>
+        /// <param name="input">The space separated string.</param>
+        /// <returns>Returns the list of strings.</returns>
         [DebuggerStepThrough]
         public static IEnumerable<string> FromSpaceSeparatedString(this string input)
         {
@@ -56,6 +74,11 @@ namespace IdentityServer4.Extensions
             return input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
 
+        /// <summary>
+        /// Parses the scopes string.
+        /// </summary>
+        /// <param name="scopes">The scopes.</param>
+        /// <returns>Returns the list of scopes.</returns>
         public static List<string> ParseScopesString(this string scopes)
         {
             if (scopes.IsMissing())
@@ -75,12 +98,23 @@ namespace IdentityServer4.Extensions
             return null;
         }
 
+        /// <summary>
+        /// Determines whether the specified value is missing.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns><c>true</c> if the specified value is missing; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         public static bool IsMissing(this string value)
         {
             return string.IsNullOrWhiteSpace(value);
         }
 
+        /// <summary>
+        /// Determines whether is missing or too long the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns><c>true</c> if is missing or too long the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         public static bool IsMissingOrTooLong(this string value, int maxLength)
         {
@@ -96,12 +130,22 @@ namespace IdentityServer4.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified value is present.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns><c>true</c> if the specified value is present; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         public static bool IsPresent(this string value)
         {
             return !string.IsNullOrWhiteSpace(value);
         }
 
+        /// <summary>
+        /// Ensures the leading slash in path.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>Returns the URL with leading slash in path.</returns>
         [DebuggerStepThrough]
         public static string EnsureLeadingSlash(this string url)
         {
@@ -113,6 +157,11 @@ namespace IdentityServer4.Extensions
             return url;
         }
 
+        /// <summary>
+        /// Ensures the trailing slash.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>Returns the URL with trailing slash in path.</returns>
         [DebuggerStepThrough]
         public static string EnsureTrailingSlash(this string url)
         {
@@ -124,6 +173,11 @@ namespace IdentityServer4.Extensions
             return url;
         }
 
+        /// <summary>
+        /// Removes the leading slash.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>Returns the URL without leading slash in path.</returns>
         [DebuggerStepThrough]
         public static string RemoveLeadingSlash(this string url)
         {
@@ -135,6 +189,11 @@ namespace IdentityServer4.Extensions
             return url;
         }
 
+        /// <summary>
+        /// Removes the trailing slash.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>Returns the URL without trailing slash in path.</returns>
         [DebuggerStepThrough]
         public static string RemoveTrailingSlash(this string url)
         {
@@ -146,10 +205,15 @@ namespace IdentityServer4.Extensions
             return url;
         }
 
+        /// <summary>
+        /// Cleans the URL path.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>System.String.</returns>
         [DebuggerStepThrough]
         public static string CleanUrlPath(this string url)
         {
-            if (String.IsNullOrWhiteSpace(url)) url = "/";
+            if (string.IsNullOrWhiteSpace(url)) url = "/";
 
             if (url != "/" && url.EndsWith("/"))
             {
@@ -159,6 +223,11 @@ namespace IdentityServer4.Extensions
             return url;
         }
 
+        /// <summary>
+        /// Determines whether is local URL the specified value.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns><c>true</c> if is local URL the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         public static bool IsLocalUrl(this string url)
         {
@@ -206,6 +275,12 @@ namespace IdentityServer4.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Adds the query string to URL.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <param name="query">The query to add.</param>
+        /// <returns>Returns URL with query.</returns>
         [DebuggerStepThrough]
         public static string AddQueryString(this string url, string query)
         {
@@ -221,12 +296,25 @@ namespace IdentityServer4.Extensions
             return url + query;
         }
 
+        /// <summary>
+        /// Adds the query parameters with value to URL.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <param name="name">The query parameter name.</param>
+        /// <param name="value">The query parameter value.</param>
+        /// <returns>Returns URL with query.</returns>
         [DebuggerStepThrough]
         public static string AddQueryString(this string url, string name, string value)
         {
             return url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value));
         }
 
+        /// <summary>
+        /// Adds the hash fragment.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <param name="query">The query to add with hash.</param>
+        /// <returns>Returns URL with hash fragment.</returns>
         [DebuggerStepThrough]
         public static string AddHashFragment(this string url, string query)
         {
@@ -238,6 +326,11 @@ namespace IdentityServer4.Extensions
             return url + query;
         }
 
+        /// <summary>
+        /// Reads the query string as name value collection.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>Returns name value collection from query.</returns>
         [DebuggerStepThrough]
         public static NameValueCollection ReadQueryStringAsNameValueCollection(this string url)
         {
@@ -258,6 +351,11 @@ namespace IdentityServer4.Extensions
             return new NameValueCollection();           
         }
 
+        /// <summary>
+        /// Gets the origin.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <returns>Returns origin.</returns>
         public static string GetOrigin(this string url)
         {
             if (url != null)

@@ -56,6 +56,13 @@ namespace IdentityServer4.Hosting
                 AugmentPrincipal(principal);
 
                 if (properties == null) properties = new AuthenticationProperties();
+                properties.Items[IdentityConstants.AuthenticationProperties.Ip] = context.GetRequestIp();
+                var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
+                if (userDevice != null)
+                {
+                    properties.Items[IdentityConstants.AuthenticationProperties.Device] = userDevice.GetDeviceName();
+                }
+
                 await _session.CreateSessionIdAsync(principal, properties);
             }
 

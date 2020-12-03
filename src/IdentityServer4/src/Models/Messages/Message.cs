@@ -4,12 +4,16 @@
 
 
 using System;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace IdentityServer4.Models
 {
     /// <summary>
     /// Base class for data that needs to be written out as cookies.
     /// </summary>
+    [Serializable]
+    [DataContract]
     public class Message<TModel>
     {
         /// <summary>
@@ -23,7 +27,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// for JSON serializer
         /// </summary>
-        internal Message()
+        public Message()
         {
         }
         
@@ -44,6 +48,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The created UTC ticks.
         /// </value>
+        [DataMember(Name = "created")]
+        [JsonPropertyName("created")]
         public long Created { get; set; }
 
         /// <summary>
@@ -52,6 +58,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The data.
         /// </value>
+        [DataMember(Name = "data")]
+        [JsonPropertyName("data")]
         public TModel Data { get; set; }
     }
 }
