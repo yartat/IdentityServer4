@@ -26,8 +26,8 @@ namespace IdentityServer4.Services.Default
         /// <param name="logger">The logger instance.</param>
         /// <exception cref="ArgumentNullException">logger</exception>
         public DefaultAuthorizationParametersProcessor(
-            IAuthorizationParametersMessageStore store,
-            ILogger<DefaultAuthorizationParametersProcessor> logger)
+            ILogger<DefaultAuthorizationParametersProcessor> logger,
+            IAuthorizationParametersMessageStore store = null)
         {
             _store = store;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
