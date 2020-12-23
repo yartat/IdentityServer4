@@ -268,7 +268,7 @@ namespace IdentityServer4.Extensions
 
         public static T GetHeaderValueAs<T>(this HttpContext context, string headerName)
         {
-            if (context?.Request?.Headers?.TryGetValue(headerName, out var values) ?? false)
+            if (context?.Request?.Headers != null && context.Request.Headers.TryGetValue(headerName, out var values))
             {
                 var rawValues = values.ToString();   // writes out as Csv when there are multiple.
 
