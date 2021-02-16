@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
             return context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
-        internal static async Task<string> GetCookieAuthenticationSchemeAsync(this HttpContext context)
+        public static async Task<string> GetCookieAuthenticationSchemeAsync(this HttpContext context)
         {
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
             if (options.Authentication.CookieAuthenticationScheme != null)

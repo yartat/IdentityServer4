@@ -1,37 +1,38 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using System.Collections.Specialized;
-using System.Net;
-using System.Threading.Tasks;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
-using IdentityServer4.ResponseHandling;
 using IdentityServer4.Services;
-using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Specialized;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints
 {
-    internal class AuthorizeEndpoint : AuthorizeEndpointBase
+    internal class AuthorizeEndpoint : IEndpointHandler
     {
+        private readonly IAuthorizeRequestHandler _requestHandler;
+        private readonly ILogger<AuthorizeEndpoint> _logger;
+        private readonly IUserSession _userSession;
+
         public AuthorizeEndpoint(
-           IEventService events,
+           IAuthorizeRequestHandler requestHandler,
            ILogger<AuthorizeEndpoint> logger,
-           IAuthorizeRequestValidator validator,
-           IAuthorizeInteractionResponseGenerator interactionGenerator,
-           IAuthorizeResponseGenerator authorizeResponseGenerator,
-           IUserSession userSession,
-           ILoginUrlProcessor loginUrlProcessor = null)
-            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession, loginUrlProcessor)
+           IUserSession userSession)
         {
+            _requestHandler = requestHandler ?? throw new ArgumentNullException(nameof(requestHandler));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
         }
 
-        public override async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
-            Logger.LogDebug("Start authorize request");
+            _logger.LogDebug("Start authorize request");
 
             NameValueCollection values;
 
@@ -53,9 +54,9 @@ namespace IdentityServer4.Endpoints
                 return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
-            var user = await UserSession.GetUserAsync(true);
-            var result = await ProcessAuthorizeRequestAsync(values, user, null, context);
-            Logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
+            var user = await _userSession.GetUserAsync(true);
+            var result = await _requestHandler.ProcessAuthorizeRequestAsync(values, user, null, context);
+            _logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
 
             return result;
         }

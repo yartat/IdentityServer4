@@ -213,7 +213,6 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Removes the session identifier cookie.
         /// </summary>
-        /// <returns></returns>
         public virtual Task RemoveSessionIdCookieAsync()
         {
             if (HttpContext.Request.Cookies.ContainsKey(CheckSessionCookieName))

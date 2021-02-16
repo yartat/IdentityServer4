@@ -242,7 +242,7 @@ namespace IdentityServer4.ResponseHandling
                 accessTokenString = await TokenService.CreateSecurityTokenAsync(oldAccessToken);
             }
 
-            var handle = await RefreshTokenService.UpdateRefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
+            var handle = await RefreshTokenService.RefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
 
             return new TokenResponse
             {

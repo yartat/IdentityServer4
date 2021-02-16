@@ -89,6 +89,10 @@ namespace IdentityServer4.Services
             RefreshTokenStore.RemoveRefreshTokenAsync(refreshTokenHandle);
 
         /// <inheritdoc/>
+        public Task<string> RefreshTokenAsync(string handle, RefreshToken refreshToken, Client client) =>
+            UpdateRefreshTokenAsync(handle, refreshToken, client);
+
+        /// <inheritdoc/>
         public virtual async Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, Client client)
         {
             _logger.LogDebug("Updating refresh token");
