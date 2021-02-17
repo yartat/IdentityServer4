@@ -44,6 +44,12 @@ namespace Microsoft.AspNetCore.Http
             return context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
+        /// <summary>
+        /// Gets the cookie authentication scheme as an asynchronous operation.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <returns>Returns cookie authentication scheme name.</returns>
+        /// <exception cref="InvalidOperationException">No DefaultAuthenticateScheme found or no CookieAuthenticationScheme configured on IdentityServerOptions.</exception>
         public static async Task<string> GetCookieAuthenticationSchemeAsync(this HttpContext context)
         {
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();

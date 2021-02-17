@@ -7,6 +7,7 @@ namespace IdentityServer4.Services
 {
     /// <summary>
     /// Defines an interface to handle complete authorize request
+    /// </summary>
     public interface IAuthorizeRequestCompleteHandler
     {
         /// <summary>
