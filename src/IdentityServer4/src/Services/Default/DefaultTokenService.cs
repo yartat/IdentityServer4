@@ -103,13 +103,14 @@ namespace IdentityServer4.Services
         /// </returns>
         public virtual async Task<Token> CreateIdentityTokenAsync(TokenCreationRequest request)
         {
-            Logger.LogTrace("Creating identity token");
+            Logger.LogDebug("Creating identity token. Validate request");
             request.Validate();
 
-            // todo: Dom, add a test for this. validate the at and c hashes are correct for the id_token when the client's alg doesn't match the server default.
+            // TODO: Dom, add a test for this. validate the at and c hashes are correct for the id_token when the client's alg doesn't match the server default.
             var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.ValidatedRequest.Client.AllowedIdentityTokenSigningAlgorithms);
             if (credential == null)
             {
+                Logger.LogDebug("No signing credential is configured.");
                 throw new InvalidOperationException("No signing credential is configured.");
             }
 
@@ -158,7 +159,7 @@ namespace IdentityServer4.Services
                 request.ValidatedRequest));
 
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
-
+            Logger.LogTrace("Add issuer '{issuer}' to token", issuer);
             var token = new Token(OidcConstants.TokenTypes.IdentityToken)
             {
                 CreationTime = Clock.UtcNow.UtcDateTime,
@@ -171,6 +172,7 @@ namespace IdentityServer4.Services
                 AllowedSigningAlgorithms = request.ValidatedRequest.Client.AllowedIdentityTokenSigningAlgorithms
             };
 
+            Logger.LogDebug("Create identity token complete");
             return token;
         }
 

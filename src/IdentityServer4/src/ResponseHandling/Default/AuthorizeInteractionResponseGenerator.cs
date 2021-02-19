@@ -124,10 +124,18 @@ namespace IdentityServer4.ResponseHandling
 
             if (isAuthenticated)
             {
-                var isActiveCtx = new IsActiveContext(request.Subject, request.Client, IdentityServerConstants.ProfileIsActiveCallers.AuthorizeEndpoint);
-                await Profile.IsActiveAsync(isActiveCtx);
+                if (request.RequireCheckActive)
+                {
+                    var isActiveCtx = new IsActiveContext(request.Subject, request.Client, IdentityServerConstants.ProfileIsActiveCallers.AuthorizeEndpoint);
+                    await Profile.IsActiveAsync(isActiveCtx);
 
-                isActive = isActiveCtx.IsActive;
+                    isActive = isActiveCtx.IsActive;
+                }
+                else
+                {
+                    // profile was checked before
+                    isActive = true;
+                }
             }
 
             if (!isAuthenticated || !isActive)

@@ -97,11 +97,9 @@ namespace IdentityServer4.Endpoints
             }
 
             request.ClientIp = context.GetRequestIp();
-            var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
-            if (userDevice != null)
-            {
-                request.Device = userDevice.GetDeviceName();
-            }
+            request.Device = context
+                .GetHeaderValueAs<string>("User-Agent")
+                .GetDevice();
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
 

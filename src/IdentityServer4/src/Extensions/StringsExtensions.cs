@@ -4,6 +4,7 @@
 using DeviceDetectorNET;
 using DeviceDetectorNET.Cache;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -19,24 +20,33 @@ namespace IdentityServer4.Extensions
     /// </summary>
     public static class StringExtensions
     {
-        private static readonly DictionaryCache _cache = new DictionaryCache();
+        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
+        {
+            SizeLimit = 10 * 1024 * 1024 // 10 MB
+        });
+        private static readonly TimeSpan _entryTtl = TimeSpan.FromHours(1);
 
         /// <summary>
         /// Gets the device by user agent string.
         /// </summary>
         /// <param name="userAgent">The user agent string.</param>
         /// <returns>Returns device name.</returns>
-        public static DeviceDetector GetDevice(this string userAgent)
+        public static string GetDevice(this string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent))
             {
                 return null;
             }
 
-            var result = new DeviceDetector(userAgent);
-            result.SetCache(_cache);
-            result.Parse();
-            return result;
+            return _cache.GetOrCreate(userAgent, entry =>
+            {
+                entry.SlidingExpiration = _entryTtl;
+                entry.Size = userAgent.Length + 200;
+                var result = new DeviceDetector(userAgent);
+                result.SetCache(new DictionaryCache());
+                result.Parse();
+                return result.GetDeviceName();
+            });
         }
 
         /// <summary>

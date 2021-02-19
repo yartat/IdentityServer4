@@ -57,10 +57,12 @@ namespace IdentityServer4.Hosting
 
                 if (properties == null) properties = new AuthenticationProperties();
                 properties.Items[IdentityConstants.AuthenticationProperties.Ip] = context.GetRequestIp();
-                var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
-                if (userDevice != null)
+                var userDevice = context
+                    .GetHeaderValueAs<string>("User-Agent")
+                    .GetDevice();
+                if (!string.IsNullOrEmpty(userDevice))
                 {
-                    properties.Items[IdentityConstants.AuthenticationProperties.Device] = userDevice.GetDeviceName();
+                    properties.Items[IdentityConstants.AuthenticationProperties.Device] = userDevice;
                 }
 
                 await _session.CreateSessionIdAsync(principal, properties);

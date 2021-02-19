@@ -142,7 +142,7 @@ namespace IdentityServer4.ResponseHandling
         /// <exception cref="System.InvalidOperationException">Client does not exist anymore.</exception>
         protected virtual async Task<TokenResponse> ProcessAuthorizationCodeRequestAsync(TokenRequestValidationResult request)
         {
-            Logger.LogTrace("Creating response for authorization code request");
+            Logger.LogDebug("Creating response for authorization code request");
 
             //////////////////////////
             // access token
@@ -199,6 +199,7 @@ namespace IdentityServer4.ResponseHandling
                 response.IdentityToken = await TokenService.CreateSecurityTokenAsync(idToken);
             }
 
+            Logger.LogDebug("Response for authorization code request completed");
             return response;
         }
 
@@ -453,13 +454,16 @@ namespace IdentityServer4.ResponseHandling
         /// <returns>Task.</returns>
         protected virtual async Task<(string AccessToken, string RefreshToken)> GetTokenAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device, bool createRefreshToken)
         {
+            Logger.LogDebug("Getting token");
             var accessToken = await TokenService.CreateSecurityTokenAsync(token);
             if (createRefreshToken)
             {
                 var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(claimsPrincipal, token, client, ip, device);
+                Logger.LogDebug("Access and refresh token completed");
                 return (accessToken, refreshToken);
             }
 
+            Logger.LogDebug("Access token completed");
             return (accessToken, null);
         }
 

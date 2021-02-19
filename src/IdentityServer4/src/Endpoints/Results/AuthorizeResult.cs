@@ -19,10 +19,24 @@ using System.Text.Encodings.Web;
 
 namespace IdentityServer4.Endpoints.Results
 {
-    internal class AuthorizeResult : IEndpointResult
+    /// <summary>
+    /// Defines an authorize result response.
+    /// Implements the <see cref="IEndpointResult" />
+    /// </summary>
+    /// <seealso cref="IEndpointResult" />
+    public class AuthorizeResult : IEndpointResult
     {
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <value>The response.</value>
         public AuthorizeResponse Response { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizeResult"/> class.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <exception cref="ArgumentNullException">response</exception>
         public AuthorizeResult(AuthorizeResponse response)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));

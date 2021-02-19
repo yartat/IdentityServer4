@@ -114,11 +114,13 @@ namespace IdentityServer4.ResponseHandling
             Logger.LogDebug("Creating Hybrid Flow response.");
 
             var code = await CreateCodeAsync(request);
+            Logger.LogTrace("Store authorization code");
             var id = await AuthorizationCodeStore.StoreAuthorizationCodeAsync(code);
 
             var response = await CreateImplicitFlowResponseAsync(request, id);
             response.Code = id;
 
+            Logger.LogDebug("Response completed.");
             return response;
         }
 
@@ -132,6 +134,7 @@ namespace IdentityServer4.ResponseHandling
             Logger.LogDebug("Creating Authorization Code Flow response.");
 
             var code = await CreateCodeAsync(request);
+            Logger.LogTrace("Store authorization code");
             var id = await AuthorizationCodeStore.StoreAuthorizationCodeAsync(code);
 
             var response = new AuthorizeResponse
@@ -141,6 +144,7 @@ namespace IdentityServer4.ResponseHandling
                 SessionState = request.GenerateSessionStateValue()
             };
 
+            Logger.LogDebug("Response completed.");
             return response;
         }
 
@@ -161,6 +165,7 @@ namespace IdentityServer4.ResponseHandling
 
             if (responseTypes.Contains(OidcConstants.ResponseTypes.Token))
             {
+                Logger.LogDebug("Creating access token.");
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.Subject,
@@ -178,9 +183,11 @@ namespace IdentityServer4.ResponseHandling
             string jwt = null;
             if (responseTypes.Contains(OidcConstants.ResponseTypes.IdToken))
             {
+                Logger.LogDebug("Creating id_token.");
                 string stateHash = null;
                 if (request.State.IsPresent())
                 {
+                    Logger.LogDebug("Creating state hash.");
                     var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                     if (credential == null)
                     {
@@ -216,6 +223,7 @@ namespace IdentityServer4.ResponseHandling
                 SessionState = request.GenerateSessionStateValue()
             };
 
+            Logger.LogDebug("Response with tokens completed.");
             return response;
         }
 
@@ -238,9 +246,12 @@ namespace IdentityServer4.ResponseHandling
         /// <returns></returns>
         protected virtual async Task<AuthorizationCode> CreateCodeAsync(ValidatedAuthorizeRequest request)
         {
+            Logger.LogDebug("Creating Code response.");
+
             string stateHash = null;
             if (request.State.IsPresent())
             {
+                Logger.LogDebug("Creating state hash.");
                 var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                 if (credential == null)
                 {
@@ -271,6 +282,7 @@ namespace IdentityServer4.ResponseHandling
                 WasConsentShown = request.WasConsentShown
             };
 
+            Logger.LogDebug("Response with code completed.");
             return code;
         }
     }

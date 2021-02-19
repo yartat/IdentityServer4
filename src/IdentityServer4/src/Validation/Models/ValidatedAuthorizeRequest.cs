@@ -51,7 +51,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The requested scopes.
         /// </value>
-        // todo: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
+        // TODO: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
         public List<string> RequestedScopes { get; set; }
 
         /// <summary>
@@ -194,7 +194,10 @@ namespace IdentityServer4.Validation
                                             ResponseType == OidcConstants.ResponseTypes.CodeToken ||
                                             ResponseType == OidcConstants.ResponseTypes.CodeIdTokenToken;
 
-
+        /// <summary>
+        /// Requires check user is active
+        /// </summary>
+        public bool RequireCheckActive { get; set; } = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidatedAuthorizeRequest"/> class.

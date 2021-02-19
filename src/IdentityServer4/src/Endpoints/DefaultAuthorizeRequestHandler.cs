@@ -96,34 +96,39 @@ namespace IdentityServer4.Endpoints
             var interactionResult = await _interactionGenerator.ProcessInteractionAsync(request, consent);
             if (interactionResult.IsError)
             {
+                _logger.LogDebug("Iteration result is error");
                 return await CreateErrorResultAsync("Interaction generator error", request, interactionResult.Error, interactionResult.ErrorDescription, false);
             }
             if (interactionResult.IsLogin)
             {
+                _logger.LogDebug("Iteration result is login");
                 return new LoginPageResult(request, _loginUrlProcessor);
             }
             if (interactionResult.IsConsent)
             {
+                _logger.LogDebug("Iteration result is consent");
                 return new ConsentPageResult(request);
             }
             if (interactionResult.IsRedirect)
             {
+                _logger.LogDebug("Iteration result is redirect");
                 return new CustomRedirectResult(request, interactionResult.RedirectUrl);
             }
 
+            _logger.LogTrace("Enrich by IP and device type");
             request.ClientIp = context.GetRequestIp();
-            var userDevice = context.GetHeaderValueAs<string>("User-Agent").GetDevice();
-            if (userDevice != null)
-            {
-                request.Device = userDevice.GetDeviceName();
-            }
+            request.Device = context
+                .GetHeaderValueAs<string>("User-Agent")
+                .GetDevice();
 
+            _logger.LogTrace("Generate response");
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
 
             await RaiseResponseEventAsync(response);
 
             LogResponse(response);
 
+            _logger.LogDebug("Response completed as AuthorizeResult");
             return new AuthorizeResult(response);
         }
 
@@ -160,18 +165,29 @@ namespace IdentityServer4.Endpoints
 
         private void LogRequest(ValidatedAuthorizeRequest request)
         {
-            var details = new AuthorizeRequestValidationLog(request);
-            _logger.LogDebug(nameof(ValidatedAuthorizeRequest) + Environment.NewLine + "{@validationDetails}", details);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                var details = new AuthorizeRequestValidationLog(request);
+                _logger.LogTrace(nameof(ValidatedAuthorizeRequest) + Environment.NewLine + "{@validationDetails}", details);
+            }
         }
 
         private void LogResponse(AuthorizeResponse response)
         {
-            var details = new AuthorizeResponseLog(response);
-            _logger.LogDebug("Authorize endpoint response" + Environment.NewLine + "{@details}", details);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                var details = new AuthorizeResponseLog(response);
+                _logger.LogTrace("Authorize endpoint response" + Environment.NewLine + "{@details}", details);
+            }
         }
 
         private void LogTokens(AuthorizeResponse response)
         {
+            if (!_logger.IsEnabled(LogLevel.Trace))
+            {
+                return;
+            }
+
             var clientId = $"{response.Request.ClientId} ({response.Request.Client.ClientName ?? "no name set"})";
             var subjectId = response.Request.Subject.GetSubjectId();
 
