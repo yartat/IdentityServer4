@@ -37,7 +37,11 @@ namespace IdentityServer4.Services
         public async Task<string> GetJwtAsync(string url, Client client)
         {
             var req = new HttpRequestMessage(HttpMethod.Get, url);
+#if NETCOREAPP3_1
             req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
+#else
+            req.Options.Set(new HttpRequestOptionsKey<Client>(IdentityServerConstants.JwtRequestClientKey), client);
+#endif
 
             var response = await _client.SendAsync(req);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
