@@ -71,14 +71,15 @@ namespace IdentityServer4.Endpoints
         {
             if (user != null)
             {
-                _logger.LogDebug("User in authorize request: {subjectId}", user.GetSubjectId());
+                _logger.LogTrace("User in authorize request: {subjectId}", user.GetSubjectId());
             }
             else
             {
-                _logger.LogDebug("No user present in authorize request");
+                _logger.LogTrace("No user present in authorize request");
             }
 
             // validate request
+            _logger.LogTrace("Validates request");
             var result = await _validator.ValidateAsync(parameters, user);
             if (result.IsError)
             {
@@ -93,6 +94,7 @@ namespace IdentityServer4.Endpoints
             LogRequest(request);
 
             // determine user interaction
+            _logger.LogTrace("Process interaction request");
             var interactionResult = await _interactionGenerator.ProcessInteractionAsync(request, consent);
             if (interactionResult.IsError)
             {
@@ -101,17 +103,17 @@ namespace IdentityServer4.Endpoints
             }
             if (interactionResult.IsLogin)
             {
-                _logger.LogDebug("Iteration result is login");
+                _logger.LogTrace("Iteration result is login");
                 return new LoginPageResult(request, _loginUrlProcessor);
             }
             if (interactionResult.IsConsent)
             {
-                _logger.LogDebug("Iteration result is consent");
+                _logger.LogTrace("Iteration result is consent");
                 return new ConsentPageResult(request);
             }
             if (interactionResult.IsRedirect)
             {
-                _logger.LogDebug("Iteration result is redirect");
+                _logger.LogTrace("Iteration result is redirect");
                 return new CustomRedirectResult(request, interactionResult.RedirectUrl);
             }
 
@@ -123,12 +125,10 @@ namespace IdentityServer4.Endpoints
 
             _logger.LogTrace("Generate response");
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
-
             await RaiseResponseEventAsync(response);
-
             LogResponse(response);
 
-            _logger.LogDebug("Response completed as AuthorizeResult");
+            _logger.LogTrace("Response completed as AuthorizeResult");
             return new AuthorizeResult(response);
         }
 
@@ -205,10 +205,8 @@ namespace IdentityServer4.Endpoints
             }
         }
 
-        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
-        {
-            return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
-        }
+        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription) =>
+            _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
 
         private Task RaiseResponseEventAsync(AuthorizeResponse response)
         {

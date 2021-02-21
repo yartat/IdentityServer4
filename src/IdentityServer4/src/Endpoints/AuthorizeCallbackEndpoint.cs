@@ -39,17 +39,20 @@ namespace IdentityServer4.Endpoints
         }
 
         /// <inheritdoc/>
-        public Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
             if (!HttpMethods.IsGet(context.Request.Method))
             {
                 _logger.LogWarning("Invalid HTTP method for authorize endpoint.");
-                return Task.FromResult((IEndpointResult) new StatusCodeResult(HttpStatusCode.MethodNotAllowed));
+                return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
-            _logger.LogDebug("Start authorize callback request");
+            _logger.LogTrace("Start authorize callback request");
             var parameters = context.Request.Query.AsNameValueCollection();
-            return _requestHandler.ProcessCompleteAuthorizeRequestAsync(parameters, context);
+            var result = await _requestHandler.ProcessCompleteAuthorizeRequestAsync(parameters, context);
+
+            _logger.LogTrace("Authorize callback request completed");
+            return result;
         }
     }
 }

@@ -43,10 +43,11 @@ namespace IdentityServer4.Endpoints.Results
         internal class ResultDto
         {
             public string error { get; set; }
+
             public string error_description { get; set; }
 
             [JsonExtensionData]
             public Dictionary<string, object> custom { get; set; }
-        }    
+        }
     }
 }

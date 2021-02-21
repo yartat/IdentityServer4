@@ -32,8 +32,7 @@ namespace IdentityServer4.Endpoints
 
         public async Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
-            _logger.LogDebug("Start authorize request");
-
+            _logger.LogTrace("Start authorize request");
             NameValueCollection values;
 
             if (HttpMethods.IsGet(context.Request.Method))
@@ -44,6 +43,7 @@ namespace IdentityServer4.Endpoints
             {
                 if (!context.Request.HasFormContentType)
                 {
+                    _logger.LogWarning("Unsupported content type for POST authorize request");
                     return new StatusCodeResult(HttpStatusCode.UnsupportedMediaType);
                 }
 
@@ -51,13 +51,17 @@ namespace IdentityServer4.Endpoints
             }
             else
             {
+                _logger.LogWarning("Authorize method not allowed");
                 return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
+            _logger.LogTrace("Getting user session");
             var user = await _userSession.GetUserAsync(true);
-            var result = await _requestHandler.ProcessAuthorizeRequestAsync(values, user, null, context);
-            _logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
 
+            _logger.LogTrace("Processing authorize");
+            var result = await _requestHandler.ProcessAuthorizeRequestAsync(values, user, null, context);
+
+            _logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
             return result;
         }
     }

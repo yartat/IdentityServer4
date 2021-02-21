@@ -53,30 +53,34 @@ namespace IdentityServer4.Endpoints
         /// <inheritdoc/>
         public async Task<IEndpointResult> ProcessCompleteAuthorizeRequestAsync(NameValueCollection parameters, HttpContext context)
         {
+            _logger.LogTrace("Processing complete authorize request");
             if (_authorizationParametersMessageStore != null)
             {
+                _logger.LogTrace("Check parameters from message store");
                 var messageStoreId = parameters[Constants.AuthorizationParamsStore.MessageStoreIdParameterName];
                 var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId);
                 parameters = entry?.Data.FromFullDictionary() ?? new NameValueCollection();
 
+                _logger.LogTrace("Remove parameters from message store");
                 await _authorizationParametersMessageStore.DeleteAsync(messageStoreId);
             }
 
+            _logger.LogTrace("Get user session");
             var user = await _userSession.GetUserAsync();
             var consentRequest = new ConsentRequest(parameters, user?.GetSubjectId());
             var consent = await _consentResponseStore.ReadAsync(consentRequest.Id);
 
             if (consent != null && consent.Data == null)
             {
+                _logger.LogWarning("Consent message is missing data");
                 return await _authorizeRequestHandler.CreateErrorResultAsync("consent message is missing data");
             }
 
             try
             {
+                _logger.LogTrace("Authorize Request processing");
                 var result = await _authorizeRequestHandler.ProcessAuthorizeRequestAsync(parameters, user, consent?.Data, context);
-
                 _logger.LogTrace("End Authorize Request. Result type: {0}", result?.GetType().ToString() ?? "-none-");
-
                 return result;
             }
             finally
@@ -85,6 +89,8 @@ namespace IdentityServer4.Endpoints
                 {
                     await _consentResponseStore.DeleteAsync(consentRequest.Id);
                 }
+
+                _logger.LogTrace("Complete authorize request completed.");
             }
         }
     }

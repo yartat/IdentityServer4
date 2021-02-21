@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
 
-    <PackageReference Include="IdentityServer4.Storage" Version="4.0.14-ideals" />
+    <PackageReference Include="IdentityServer4.Storage" Version="4.0.15-ideals" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseIdentityServer(this IApplicationBuilder app, IdentityServerMiddlewareOptions options = null)
         {
-            app.Validate();
+            app.ValidateIdentityServer();
 
             app.UseMiddleware<BaseUrlMiddleware>();
 
@@ -47,7 +47,12 @@ namespace Microsoft.AspNetCore.Builder
             return app;
         }
 
-        internal static void Validate(this IApplicationBuilder app)
+        /// <summary>
+        /// Validates the specified application to apply IdentityServer4 services.
+        /// </summary>
+        /// <param name="app">The application builder instance.</param>
+        /// <exception cref="ArgumentNullException">loggerFactory</exception>
+        public static void ValidateIdentityServer(this IApplicationBuilder app)
         {
             var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));

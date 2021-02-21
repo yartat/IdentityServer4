@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="DeviceDetector.NET" Version="4.2.0" />
-    <PackageReference Include="IdentityServer4.Storage" Version="4.0.14-ideals" />
+    <PackageReference Include="IdentityServer4.Storage" Version="4.0.15-ideals" />
 
     <PackageReference Include="IdentityModel" Version="5.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />
