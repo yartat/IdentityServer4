@@ -17,8 +17,9 @@ namespace IdentityServer4.Extensions
     {
         public static async Task WriteJsonAsync(this HttpResponse response, object o, string contentType = null)
         {
-            var json = ObjectSerializer.ToString(o);
-            await response.WriteJsonAsync(json, contentType);
+            var json = ObjectSerializer.ToBuffer(o);
+            response.ContentType = contentType ?? "application/json; charset=UTF-8";
+            await response.Body.WriteAsync(json);
             await response.Body.FlushAsync();
         }
 

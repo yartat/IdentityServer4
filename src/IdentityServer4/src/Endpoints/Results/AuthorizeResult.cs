@@ -1,21 +1,21 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System.Threading.Tasks;
-using IdentityServer4.Models;
+using IdentityModel;
+using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
-using IdentityModel;
+using IdentityServer4.Models;
+using IdentityServer4.ResponseHandling;
+using IdentityServer4.Services;
+using IdentityServer4.Stores;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using IdentityServer4.Services;
-using IdentityServer4.Configuration;
-using IdentityServer4.Stores;
-using IdentityServer4.ResponseHandling;
-using Microsoft.AspNetCore.Authentication;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -26,6 +26,9 @@ namespace IdentityServer4.Endpoints.Results
     /// <seealso cref="IEndpointResult" />
     public class AuthorizeResult : IEndpointResult
     {
+        private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
+        private Activity _activity;
+
         /// <summary>
         /// Gets the response.
         /// </summary>
@@ -40,6 +43,7 @@ namespace IdentityServer4.Endpoints.Results
         public AuthorizeResult(AuthorizeResponse response)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
+            CreateActivity();
         }
 
         internal AuthorizeResult(
@@ -54,12 +58,25 @@ namespace IdentityServer4.Endpoints.Results
             _userSession = userSession;
             _errorMessageStore = errorMessageStore;
             _clock = clock;
+            CreateActivity();
         }
 
         private IdentityServerOptions _options;
         private IUserSession _userSession;
         private IMessageStore<ErrorMessage> _errorMessageStore;
         private ISystemClock _clock;
+
+        private void CreateActivity()
+        {
+            var parentId = Activity.Current?.Parent?.Id ?? Activity.Current?.Id;
+            var trace = Activity.Current?.TraceStateString;
+            _activity = new Activity("Process authorize result");
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                _activity.SetParentId(parentId);
+                _activity.TraceStateString = trace;
+            }
+        }
 
         private void Init(HttpContext context)
         {
@@ -69,17 +86,26 @@ namespace IdentityServer4.Endpoints.Results
             _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(HttpContext context)
         {
-            Init(context);
+            _activity.Start();
+            try
+            {
+                Init(context);
 
-            if (Response.IsError)
-            {
-                await ProcessErrorAsync(context);
+                if (Response.IsError)
+                {
+                    await ProcessErrorAsync(context);
+                }
+                else
+                {
+                    await ProcessResponseAsync(context);
+                }
             }
-            else
+            finally
             {
-                await ProcessResponseAsync(context);
+                _activity?.Stop();
             }
         }
 
@@ -106,6 +132,10 @@ namespace IdentityServer4.Endpoints.Results
             }
         }
 
+        /// <summary>
+        /// Processes the response asynchronous.
+        /// </summary>
+        /// <param name="context">The context.</param>
         protected async Task ProcessResponseAsync(HttpContext context)
         {
             if (!Response.IsError)
@@ -143,7 +173,7 @@ namespace IdentityServer4.Endpoints.Results
         {
             context.Response.AddScriptCspHeaders(_options.Csp, "sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8=");
 
-            var referrer_policy = "no-referrer";
+            const string referrer_policy = "no-referrer";
             if (!context.Response.Headers.ContainsKey("Referrer-Policy"))
             {
                 context.Response.Headers.Add("Referrer-Policy", referrer_policy);
@@ -172,8 +202,6 @@ namespace IdentityServer4.Endpoints.Results
 
             return uri;
         }
-
-        private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
 
         private string GetFormPostHtml()
         {

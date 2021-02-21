@@ -111,7 +111,7 @@ namespace IdentityServer4.Endpoints
 
             // return result
             _logger.LogDebug("Token request success.");
-            return new TokenResult(response);
+            return new TokenResult(response, _logger);
         }
 
         private TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)

@@ -1,14 +1,15 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
+using IdentityServer4.Logging.Models;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IdentityServer4.Logging.Models;
-using Microsoft.AspNetCore.Authentication;
 
 namespace IdentityServer4.Validation
 {
@@ -32,9 +31,9 @@ namespace IdentityServer4.Validation
         private readonly ITokenValidator _tokenValidator;
         private readonly IEventService _events;
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
-        private readonly IProfileService _profile;
         private readonly IDeviceCodeValidator _deviceCodeValidator;
         private readonly ISystemClock _clock;
+        private readonly IUserValidator _userValidator;
         private readonly ILogger _logger;
 
         private ValidatedTokenRequest _validatedRequest;
@@ -45,7 +44,6 @@ namespace IdentityServer4.Validation
         /// <param name="options">The options.</param>
         /// <param name="authorizationCodeStore">The authorization code store.</param>
         /// <param name="resourceOwnerValidator">The resource owner validator.</param>
-        /// <param name="profile">The profile.</param>
         /// <param name="deviceCodeValidator">The device code validator.</param>
         /// <param name="extensionGrantValidator">The extension grant validator.</param>
         /// <param name="customRequestValidator">The custom request validator.</param>
@@ -54,19 +52,20 @@ namespace IdentityServer4.Validation
         /// <param name="tokenValidator">The token validator.</param>
         /// <param name="events">The events.</param>
         /// <param name="clock">The clock.</param>
+        /// <param name="userValidator">The user validator instance.</param>
         /// <param name="logger">The logger.</param>
-        public TokenRequestValidator(IdentityServerOptions options, 
-            IAuthorizationCodeStore authorizationCodeStore, 
-            IResourceOwnerPasswordValidator resourceOwnerValidator, 
-            IProfileService profile, 
-            IDeviceCodeValidator deviceCodeValidator, 
-            ExtensionGrantValidator extensionGrantValidator, 
+        public TokenRequestValidator(IdentityServerOptions options,
+            IAuthorizationCodeStore authorizationCodeStore,
+            IResourceOwnerPasswordValidator resourceOwnerValidator,
+            IDeviceCodeValidator deviceCodeValidator,
+            ExtensionGrantValidator extensionGrantValidator,
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
             IResourceStore resourceStore,
-            ITokenValidator tokenValidator, 
-            IEventService events, 
-            ISystemClock clock, 
+            ITokenValidator tokenValidator,
+            IEventService events,
+            ISystemClock clock,
+            IUserValidator userValidator,
             ILogger<TokenRequestValidator> logger)
         {
             _logger = logger;
@@ -74,14 +73,14 @@ namespace IdentityServer4.Validation
             _clock = clock;
             _authorizationCodeStore = authorizationCodeStore;
             _resourceOwnerValidator = resourceOwnerValidator;
-            _profile = profile;
             _deviceCodeValidator = deviceCodeValidator;
             _extensionGrantValidator = extensionGrantValidator;
             _customRequestValidator = customRequestValidator;
             _resourceValidator = resourceValidator;
             _resourceStore = resourceStore;
             _tokenValidator = tokenValidator;
-            _events = events;
+            _events = events ?? throw new ArgumentNullException(nameof(events));
+            _userValidator = userValidator ?? throw new ArgumentNullException(nameof(userValidator));
         }
 
         /// <summary>
@@ -323,10 +322,11 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
-            var isActiveCtx = new IsActiveContext(_validatedRequest.AuthorizationCode.Subject, _validatedRequest.Client, IdentityServerConstants.ProfileIsActiveCallers.AuthorizationCodeValidation);
-            await _profile.IsActiveAsync(isActiveCtx);
-
-            if (isActiveCtx.IsActive == false)
+            var userEnabled = await _userValidator.IsActiveAsync(
+                _validatedRequest.AuthorizationCode.Subject,
+                _validatedRequest.Client,
+                IdentityServerConstants.ProfileIsActiveCallers.AuthorizationCodeValidation);
+            if (!userEnabled)
             {
                 LogError("User has been disabled", new { subjectId = _validatedRequest.AuthorizationCode.Subject.GetSubjectId() });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
@@ -471,10 +471,11 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
-            var isActiveCtx = new IsActiveContext(resourceOwnerContext.Result.Subject, _validatedRequest.Client, IdentityServerConstants.ProfileIsActiveCallers.ResourceOwnerValidation);
-            await _profile.IsActiveAsync(isActiveCtx);
-
-            if (isActiveCtx.IsActive == false)
+            var userEnabled = await _userValidator.IsActiveAsync(
+                resourceOwnerContext.Result.Subject,
+                _validatedRequest.Client,
+                IdentityServerConstants.ProfileIsActiveCallers.ResourceOwnerValidation);
+            if (!userEnabled)
             {
                 LogError("User has been disabled", new { subjectId = resourceOwnerContext.Result.Subject.GetSubjectId() });
                 await RaiseFailedResourceOwnerAuthenticationEventAsync(userName, "user is inactive", resourceOwnerContext.Request.Client.ClientId);
@@ -625,14 +626,11 @@ namespace IdentityServer4.Validation
                 /////////////////////////////////////////////
                 // make sure user is enabled
                 /////////////////////////////////////////////
-                var isActiveCtx = new IsActiveContext(
+                var userEnabled = await _userValidator.IsActiveAsync(
                     result.Subject,
                     _validatedRequest.Client,
                     IdentityServerConstants.ProfileIsActiveCallers.ExtensionGrantValidation);
-
-                await _profile.IsActiveAsync(isActiveCtx);
-
-                if (isActiveCtx.IsActive == false)
+                if (!userEnabled)
                 {
                     // todo: raise event?
 
@@ -647,7 +645,7 @@ namespace IdentityServer4.Validation
             return Valid(result.CustomResponse);
         }
 
-        // todo: do we want to rework the semantics of these ignore params?
+        // TODO: do we want to rework the semantics of these ignore params?
         // also seems like other workflows other than CC clients can omit scopes?
         private async Task<bool> ValidateRequestedScopesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
         {
@@ -779,30 +777,20 @@ namespace IdentityServer4.Validation
             return TimeConstantComparer.IsEqual(transformedCodeVerifier.Sha256(), codeChallenge);
         }
 
-        private TokenRequestValidationResult Valid(Dictionary<string, object> customResponse = null)
-        {
-            return new TokenRequestValidationResult(_validatedRequest, customResponse);
-        }
+        private TokenRequestValidationResult Valid(Dictionary<string, object> customResponse = null) =>
+            new TokenRequestValidationResult(_validatedRequest, customResponse);
 
-        private TokenRequestValidationResult Invalid(string error, string errorDescription = null, Dictionary<string, object> customResponse = null)
-        {
-            return new TokenRequestValidationResult(_validatedRequest, error, errorDescription, customResponse);
-        }
+        private TokenRequestValidationResult Invalid(string error, string errorDescription = null, Dictionary<string, object> customResponse = null) =>
+            new TokenRequestValidationResult(_validatedRequest, error, errorDescription, customResponse);
 
-        private void LogError(string message = null, object values = null)
-        {
+        private void LogError(string message = null, object values = null) =>
             LogWithRequestDetails(LogLevel.Error, message, values);
-        }
 
-        private void LogWarning(string message = null, object values = null)
-        {
+        private void LogWarning(string message = null, object values = null) =>
             LogWithRequestDetails(LogLevel.Warning, message, values);
-        }
 
-        private void LogInformation(string message = null, object values = null)
-        {
+        private void LogInformation(string message = null, object values = null) =>
             LogWithRequestDetails(LogLevel.Information, message, values);
-        }
 
         private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
         {
@@ -833,19 +821,13 @@ namespace IdentityServer4.Validation
             }
         }
 
-        private void LogSuccess()
-        {
+        private void LogSuccess() =>
             LogWithRequestDetails(LogLevel.Information, "Token request validation success");
-        }
 
-        private Task RaiseSuccessfulResourceOwnerAuthenticationEventAsync(string userName, string subjectId, string clientId)
-        {
-            return _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, false, clientId));
-        }
+        private Task RaiseSuccessfulResourceOwnerAuthenticationEventAsync(string userName, string subjectId, string clientId) =>
+            _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, false, clientId));
 
-        private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string error, string clientId)
-        {
-            return _events.RaiseAsync(new UserLoginFailureEvent(userName, error, clientId: clientId));
-        }
+        private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string error, string clientId) =>
+            _events.RaiseAsync(new UserLoginFailureEvent(userName, error, clientId: clientId));
     }
 }

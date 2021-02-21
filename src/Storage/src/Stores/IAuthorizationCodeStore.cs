@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Models;
 using System.Threading.Tasks;
 
@@ -23,14 +22,14 @@ namespace IdentityServer4.Stores
         /// Gets the authorization code.
         /// </summary>
         /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <returns>Returns authorization code.</returns>
         Task<AuthorizationCode> GetAuthorizationCodeAsync(string code);
 
         /// <summary>
         /// Removes the authorization code.
         /// </summary>
         /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <returns>Returns authorization code.</returns>
         Task RemoveAuthorizationCodeAsync(string code);
    }
 }

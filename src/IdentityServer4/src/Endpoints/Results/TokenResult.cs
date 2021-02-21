@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
 using IdentityServer4.ResponseHandling;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -16,39 +17,66 @@ namespace IdentityServer4.Endpoints.Results
 {
     internal class TokenResult : IEndpointResult
     {
-        public TokenResponse Response { get; set; }
+        private readonly Activity _activity;
+        private readonly ILogger _logger;
 
-        public TokenResult(TokenResponse response)
+        public TokenResult(TokenResponse response, ILogger logger)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            var parentId = Activity.Current?.Parent?.Id ?? Activity.Current?.Id;
+            var trace = Activity.Current?.TraceStateString;
+            _activity = new Activity("Process token result");
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                _activity.SetParentId(parentId);
+                _activity.TraceStateString = trace;
+            }
         }
+
+        public TokenResponse Response { get; set; }
 
         public async Task ExecuteAsync(HttpContext context)
         {
-            context.Response.SetNoCache();
-
-            var dto = new ResultDto
+            _activity.Start();
+            try
             {
-                id_token = Response.IdentityToken,
-                access_token = Response.AccessToken,
-                refresh_token = Response.RefreshToken,
-                expires_in = Response.AccessTokenLifetime,
-                token_type = OidcConstants.TokenResponse.BearerTokenType,
-                scope = Response.Scope,
-                
-                Custom = Response.Custom
-            };
+                _logger.LogDebug("Start processing token result");
+                context.Response.SetNoCache();
 
-            await context.Response.WriteJsonAsync(dto);
+                var dto = new ResultDto
+                {
+                    id_token = Response.IdentityToken,
+                    access_token = Response.AccessToken,
+                    refresh_token = Response.RefreshToken,
+                    expires_in = Response.AccessTokenLifetime,
+                    token_type = OidcConstants.TokenResponse.BearerTokenType,
+                    scope = Response.Scope,
+
+                    Custom = Response.Custom
+                };
+
+                await context.Response.WriteJsonAsync(dto);
+            }
+            finally
+            {
+                _logger.LogDebug("Processing token result completed");
+                _activity.Stop();
+            }
         }
 
         internal class ResultDto
         {
             public string id_token { get; set; }
+
             public string access_token { get; set; }
+
             public int expires_in { get; set; }
+
             public string token_type { get; set; }
+
             public string refresh_token { get; set; }
+
             public string scope { get; set; }
 
             [JsonExtensionData]
