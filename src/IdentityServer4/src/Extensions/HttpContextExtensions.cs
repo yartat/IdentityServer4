@@ -12,6 +12,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
+using System.Collections.Generic;
 
 #pragma warning disable 1591
 
@@ -49,7 +50,7 @@ namespace IdentityServer4.Extensions
         {
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
             var request = context.Request;
-            
+
             if (options.MutualTls.Enabled && options.MutualTls.DomainName.IsPresent())
             {
                 if (!options.MutualTls.DomainName.Contains("."))
@@ -61,7 +62,7 @@ namespace IdentityServer4.Extensions
                     }
                 }
             }
-            
+
             return request.Scheme + "://" + request.Host.Value;
         }
 
@@ -72,10 +73,8 @@ namespace IdentityServer4.Extensions
             context.Items[Constants.EnvironmentKeys.SignOutCalled] = "true";
         }
 
-        internal static bool GetSignOutCalled(this HttpContext context)
-        {
-            return context.Items.ContainsKey(Constants.EnvironmentKeys.SignOutCalled);
-        }
+        internal static bool GetSignOutCalled(this HttpContext context) =>
+            context.Items.ContainsKey(Constants.EnvironmentKeys.SignOutCalled);
 
         /// <summary>
         /// Gets the host name of IdentityServer.
@@ -93,20 +92,8 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static string GetIdentityServerBasePath(this HttpContext context)
-        {
-            return context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
-        }
-
-        /// <summary>
-        /// Gets the public base URL for IdentityServer.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        public static string GetIdentityServerBaseUrl(this HttpContext context)
-        {
-            return context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
-        }
+        public static string GetIdentityServerBasePath(this HttpContext context) =>
+            context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
 
         /// <summary>
         /// Gets the identity server relative URL.
@@ -122,15 +109,14 @@ namespace IdentityServer4.Extensions
             }
 
             if (path.StartsWith("~/")) path = path.Substring(1);
-            path = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + path.RemoveLeadingSlash();
-            return path;
+            return context.GetIdentityServerBaseUri() + path.RemoveLeadingSlash();
         }
 
         /// <summary>
         /// Gets the identity server issuer URI.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
+        /// <returns>Returns issuer URI.</returns>
         /// <exception cref="System.ArgumentNullException">context</exception>
         public static string GetIdentityServerIssuerUri(this HttpContext context)
         {
@@ -151,6 +137,36 @@ namespace IdentityServer4.Extensions
             }
 
             return uri;
+        }
+
+        /// <summary>
+        /// Gets the identity server base URI.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>Returns base URI</returns>
+        /// <exception cref="System.ArgumentNullException">context</exception>
+        public static string GetIdentityServerBaseUri(this HttpContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // if they've explicitly configured a URI then use it,
+            // otherwise dynamically calculate it
+            var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            var uri = options.BaseUri;
+            if (uri.IsMissing())
+            {
+                uri = context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
+            }
+
+            if (options.LowerCaseIssuerUri)
+            {
+                uri = uri?.ToLower();
+            }
+
+            return uri?.EnsureTrailingSlash();
         }
 
         internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null)
@@ -203,7 +219,7 @@ namespace IdentityServer4.Extensions
                 var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<EndSession>>();
                 var id = await endSessionMessageStore.WriteAsync(msg);
 
-                var signoutIframeUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
+                var signoutIframeUrl = context.GetIdentityServerBaseUri() + Constants.ProtocolRoutePaths.EndSessionCallback;
                 signoutIframeUrl = signoutIframeUrl.AddQueryString(Constants.UIConstants.DefaultRoutePathParams.EndSessionCallback, id);
 
                 return signoutIframeUrl;
@@ -211,6 +227,68 @@ namespace IdentityServer4.Extensions
 
             // no sessions, so nothing to cleanup
             return null;
+        }
+
+        /// <summary>
+        /// Extracts client IP address from context
+        /// </summary>
+        /// <param name="context">HTTP context object.</param>
+        /// <param name="tryUseXForwardHeader">Use X-Forwarded-For header</param>
+        /// <returns>Returns IP address of the specified HTTP context object.</returns>
+        public static string GetRequestIp(this HttpContext context,
+            bool tryUseXForwardHeader = true)
+        {
+            string ip = null;
+
+            // todo support new "Forwarded" header (2014) https://en.wikipedia.org/wiki/X-Forwarded-For
+
+            // X-Forwarded-For (csv list):  Using the First entry in the list seems to work
+            // for 99% of cases however it has been suggested that a better (although tedious)
+            // approach might be to read each IP from right to left and use the first public IP.
+            // http://stackoverflow.com/a/43554000/538763
+            //
+            if (tryUseXForwardHeader)
+            {
+                ip = context.GetHeaderValueAs<string>("X-Forwarded-For").SplitCsv().FirstOrDefault();
+            }
+
+            // RemoteIpAddress is always null in DNX RC1 Update1 (bug).
+            if (string.IsNullOrWhiteSpace(ip) && context?.Connection?.RemoteIpAddress != null)
+            {
+                ip = context.Connection.RemoteIpAddress.ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(ip))
+            {
+                ip = context.GetHeaderValueAs<string>("REMOTE_ADDR");
+            }
+
+            return ip;
+        }
+
+        public static T GetHeaderValueAs<T>(this HttpContext context, string headerName)
+        {
+            if (context?.Request?.Headers != null && context.Request.Headers.TryGetValue(headerName, out var values))
+            {
+                var rawValues = values.ToString();   // writes out as Csv when there are multiple.
+
+                if (!string.IsNullOrEmpty(rawValues))
+                {
+                    return (T)Convert.ChangeType(values.ToString(), typeof(T));
+                }
+            }
+
+            return default(T);
+        }
+
+        private static IEnumerable<string> SplitCsv(this string csvList)
+        {
+            return string.IsNullOrWhiteSpace(csvList) ?
+                Enumerable.Empty<string>() :
+                csvList
+                    .TrimEnd(',')
+                    .Split(',')
+                    .Select(s => s.Trim());
         }
     }
 }

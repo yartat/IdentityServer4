@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -46,6 +45,11 @@ namespace IdentityServer4.Hosting.FederatedSignOut
 
                 // now we can do our processing to render the iframe (if needed)
                 await ProcessFederatedSignOutRequestAsync();
+            }
+
+            if (_context.Response.StatusCode == (int)System.Net.HttpStatusCode.Redirect)
+            {
+                _logger.LogDebug("Redirect to {location}", _context.Response.Headers["location"]);
             }
 
             return result;

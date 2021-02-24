@@ -23,12 +23,10 @@ namespace IdentityServer4.Endpoints
     internal abstract class AuthorizeEndpointBase : IEndpointHandler
     {
         private readonly IAuthorizeResponseGenerator _authorizeResponseGenerator;
-
         private readonly IEventService _events;
-
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
-
         private readonly IAuthorizeRequestValidator _validator;
+        private readonly ILoginUrlProcessor _loginUrlProcessor;
 
         protected AuthorizeEndpointBase(
             IEventService events,
@@ -36,7 +34,8 @@ namespace IdentityServer4.Endpoints
             IAuthorizeRequestValidator validator,
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
-            IUserSession userSession)
+            IUserSession userSession,
+            ILoginUrlProcessor loginUrlProcessor = null)
         {
             _events = events;
             Logger = logger;
@@ -44,15 +43,16 @@ namespace IdentityServer4.Endpoints
             _interactionGenerator = interactionGenerator;
             _authorizeResponseGenerator = authorizeResponseGenerator;
             UserSession = userSession;
+            _loginUrlProcessor = loginUrlProcessor;
         }
 
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger { get; }
 
-        protected IUserSession UserSession { get; private set; }
+        protected IUserSession UserSession { get; }
 
         public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
 
-        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent)
+        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context)
         {
             if (user != null)
             {
@@ -85,7 +85,7 @@ namespace IdentityServer4.Endpoints
             }
             if (interactionResult.IsLogin)
             {
-                return new LoginPageResult(request);
+                return new LoginPageResult(request, _loginUrlProcessor);
             }
             if (interactionResult.IsConsent)
             {
@@ -95,6 +95,11 @@ namespace IdentityServer4.Endpoints
             {
                 return new CustomRedirectResult(request, interactionResult.RedirectUrl);
             }
+
+            request.ClientIp = context.GetRequestIp();
+            request.Device = context
+                .GetHeaderValueAs<string>("User-Agent")
+                .GetDevice();
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
 

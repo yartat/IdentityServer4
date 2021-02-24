@@ -14,13 +14,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Configuration;
+using System.Security.Claims;
 
 namespace IdentityServer4.ResponseHandling
 {
     /// <summary>
     /// The authorize response generator
     /// </summary>
-    /// <seealso cref="IdentityServer4.ResponseHandling.IAuthorizeResponseGenerator" />
+    /// <seealso cref="IAuthorizeResponseGenerator" />
     public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     {
         /// <summary>
@@ -113,11 +114,13 @@ namespace IdentityServer4.ResponseHandling
             Logger.LogDebug("Creating Hybrid Flow response.");
 
             var code = await CreateCodeAsync(request);
+            Logger.LogTrace("Store authorization code");
             var id = await AuthorizationCodeStore.StoreAuthorizationCodeAsync(code);
 
             var response = await CreateImplicitFlowResponseAsync(request, id);
             response.Code = id;
 
+            Logger.LogDebug("Response completed.");
             return response;
         }
 
@@ -131,6 +134,7 @@ namespace IdentityServer4.ResponseHandling
             Logger.LogDebug("Creating Authorization Code Flow response.");
 
             var code = await CreateCodeAsync(request);
+            Logger.LogTrace("Store authorization code");
             var id = await AuthorizationCodeStore.StoreAuthorizationCodeAsync(code);
 
             var response = new AuthorizeResponse
@@ -140,6 +144,7 @@ namespace IdentityServer4.ResponseHandling
                 SessionState = request.GenerateSessionStateValue()
             };
 
+            Logger.LogDebug("Response completed.");
             return response;
         }
 
@@ -160,6 +165,7 @@ namespace IdentityServer4.ResponseHandling
 
             if (responseTypes.Contains(OidcConstants.ResponseTypes.Token))
             {
+                Logger.LogDebug("Creating access token.");
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.Subject,
@@ -171,15 +177,17 @@ namespace IdentityServer4.ResponseHandling
                 var accessToken = await TokenService.CreateAccessTokenAsync(tokenRequest);
                 accessTokenLifetime = accessToken.Lifetime;
 
-                accessTokenValue = await TokenService.CreateSecurityTokenAsync(accessToken);
+                accessTokenValue = await GetTokenValueAsync(request.Subject, accessToken, request.Client, request.ClientIp, request.Device);
             }
 
             string jwt = null;
             if (responseTypes.Contains(OidcConstants.ResponseTypes.IdToken))
             {
+                Logger.LogDebug("Creating id_token.");
                 string stateHash = null;
                 if (request.State.IsPresent())
                 {
+                    Logger.LogDebug("Creating state hash.");
                     var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                     if (credential == null)
                     {
@@ -203,7 +211,7 @@ namespace IdentityServer4.ResponseHandling
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
-                jwt = await TokenService.CreateSecurityTokenAsync(idToken);
+                jwt = await GetTokenValueAsync(request.Subject, idToken, request.Client, request.ClientIp, request.Device);
             }
 
             var response = new AuthorizeResponse
@@ -215,8 +223,21 @@ namespace IdentityServer4.ResponseHandling
                 SessionState = request.GenerateSessionStateValue()
             };
 
+            Logger.LogDebug("Response with tokens completed.");
             return response;
         }
+
+        /// <summary>
+        /// Gets the token value asynchronous.
+        /// </summary>
+        /// <param name="claimsPrincipal">The claims principal.</param>
+        /// <param name="token">The token instance.</param>
+        /// <param name="client">The client instance.</param>
+        /// <param name="ip">The IP address.</param>
+        /// <param name="device">The requested device.</param>
+        /// <returns>Returns string token value.</returns>
+        protected virtual Task<string> GetTokenValueAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device) =>
+            TokenService.CreateSecurityTokenAsync(token);
 
         /// <summary>
         /// Creates an authorization code
@@ -225,9 +246,12 @@ namespace IdentityServer4.ResponseHandling
         /// <returns></returns>
         protected virtual async Task<AuthorizationCode> CreateCodeAsync(ValidatedAuthorizeRequest request)
         {
+            Logger.LogDebug("Creating Code response.");
+
             string stateHash = null;
             if (request.State.IsPresent())
             {
+                Logger.LogDebug("Creating state hash.");
                 var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                 if (credential == null)
                 {
@@ -258,6 +282,7 @@ namespace IdentityServer4.ResponseHandling
                 WasConsentShown = request.WasConsentShown
             };
 
+            Logger.LogDebug("Response with code completed.");
             return code;
         }
     }

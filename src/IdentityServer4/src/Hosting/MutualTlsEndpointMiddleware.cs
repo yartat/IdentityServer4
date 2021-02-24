@@ -18,36 +18,45 @@ namespace IdentityServer4.Hosting
         private readonly IdentityServerOptions _options;
 
         /// <summary>
-        ///     ctor
+        /// Initializes a new instance of the <see cref="MutualTlsEndpointMiddleware"/> class.
         /// </summary>
-        /// <param name="next"></param>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        public MutualTlsEndpointMiddleware(RequestDelegate next, IdentityServerOptions options,
+        /// <param name="next">The next.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="logger">The logger instance.</param>
+        /// <exception cref="ArgumentNullException">options</exception>
+        /// <exception cref="ArgumentNullException">logger</exception>
+        public MutualTlsEndpointMiddleware(
+            RequestDelegate next,
+            IdentityServerOptions options,
             ILogger<MutualTlsEndpointMiddleware> logger)
         {
             _next = next;
-            _options = options;
-            _logger = logger;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc />
-        public async Task Invoke(HttpContext context, IAuthenticationSchemeProvider schemes)
+        public async Task Invoke(HttpContext context)
         {
+            _logger.LogTrace("Mutual TLS middleware processing");
             if (_options.MutualTls.Enabled)
             {
                 // domain-based MTLS
+                _logger.LogTrace("Mutual TLS is enabled");
                 if (_options.MutualTls.DomainName.IsPresent())
                 {
                     // separate domain
+                    _logger.LogTrace("Mutual TLS check domains");
                     if (_options.MutualTls.DomainName.Contains("."))
                     {
                         if (context.Request.Host.Host.Equals(_options.MutualTls.DomainName,
                             StringComparison.OrdinalIgnoreCase))
                         {
+                            _logger.LogTrace("Mutual TLS detects {domain} to validate certificate", _options.MutualTls.DomainName);
                             var result = await TriggerCertificateAuthentication(context);
                             if (!result.Succeeded)
                             {
+                                _logger.LogTrace("Mutual TLS does not authenticate certificate {domain}", _options.MutualTls.DomainName);
                                 return;
                             }
                         }
@@ -57,9 +66,11 @@ namespace IdentityServer4.Hosting
                     {
                         if (context.Request.Host.Host.StartsWith(_options.MutualTls.DomainName + ".", StringComparison.OrdinalIgnoreCase))
                         {
+                            _logger.LogTrace("Mutual TLS detects subdomain {domain} to validate certificate", _options.MutualTls.DomainName);
                             var result = await TriggerCertificateAuthentication(context);
                             if (!result.Succeeded)
                             {
+                                _logger.LogTrace("Mutual TLS does not authenticate certificate {domain}", _options.MutualTls.DomainName);
                                 return;
                             }
                         }
@@ -68,25 +79,26 @@ namespace IdentityServer4.Hosting
                 // path based MTLS
                 else if (context.Request.Path.StartsWithSegments(Constants.ProtocolRoutePaths.MtlsPathPrefix.EnsureLeadingSlash(), out var subPath))
                 {
+                    _logger.LogTrace("Mutual TLS detects path based MTLS {path}", subPath);
                     var result = await TriggerCertificateAuthentication(context);
-
                     if (result.Succeeded)
                     {
                         var path = Constants.ProtocolRoutePaths.ConnectPathPrefix +
                                    subPath.ToString().EnsureLeadingSlash();
                         path = path.EnsureLeadingSlash();
-
                         _logger.LogDebug("Rewriting MTLS request from: {oldPath} to: {newPath}",
                             context.Request.Path.ToString(), path);
                         context.Request.Path = path;
                     }
                     else
                     {
+                        _logger.LogTrace("Mutual TLS does not authenticate certificate {path}", subPath);
                         return;
                     }
                 }
             }
-            
+
+            _logger.LogTrace("Mutual TLS middleware call next stage pipeline");
             await _next(context);
         }
 

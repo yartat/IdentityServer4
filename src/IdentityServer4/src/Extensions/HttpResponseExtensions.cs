@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
@@ -17,8 +16,9 @@ namespace IdentityServer4.Extensions
     {
         public static async Task WriteJsonAsync(this HttpResponse response, object o, string contentType = null)
         {
-            var json = ObjectSerializer.ToString(o);
-            await response.WriteJsonAsync(json, contentType);
+            var json = ObjectSerializer.ToBuffer(o);
+            response.ContentType = contentType ?? "application/json; charset=UTF-8";
+            await response.Body.WriteAsync(json);
             await response.Body.FlushAsync();
         }
 
@@ -83,7 +83,7 @@ namespace IdentityServer4.Extensions
             if (url.IsLocalUrl())
             {
                 if (url.StartsWith("~/")) url = url.Substring(1);
-                url = response.HttpContext.GetIdentityServerBaseUrl().EnsureTrailingSlash() + url.RemoveLeadingSlash();
+                url = response.HttpContext.GetIdentityServerBaseUri() + url.RemoveLeadingSlash();
             }
             response.Redirect(url);
         }
@@ -109,7 +109,7 @@ namespace IdentityServer4.Extensions
             AddCspHeaders(response.Headers, options, cspHeader);
         }
 
-        public static void AddCspHeaders(IHeaderDictionary headers, CspOptions options, string cspHeader)
+        public static void AddCspHeaders(this IHeaderDictionary headers, CspOptions options, string cspHeader)
         {
             if (!headers.ContainsKey("Content-Security-Policy"))
             {

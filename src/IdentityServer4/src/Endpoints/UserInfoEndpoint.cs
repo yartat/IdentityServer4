@@ -1,16 +1,16 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System.Threading.Tasks;
-using IdentityServer4.Validation;
-using IdentityServer4.ResponseHandling;
-using Microsoft.Extensions.Logging;
-using IdentityServer4.Hosting;
-using IdentityServer4.Endpoints.Results;
 using IdentityModel;
+using IdentityServer4.Endpoints.Results;
+using IdentityServer4.Hosting;
+using IdentityServer4.ResponseHandling;
+using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints
 {
@@ -33,15 +33,15 @@ namespace IdentityServer4.Endpoints
         /// <param name="responseGenerator">The response generator.</param>
         /// <param name="logger">The logger.</param>
         public UserInfoEndpoint(
-            BearerTokenUsageValidator tokenUsageValidator, 
-            IUserInfoRequestValidator requestValidator, 
-            IUserInfoResponseGenerator responseGenerator, 
+            BearerTokenUsageValidator tokenUsageValidator,
+            IUserInfoRequestValidator requestValidator,
+            IUserInfoResponseGenerator responseGenerator,
             ILogger<UserInfoEndpoint> logger)
         {
-            _tokenUsageValidator = tokenUsageValidator;
-            _requestValidator = requestValidator;
-            _responseGenerator = responseGenerator;
-            _logger = logger;
+            _tokenUsageValidator = tokenUsageValidator ?? throw new ArgumentNullException(nameof(tokenUsageValidator));
+            _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
+            _responseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -51,18 +51,22 @@ namespace IdentityServer4.Endpoints
         /// <returns></returns>
         public async Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
+            _logger.LogTrace("User info request processing");
             if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsPost(context.Request.Method))
             {
                 _logger.LogWarning("Invalid HTTP method for userinfo endpoint.");
                 return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
-            return await ProcessUserInfoRequestAsync(context);
+            var result = await ProcessUserInfoRequestAsync(context);
+
+            _logger.LogTrace("User info request completed");
+            return result;
         }
 
         private async Task<IEndpointResult> ProcessUserInfoRequestAsync(HttpContext context)
         {
-            _logger.LogDebug("Start userinfo request");
+            _logger.LogTrace("Start userinfo request");
 
             // userinfo requires an access token on the request
             var tokenUsageResult = await _tokenUsageValidator.ValidateAsync(context);
@@ -88,13 +92,11 @@ namespace IdentityServer4.Endpoints
             _logger.LogTrace("Calling into userinfo response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.ProcessAsync(validationResult);
 
-            _logger.LogDebug("End userinfo request");
+            _logger.LogDebug("End userinfo request. Return UserInfoResult");
             return new UserInfoResult(response);
         }
 
-        private IEndpointResult Error(string error, string description = null)
-        {
-            return new ProtectedResourceErrorResult(error, description);
-        }
+        private IEndpointResult Error(string error, string description = null) =>
+            new ProtectedResourceErrorResult(error, description);
     }
 }

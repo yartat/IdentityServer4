@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -30,7 +29,6 @@ namespace IdentityServer4.Hosting
         private readonly IAuthenticationSchemeProvider _schemes;
         private readonly ISystemClock _clock;
         private readonly IUserSession _session;
-        private readonly IdentityServerOptions _options;
         private readonly ILogger<IdentityServerAuthenticationService> _logger;
 
         public IdentityServerAuthenticationService(
@@ -38,7 +36,6 @@ namespace IdentityServer4.Hosting
             IAuthenticationSchemeProvider schemes,
             ISystemClock clock,
             IUserSession session,
-            IdentityServerOptions options,
             ILogger<IdentityServerAuthenticationService> logger)
         {
             _inner = decorator.Instance;
@@ -46,7 +43,6 @@ namespace IdentityServer4.Hosting
             _schemes = schemes;
             _clock = clock;
             _session = session;
-            _options = options;
             _logger = logger;
         }
 
@@ -60,6 +56,15 @@ namespace IdentityServer4.Hosting
                 AugmentPrincipal(principal);
 
                 if (properties == null) properties = new AuthenticationProperties();
+                properties.Items[IdentityConstants.AuthenticationProperties.Ip] = context.GetRequestIp();
+                var userDevice = context
+                    .GetHeaderValueAs<string>("User-Agent")
+                    .GetDevice();
+                if (!string.IsNullOrEmpty(userDevice))
+                {
+                    properties.Items[IdentityConstants.AuthenticationProperties.Device] = userDevice;
+                }
+
                 await _session.CreateSessionIdAsync(principal, properties);
             }
 
@@ -110,7 +115,27 @@ namespace IdentityServer4.Hosting
         {
             // for now, we don't allow more than one identity in the principal/cookie
             if (principal.Identities.Count() != 1) throw new InvalidOperationException("only a single identity supported");
-            if (principal.FindFirst(JwtClaimTypes.Subject) == null) throw new InvalidOperationException("sub claim is missing");
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Email);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Name);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.GivenName);
+            SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.NameIdentifier);
+            if (principal.FindFirst(JwtClaimTypes.Subject) == null)
+            {
+                throw new InvalidOperationException("sub claim is missing");
+            }
+        }
+
+        private void SetClaimByExistName(ClaimsPrincipal principal, string claimName, params string[] existsClaimNames)
+        {
+            if (principal.FindFirst(claimName) == null)
+            {
+                var resultClaim = principal.Claims.Join(existsClaimNames, x => x.Type, x => x, (claim, _) => claim).FirstOrDefault();
+                if (resultClaim != null)
+                {
+                    var identity = principal.Identities.First();
+                    identity.AddClaim(new Claim(claimName, resultClaim.Value));
+                }
+            }
         }
 
         private void AugmentMissingClaims(ClaimsPrincipal principal, DateTime authTime)

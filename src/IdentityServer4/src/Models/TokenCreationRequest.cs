@@ -86,6 +86,18 @@ namespace IdentityServer4.Models
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the client IP address.
+        /// </summary>
+        /// <value>The client IP address.</value>
+        public string IpAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client logged device.
+        /// </summary>
+        /// <value>The client logged device.</value>
+        public string Device { get; set; }
+
+        /// <summary>
         /// Called to validate the <see cref="TokenCreationRequest"/> before it is processed.
         /// </summary>
         public void Validate()

@@ -3,6 +3,7 @@
 
 
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace IdentityServer4.Configuration
 {
@@ -28,6 +29,17 @@ namespace IdentityServer4.Configuration
         public bool CookieSlidingExpiration { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether [secure cookies].
+        /// </summary>
+        /// <value><c>null</c> if [secure cookies] contains no value, <c>true</c> if [secure cookies]; otherwise, <c>false</c>.</value>
+        public bool? SecureCookies { get; set; }
+
+        /// <summary>
+        /// Specifies the SameSite mode for the internal authentication and temp cookie
+        /// </summary>
+        public SameSiteMode CookieSameSiteMode { get; set; } = SameSiteMode.None;
+
+        /// <summary>
         /// Indicates if user must be authenticated to accept parameters to end session endpoint. Defaults to false.
         /// </summary>
         /// <value>
@@ -39,6 +51,11 @@ namespace IdentityServer4.Configuration
         /// Gets or sets the name of the cookie used for the check session endpoint.
         /// </summary>
         public string CheckSessionCookieName { get; set; } = IdentityServerConstants.DefaultCheckSessionCookieName;
+
+        /// <summary>
+        /// Gets or sets the domain of the cookie used for the check session endpoint. Defaults to null.
+        /// </summary>
+        public string CheckSessionCookieDomain { get; set; }
 
         /// <summary>
         /// If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel signout notification.

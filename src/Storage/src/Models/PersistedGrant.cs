@@ -3,12 +3,15 @@
 
 
 using System;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace IdentityServer4.Models
 {
     /// <summary>
     /// A model for a persisted grant
     /// </summary>
+    [DataContract]
     public class PersistedGrant
     {
         /// <summary>
@@ -17,6 +20,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The key.
         /// </value>
+        [DataMember(Name = "key")]
+        [JsonPropertyName("key")]
         public string Key { get; set; }
 
         /// <summary>
@@ -25,6 +30,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The type.
         /// </value>
+        [DataMember(Name = "type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
         /// <summary>
@@ -33,6 +40,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The subject identifier.
         /// </value>
+        [DataMember(Name = "subjectId")]
+        [JsonPropertyName("subjectId")]
         public string SubjectId { get; set; }
 
         /// <summary>
@@ -41,14 +50,18 @@ namespace IdentityServer4.Models
         /// <value>
         /// The session identifier.
         /// </value>
+        [DataMember(Name = "sessionId")]
+        [JsonPropertyName("sessionId")]
         public string SessionId { get; set; }
-        
+
         /// <summary>
         /// Gets the client identifier.
         /// </summary>
         /// <value>
         /// The client identifier.
         /// </value>
+        [DataMember(Name = "clientId")]
+        [JsonPropertyName("clientId")]
         public string ClientId { get; set; }
 
         /// <summary>
@@ -57,6 +70,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The description.
         /// </value>
+        [DataMember(Name = "description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
         /// <summary>
@@ -65,6 +80,8 @@ namespace IdentityServer4.Models
         /// <value>
         /// The creation time.
         /// </value>
+        [DataMember(Name = "creationTime")]
+        [JsonPropertyName("creationTime")]
         public DateTime CreationTime { get; set; }
 
         /// <summary>
@@ -73,14 +90,18 @@ namespace IdentityServer4.Models
         /// <value>
         /// The expiration.
         /// </value>
+        [DataMember(Name = "expiration")]
+        [JsonPropertyName("expiration")]
         public DateTime? Expiration { get; set; }
-       
+
         /// <summary>
         /// Gets or sets the data.
         /// </summary>
         /// <value>
         /// The data.
         /// </value>
+        [DataMember(Name = "data")]
+        [JsonPropertyName("data")]
         public string Data { get; set; }
     }
 }

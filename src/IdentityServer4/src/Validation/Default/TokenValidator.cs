@@ -28,7 +28,7 @@ namespace IdentityServer4.Validation
         private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _context;
         private readonly IReferenceTokenStore _referenceTokenStore;
-        private readonly IRefreshTokenStore _refreshTokenStore;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly ICustomTokenValidator _customValidator;
         private readonly IClientStore _clients;
         private readonly IProfileService _profile;
@@ -42,7 +42,7 @@ namespace IdentityServer4.Validation
             IClientStore clients,
             IProfileService profile,
             IReferenceTokenStore referenceTokenStore,
-            IRefreshTokenStore refreshTokenStore,
+            IRefreshTokenService refreshTokenService,
             ICustomTokenValidator customValidator,
             IKeyMaterialService keys,
             ISystemClock clock,
@@ -53,7 +53,7 @@ namespace IdentityServer4.Validation
             _clients = clients;
             _profile = profile;
             _referenceTokenStore = referenceTokenStore;
-            _refreshTokenStore = refreshTokenStore;
+            _refreshTokenService = refreshTokenService;
             _customValidator = customValidator;
             _keys = keys;
             _clock = clock;
@@ -379,7 +379,7 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if refresh token is valid
             /////////////////////////////////////////////
-            var refreshToken = await _refreshTokenStore.GetRefreshTokenAsync(tokenHandle);
+            var refreshToken = await _refreshTokenService.GetRefreshTokenAsync(tokenHandle);
             if (refreshToken == null)
             {
                 _logger.LogWarning("Invalid refresh token");
@@ -393,7 +393,7 @@ namespace IdentityServer4.Validation
             {
                 _logger.LogWarning("Refresh token has expired. Removing from store.");
 
-                await _refreshTokenStore.RemoveRefreshTokenAsync(tokenHandle);
+                await _refreshTokenService.RemoveRefreshTokenAsync(tokenHandle);
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
@@ -470,9 +470,7 @@ namespace IdentityServer4.Validation
             try
             {
                 var jwt = new JwtSecurityToken(token);
-                var clientId = jwt.Audiences.FirstOrDefault();
-
-                return clientId;
+                return jwt.Audiences.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -481,23 +479,17 @@ namespace IdentityServer4.Validation
             }
         }
 
-        private TokenValidationResult Invalid(string error)
-        {
-            return new TokenValidationResult
+        private TokenValidationResult Invalid(string error) =>
+            new TokenValidationResult
             {
                 IsError = true,
                 Error = error
             };
-        }
 
-        private void LogError(string message)
-        {
+        private void LogError(string message) =>
             _logger.LogError(message + "\n{@logMessage}", _log);
-        }
 
-        private void LogSuccess()
-        {
+        private void LogSuccess() =>
             _logger.LogDebug("Token validation success\n{@logMessage}", _log);
-        }
     }
 }

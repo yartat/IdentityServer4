@@ -205,6 +205,21 @@ namespace IdentityServer4.Extensions
         }
 
         /// <summary>
+        /// Gets the session id.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <returns>Returns session id</returns>
+        [DebuggerStepThrough]
+        public static string GetSessionId(this IIdentity identity)
+        {
+            var id = identity as ClaimsIdentity;
+            var claim = id.FindFirst(JwtClaimTypes.SessionId);
+            return claim != null ?
+                claim.Value :
+                null;
+        }
+
+        /// <summary>
         /// Determines whether this instance is authenticated.
         /// </summary>
         /// <param name="principal">The principal.</param>

@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
@@ -12,6 +11,7 @@ using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -38,17 +38,17 @@ namespace IdentityServer4.Endpoints
         /// <param name="events">The events.</param>
         /// <param name="logger">The logger.</param>
         public TokenEndpoint(
-            IClientSecretValidator clientValidator, 
-            ITokenRequestValidator requestValidator, 
-            ITokenResponseGenerator responseGenerator, 
-            IEventService events, 
+            IClientSecretValidator clientValidator,
+            ITokenRequestValidator requestValidator,
+            ITokenResponseGenerator responseGenerator,
+            IEventService events,
             ILogger<TokenEndpoint> logger)
         {
-            _clientValidator = clientValidator;
-            _requestValidator = requestValidator;
-            _responseGenerator = responseGenerator;
-            _events = events;
-            _logger = logger;
+            _clientValidator = clientValidator ?? throw new ArgumentNullException(nameof(clientValidator));
+            _requestValidator = requestValidator ?? throw new ArgumentNullException(nameof(requestValidator));
+            _responseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
+            _events = events ?? throw new ArgumentNullException(nameof(events));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -67,18 +67,20 @@ namespace IdentityServer4.Endpoints
                 return Error(OidcConstants.TokenErrors.InvalidRequest);
             }
 
-            return await ProcessTokenRequestAsync(context);
+            var result = await ProcessTokenRequestAsync(context);
+            _logger.LogTrace("Token request completed");
+            return result;
         }
 
         private async Task<IEndpointResult> ProcessTokenRequestAsync(HttpContext context)
         {
-            _logger.LogDebug("Start token request.");
+            _logger.LogTrace("Start token request.");
 
             // validate client
             var clientResult = await _clientValidator.ValidateAsync(context);
-
             if (clientResult.Client == null)
             {
+                _logger.LogWarning("Invalid client");
                 return Error(OidcConstants.TokenErrors.InvalidClient);
             }
 
@@ -86,22 +88,29 @@ namespace IdentityServer4.Endpoints
             var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
             _logger.LogTrace("Calling into token request validator: {type}", _requestValidator.GetType().FullName);
             var requestResult = await _requestValidator.ValidateRequestAsync(form, clientResult);
-
             if (requestResult.IsError)
             {
+                _logger.LogWarning("Token issued failure");
                 await _events.RaiseAsync(new TokenIssuedFailureEvent(requestResult));
                 return Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
             }
+
+            _logger.LogTrace("Get IP address and device type");
+            requestResult.ValidatedRequest.ClientIp = context.GetRequestIp();
+            requestResult.ValidatedRequest.Device = context
+                .GetHeaderValueAs<string>("User-Agent")
+                .GetDevice();
 
             // create response
             _logger.LogTrace("Calling into token request response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.ProcessAsync(requestResult);
 
+            _logger.LogTrace("Raise token issued successfully event");
             await _events.RaiseAsync(new TokenIssuedSuccessEvent(response, requestResult));
             LogTokens(response, requestResult);
 
             // return result
-            _logger.LogDebug("Token request success.");
+            _logger.LogTrace("Token request success.");
             return new TokenResult(response);
         }
 
@@ -119,6 +128,11 @@ namespace IdentityServer4.Endpoints
 
         private void LogTokens(TokenResponse response, TokenRequestValidationResult requestResult)
         {
+            if (!_logger.IsEnabled(LogLevel.Trace))
+            {
+                return;
+            }
+
             var clientId = $"{requestResult.ValidatedRequest.Client.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
             var subjectId = requestResult.ValidatedRequest.Subject?.GetSubjectId() ?? "no subject";
 

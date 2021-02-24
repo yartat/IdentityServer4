@@ -1,29 +1,44 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System.Threading.Tasks;
-using IdentityServer4.Models;
+using IdentityModel;
+using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
-using IdentityModel;
+using IdentityServer4.Models;
+using IdentityServer4.ResponseHandling;
+using IdentityServer4.Services;
+using IdentityServer4.Stores;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
-using IdentityServer4.Services;
-using IdentityServer4.Configuration;
-using IdentityServer4.Stores;
-using IdentityServer4.ResponseHandling;
-using Microsoft.AspNetCore.Authentication;
 using System.Text.Encodings.Web;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints.Results
 {
-    internal class AuthorizeResult : IEndpointResult
+    /// <summary>
+    /// Defines an authorize result response.
+    /// Implements the <see cref="IEndpointResult" />
+    /// </summary>
+    /// <seealso cref="IEndpointResult" />
+    public class AuthorizeResult : IEndpointResult
     {
-        public AuthorizeResponse Response { get; }
+        private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
 
+        private IdentityServerOptions _options;
+        private IUserSession _userSession;
+        private IMessageStore<ErrorMessage> _errorMessageStore;
+        private ISystemClock _clock;
+        private ILogger<AuthorizeResult> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizeResult"/> class.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <exception cref="ArgumentNullException">response</exception>
         public AuthorizeResult(AuthorizeResponse response)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
@@ -43,31 +58,38 @@ namespace IdentityServer4.Endpoints.Results
             _clock = clock;
         }
 
-        private IdentityServerOptions _options;
-        private IUserSession _userSession;
-        private IMessageStore<ErrorMessage> _errorMessageStore;
-        private ISystemClock _clock;
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <value>The response.</value>
+        public AuthorizeResponse Response { get; }
 
-        private void Init(HttpContext context)
-        {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _userSession = _userSession ?? context.RequestServices.GetRequiredService<IUserSession>();
-            _errorMessageStore = _errorMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
-            _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
-        }
-
+        /// <inheritdoc/>
         public async Task ExecuteAsync(HttpContext context)
         {
             Init(context);
 
+            _logger.LogTrace("Authorize result executing");
             if (Response.IsError)
             {
+                _logger.LogTrace("Authorize result is error");
                 await ProcessErrorAsync(context);
             }
             else
             {
                 await ProcessResponseAsync(context);
             }
+
+            _logger.LogTrace("Authorize result completed");
+        }
+
+        private void Init(HttpContext context)
+        {
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
+            _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
+            _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
+            _logger ??= context.RequestServices.GetRequiredService<ILogger<AuthorizeResult>>();
         }
 
         private async Task ProcessErrorAsync(HttpContext context)
@@ -84,21 +106,27 @@ namespace IdentityServer4.Endpoints.Results
             if (isSafeError)
             {
                 // this scenario we can return back to the client
+                _logger.LogTrace("Safe error");
                 await ProcessResponseAsync(context);
             }
             else
             {
                 // we now know we must show error page
+                _logger.LogTrace("Redirect to error page");
                 await RedirectToErrorPageAsync(context);
             }
         }
 
+        /// <summary>
+        /// Processes the response asynchronous.
+        /// </summary>
+        /// <param name="context">The context.</param>
         protected async Task ProcessResponseAsync(HttpContext context)
         {
             if (!Response.IsError)
             {
                 // success response -- track client authorization for sign-out
-                //_logger.LogDebug("Adding client {0} to client list cookie for subject {1}", request.ClientId, request.Subject.GetSubjectId());
+                _logger.LogTrace("Adding client {0} to client list cookie for subject {1}", Response.Request.ClientId, Response.Request.Subject.GetSubjectId());
                 await _userSession.AddClientIdAsync(Response.Request.ClientId);
             }
 
@@ -107,21 +135,24 @@ namespace IdentityServer4.Endpoints.Results
 
         private async Task RenderAuthorizeResponseAsync(HttpContext context)
         {
+            _logger.LogTrace("Render authorize response");
             if (Response.Request.ResponseMode == OidcConstants.ResponseModes.Query ||
                 Response.Request.ResponseMode == OidcConstants.ResponseModes.Fragment)
             {
+                _logger.LogTrace("Render as redirect");
                 context.Response.SetNoCache();
                 context.Response.Redirect(BuildRedirectUri());
             }
             else if (Response.Request.ResponseMode == OidcConstants.ResponseModes.FormPost)
             {
+                _logger.LogTrace("Render as form POST");
                 context.Response.SetNoCache();
                 AddSecurityHeaders(context);
                 await context.Response.WriteHtmlAsync(GetFormPostHtml());
             }
             else
             {
-                //_logger.LogError("Unsupported response mode.");
+                _logger.LogWarning("Unsupported response mode.");
                 throw new InvalidOperationException("Unsupported response mode");
             }
         }
@@ -130,7 +161,7 @@ namespace IdentityServer4.Endpoints.Results
         {
             context.Response.AddScriptCspHeaders(_options.Csp, "sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8=");
 
-            var referrer_policy = "no-referrer";
+            const string referrer_policy = "no-referrer";
             if (!context.Response.Headers.ContainsKey("Referrer-Policy"))
             {
                 context.Response.Headers.Add("Referrer-Policy", referrer_policy);
@@ -159,8 +190,6 @@ namespace IdentityServer4.Endpoints.Results
 
             return uri;
         }
-
-        private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
 
         private string GetFormPostHtml()
         {

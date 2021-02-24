@@ -59,20 +59,17 @@ namespace IdentityServer4.Services
 
         public bool IsValidReturnUrl(string returnUrl)
         {
-            if (returnUrl.IsLocalUrl())
+            var index = returnUrl.IndexOf('?');
+            if (index >= 0)
             {
-                var index = returnUrl.IndexOf('?');
-                if (index >= 0)
-                {
-                    returnUrl = returnUrl.Substring(0, index);
-                }
+                returnUrl = returnUrl.Substring(0, index);
+            }
 
-                if (returnUrl.EndsWith(Constants.ProtocolRoutePaths.Authorize, StringComparison.Ordinal) ||
-                    returnUrl.EndsWith(Constants.ProtocolRoutePaths.AuthorizeCallback, StringComparison.Ordinal))
-                {
-                    _logger.LogTrace("returnUrl is valid");
-                    return true;
-                }
+            if (returnUrl.EndsWith(Constants.ProtocolRoutePaths.Authorize, StringComparison.Ordinal) ||
+                returnUrl.EndsWith(Constants.ProtocolRoutePaths.AuthorizeCallback, StringComparison.Ordinal))
+            {
+                _logger.LogTrace("returnUrl is valid");
+                return true;
             }
 
             _logger.LogTrace("returnUrl is not valid");

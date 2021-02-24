@@ -19,7 +19,10 @@ namespace IdentityServer4.Services
     /// <seealso cref="IdentityServer4.Services.IUserSession" />
     public class DefaultUserSession : IUserSession
     {
-        internal const string SessionIdKey = "session_id";
+        /// <summary>
+        /// The session identifier key
+        /// </summary>
+        public const string SessionIdKey = "session_id";
         internal const string ClientListKey = "client_list";
 
         /// <summary>
@@ -62,6 +65,14 @@ namespace IdentityServer4.Services
         /// The name of the check session cookie.
         /// </value>
         protected string CheckSessionCookieName => Options.Authentication.CheckSessionCookieName;
+
+        /// <summary>
+        /// Gets the domain of the check session cookie.
+        /// </summary>
+        /// <value>
+        /// The domain of the check session cookie.
+        /// </value>
+        protected string CheckSessionCookieDomain => Options.Authentication.CheckSessionCookieDomain;
 
         /// <summary>
         /// The principal
@@ -161,22 +172,16 @@ namespace IdentityServer4.Services
             return properties.Items[SessionIdKey];
         }
 
-        /// <summary>
-        /// Gets the current authenticated user.
-        /// </summary>
-        /// <returns></returns>
-        public virtual async Task<ClaimsPrincipal> GetUserAsync()
+        /// <inheritdoc/>
+        public virtual async Task<ClaimsPrincipal> GetUserAsync(bool recheck = false)
         {
             await AuthenticateAsync();
 
             return Principal;
         }
 
-        /// <summary>
-        /// Gets the current session identifier.
-        /// </summary>
-        /// <returns></returns>
-        public virtual async Task<string> GetSessionIdAsync()
+        /// <inheritdoc/>
+        public virtual async Task<string> GetSessionIdAsync(bool recheck = false)
         {
             await AuthenticateAsync();
 
@@ -208,7 +213,6 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Removes the session identifier cookie.
         /// </summary>
-        /// <returns></returns>
         public virtual Task RemoveSessionIdCookieAsync()
         {
             if (HttpContext.Request.Cookies.ContainsKey(CheckSessionCookieName))
@@ -226,22 +230,16 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Creates the options for the session cookie.
         /// </summary>
-        public virtual CookieOptions CreateSessionIdCookieOptions()
-        {
-            var secure = HttpContext.Request.IsHttps;
-            var path = HttpContext.GetIdentityServerBasePath().CleanUrlPath();
-
-            var options = new CookieOptions
+        public virtual CookieOptions CreateSessionIdCookieOptions() =>
+            new CookieOptions
             {
                 HttpOnly = false,
-                Secure = secure,
-                Path = path,
+                Secure = true,
+                Path = HttpContext.GetIdentityServerBasePath().CleanUrlPath(),
                 IsEssential = true,
+                Domain = CheckSessionCookieDomain,
                 SameSite = SameSiteMode.None
             };
-
-            return options;
-        }
 
         /// <summary>
         /// Issues the cookie that contains the session id.

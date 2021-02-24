@@ -19,10 +19,12 @@ namespace IdentityServer4.Services
         /// <param name="subject">The subject.</param>
         /// <param name="accessToken">The access token.</param>
         /// <param name="client">The client.</param>
+        /// <param name="ip">The client IP address.</param>
+        /// <param name="device">The client logged device.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>
-        Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client);
+        Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string ip, string device);
 
         /// <summary>
         /// Updates the refresh token.
@@ -34,5 +36,29 @@ namespace IdentityServer4.Services
         /// The refresh token handle
         /// </returns>
         Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, Client client);
+
+        /// <summary>
+        /// Refreshes the refresh token.
+        /// </summary>
+        /// <param name="handle">The handle.</param>
+        /// <param name="refreshToken">The refresh token.</param>
+        /// <param name="client">The client.</param>
+        /// <returns>
+        /// The refresh token handle
+        /// </returns>
+        Task<string> RefreshTokenAsync(string handle, RefreshToken refreshToken, Client client);
+
+        /// <summary>
+        /// Gets the refresh token.
+        /// </summary>
+        /// <param name="refreshTokenHandle">The refresh token handle.</param>
+        /// <returns>Returns refresh token in case token exists or <c>null</c></returns>
+        Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle);
+
+        /// <summary>
+        /// Removes the refresh token.
+        /// </summary>
+        /// <param name="refreshTokenHandle">The refresh token handle.</param>
+        Task RemoveRefreshTokenAsync(string refreshTokenHandle);
     }
 }

@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Events;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Http;
@@ -37,7 +36,6 @@ namespace IdentityServer4.Hosting
         /// <param name="router">The router.</param>
         /// <param name="session">The user session.</param>
         /// <param name="events">The event service.</param>
-        /// <returns></returns>
         public async Task Invoke(HttpContext context, IEndpointRouter router, IUserSession session, IEventService events)
         {
             // this will check the authentication session and from it emit the check session
@@ -46,17 +44,17 @@ namespace IdentityServer4.Hosting
 
             try
             {
+                _logger.LogTrace("IdentityServerMiddleware invoke");
                 var endpoint = router.Find(context);
                 if (endpoint != null)
                 {
-                    _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
-
+                    _logger.LogTrace("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
                     var result = await endpoint.ProcessAsync(context);
-
                     if (result != null)
                     {
                         _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
                         await result.ExecuteAsync(context);
+                        _logger.LogTrace("Result was rendered.");
                     }
 
                     return;
@@ -69,6 +67,7 @@ namespace IdentityServer4.Hosting
                 throw;
             }
 
+            _logger.LogTrace("IdentityServerMiddleware process next stage pipeline");
             await _next(context);
         }
     }

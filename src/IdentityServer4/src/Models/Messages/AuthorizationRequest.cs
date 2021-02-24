@@ -137,5 +137,17 @@ namespace IdentityServer4.Models
             Parameters = request.Raw;
             RequestObjectValues = request.RequestObjectValues;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizationRequest"/> class.
+        /// </summary>
+        public AuthorizationRequest(ValidatedRequest request)
+        {
+            Client = request.Client != null ?
+                new Client(request.Client) :
+                new Client();
+            ValidatedResources = request.ValidatedResources;
+            Parameters = request.Raw;
+        }
     }
 }

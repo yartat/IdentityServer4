@@ -13,13 +13,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace IdentityServer4.ResponseHandling
 {
     /// <summary>
     /// The default token response generator
     /// </summary>
-    /// <seealso cref="IdentityServer4.ResponseHandling.ITokenResponseGenerator" />
+    /// <seealso cref="ITokenResponseGenerator" />
     public class TokenResponseGenerator : ITokenResponseGenerator
     {
         /// <summary>
@@ -67,7 +68,14 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="resources">The resources.</param>
         /// <param name="clients">The clients.</param>
         /// <param name="logger">The logger.</param>
-        public TokenResponseGenerator(ISystemClock clock, ITokenService tokenService, IRefreshTokenService refreshTokenService, IResourceValidator resourceValidator, IResourceStore resources, IClientStore clients, ILogger<TokenResponseGenerator> logger)
+        public TokenResponseGenerator(
+            ISystemClock clock,
+            ITokenService tokenService,
+            IRefreshTokenService refreshTokenService,
+            IResourceValidator resourceValidator,
+            IResourceStore resources,
+            IClientStore clients,
+            ILogger<TokenResponseGenerator> logger)
         {
             Clock = clock;
             TokenService = tokenService;
@@ -134,7 +142,7 @@ namespace IdentityServer4.ResponseHandling
         /// <exception cref="System.InvalidOperationException">Client does not exist anymore.</exception>
         protected virtual async Task<TokenResponse> ProcessAuthorizationCodeRequestAsync(TokenRequestValidationResult request)
         {
-            Logger.LogTrace("Creating response for authorization code request");
+            Logger.LogDebug("Creating response for authorization code request");
 
             //////////////////////////
             // access token
@@ -182,14 +190,16 @@ namespace IdentityServer4.ResponseHandling
                     Nonce = request.ValidatedRequest.AuthorizationCode.Nonce,
                     AccessTokenToHash = response.AccessToken,
                     StateHash = request.ValidatedRequest.AuthorizationCode.StateHash,
-                    ValidatedRequest = request.ValidatedRequest
+                    ValidatedRequest = request.ValidatedRequest,
+                    IpAddress = request.ValidatedRequest.ClientIp,
+                    Device = request.ValidatedRequest.Device
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
-                var jwt = await TokenService.CreateSecurityTokenAsync(idToken);
-                response.IdentityToken = jwt;
+                response.IdentityToken = await TokenService.CreateSecurityTokenAsync(idToken);
             }
 
+            Logger.LogDebug("Response for authorization code request completed");
             return response;
         }
 
@@ -217,7 +227,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = subject,
                     Description = request.ValidatedRequest.RefreshToken.Description,
                     ValidatedRequest = request.ValidatedRequest,
-                    ValidatedResources = validatedResources
+                    ValidatedResources = validatedResources,
+                    IpAddress = request.ValidatedRequest.RefreshToken.IpAddress,
+                    Device = request.ValidatedRequest.RefreshToken.Device,
                 };
 
                 var newAccessToken = await TokenService.CreateAccessTokenAsync(creationRequest);
@@ -231,7 +243,7 @@ namespace IdentityServer4.ResponseHandling
                 accessTokenString = await TokenService.CreateSecurityTokenAsync(oldAccessToken);
             }
 
-            var handle = await RefreshTokenService.UpdateRefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
+            var handle = await RefreshTokenService.RefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
 
             return new TokenResponse
             {
@@ -291,13 +303,15 @@ namespace IdentityServer4.ResponseHandling
 
                 var parsedScopes = await ResourceValidator.ParseRequestedScopesAsync(request.ValidatedRequest.DeviceCode.AuthorizedScopes);
                 var validatedResources = await Resources.CreateResourceValidationResult(parsedScopes);
-                
+
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.DeviceCode.Subject,
                     ValidatedResources = validatedResources,
                     AccessTokenToHash = response.AccessToken,
-                    ValidatedRequest = request.ValidatedRequest
+                    ValidatedRequest = request.ValidatedRequest,
+                    IpAddress = request.ValidatedRequest.ClientIp,
+                    Device = request.ValidatedRequest.Device
                 };
 
                 var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
@@ -378,7 +392,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = request.AuthorizationCode.Subject,
                     Description = request.AuthorizationCode.Description,
                     ValidatedResources = validatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
             else if (request.DeviceCode != null)
@@ -403,7 +419,9 @@ namespace IdentityServer4.ResponseHandling
                     Subject = request.DeviceCode.Subject,
                     Description = request.DeviceCode.Description,
                     ValidatedResources = validatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
             else
@@ -414,19 +432,38 @@ namespace IdentityServer4.ResponseHandling
                 {
                     Subject = request.Subject,
                     ValidatedResources = request.ValidatedResources,
-                    ValidatedRequest = request
+                    ValidatedRequest = request,
+                    IpAddress = request.ClientIp,
+                    Device = request.Device
                 };
             }
 
             var at = await TokenService.CreateAccessTokenAsync(tokenRequest);
-            var accessToken = await TokenService.CreateSecurityTokenAsync(at);
+            return await GetTokenAsync(tokenRequest.Subject, at, request.Client, request.ClientIp, request.Device, createRefreshToken);
+        }
 
+        /// <summary>
+        /// Stores the access token asynchronous.
+        /// </summary>
+        /// <param name="claimsPrincipal">The claims principal.</param>
+        /// <param name="token">The access token.</param>
+        /// <param name="client">The client instance.</param>
+        /// <param name="ip">The IP address.</param>
+        /// <param name="device">The requested device.</param>
+        /// <param name="createRefreshToken">Indicates to create refresh token.</param>
+        /// <returns>Task.</returns>
+        protected virtual async Task<(string AccessToken, string RefreshToken)> GetTokenAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device, bool createRefreshToken)
+        {
+            Logger.LogDebug("Getting token");
+            var accessToken = await TokenService.CreateSecurityTokenAsync(token);
             if (createRefreshToken)
             {
-                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client);
+                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(claimsPrincipal, token, client, ip, device);
+                Logger.LogDebug("Access and refresh token completed");
                 return (accessToken, refreshToken);
             }
 
+            Logger.LogDebug("Access token completed");
             return (accessToken, null);
         }
 
@@ -442,7 +479,7 @@ namespace IdentityServer4.ResponseHandling
             if (resources.IdentityResources.Any())
             {
                 var oldAccessToken = request.RefreshToken.AccessToken;
-                
+
                 var parsedScopes = await ResourceValidator.ParseRequestedScopesAsync(oldAccessToken.Scopes);
                 var validatedResources = await Resources.CreateResourceValidationResult(parsedScopes);
 

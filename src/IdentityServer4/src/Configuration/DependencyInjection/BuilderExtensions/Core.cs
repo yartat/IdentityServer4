@@ -41,11 +41,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddRequiredPlatformServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();            
-            builder.Services.AddOptions();
-            builder.Services.AddSingleton(
-                resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value);
-            builder.Services.AddHttpClient();
+            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services
+                .AddOptions()
+                .AddSingleton(resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value)
+                .AddHttpClient();
 
             return builder;
         }
@@ -57,14 +57,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCookieAuthentication(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
-                .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
-                .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            builder.Services
+                .AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
+                    .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
+                    .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
 
-            builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>();
-            builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>();
-            builder.Services.AddTransientDecorator<IAuthenticationService, IdentityServerAuthenticationService>();
-            builder.Services.AddTransientDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
+            builder.Services
+                .AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>()
+                .AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>()
+                .AddTransientDecorator<IAuthenticationService, IdentityServerAuthenticationService>()
+                .AddTransientDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
 
             return builder;
         }
@@ -78,18 +80,19 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             builder.Services.AddTransient<IEndpointRouter, EndpointRouter>();
 
-            builder.AddEndpoint<AuthorizeCallbackEndpoint>(EndpointNames.Authorize, ProtocolRoutePaths.AuthorizeCallback.EnsureLeadingSlash());
-            builder.AddEndpoint<AuthorizeEndpoint>(EndpointNames.Authorize, ProtocolRoutePaths.Authorize.EnsureLeadingSlash());
-            builder.AddEndpoint<CheckSessionEndpoint>(EndpointNames.CheckSession, ProtocolRoutePaths.CheckSession.EnsureLeadingSlash());
-            builder.AddEndpoint<DeviceAuthorizationEndpoint>(EndpointNames.DeviceAuthorization, ProtocolRoutePaths.DeviceAuthorization.EnsureLeadingSlash());
-            builder.AddEndpoint<DiscoveryKeyEndpoint>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryWebKeys.EnsureLeadingSlash());
-            builder.AddEndpoint<DiscoveryEndpoint>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryConfiguration.EnsureLeadingSlash());
-            builder.AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash());
-            builder.AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash());
-            builder.AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash());
-            builder.AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash());
-            builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
-            builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
+            builder
+                .AddEndpoint<AuthorizeCallbackEndpoint>(EndpointNames.Authorize, ProtocolRoutePaths.AuthorizeCallback.EnsureLeadingSlash())
+                .AddEndpoint<AuthorizeEndpoint>(EndpointNames.Authorize, ProtocolRoutePaths.Authorize.EnsureLeadingSlash())
+                .AddEndpoint<CheckSessionEndpoint>(EndpointNames.CheckSession, ProtocolRoutePaths.CheckSession.EnsureLeadingSlash())
+                .AddEndpoint<DeviceAuthorizationEndpoint>(EndpointNames.DeviceAuthorization, ProtocolRoutePaths.DeviceAuthorization.EnsureLeadingSlash())
+                .AddEndpoint<DiscoveryKeyEndpoint>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryWebKeys.EnsureLeadingSlash())
+                .AddEndpoint<DiscoveryEndpoint>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryConfiguration.EnsureLeadingSlash())
+                .AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash())
+                .AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash())
+                .AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash())
+                .AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash())
+                .AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash())
+                .AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
 
             return builder;
         }
@@ -105,8 +108,9 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IIdentityServerBuilder AddEndpoint<T>(this IIdentityServerBuilder builder, string name, PathString path)
             where T : class, IEndpointHandler
         {
-            builder.Services.AddTransient<T>();
-            builder.Services.AddSingleton(new IdentityServer4.Hosting.Endpoint(name, path, typeof(T)));
+            builder.Services
+                .AddTransient<T>()
+                .AddSingleton(new IdentityServer4.Hosting.Endpoint(name, path, typeof(T)));
 
             return builder;
         }
@@ -118,21 +122,25 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCoreServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddTransient<ISecretsListParser, SecretParser>();
-            builder.Services.AddTransient<ISecretsListValidator, SecretValidator>();
-            builder.Services.AddTransient<ExtensionGrantValidator>();
-            builder.Services.AddTransient<BearerTokenUsageValidator>();
-            builder.Services.AddTransient<JwtRequestValidator>();
+            builder.Services
+                .AddTransient<ISecretsListParser, SecretParser>()
+                .AddTransient<ISecretsListValidator, SecretValidator>()
+                .AddTransient<ExtensionGrantValidator>()
+                .AddTransient<BearerTokenUsageValidator>()
+                .AddTransient<JwtRequestValidator>()
 
-            builder.Services.AddTransient<ReturnUrlParser>();
-            builder.Services.AddTransient<IdentityServerTools>();
+                .AddTransient<ReturnUrlParser>()
+                .AddTransient<IdentityServerTools>()
 
-            builder.Services.AddTransient<IReturnUrlParser, OidcReturnUrlParser>();
-            builder.Services.AddScoped<IUserSession, DefaultUserSession>();
-            builder.Services.AddTransient(typeof(MessageCookie<>));
+                .AddTransient<IReturnUrlParser, OidcReturnUrlParser>()
+                .AddScoped<IUserSession, DefaultUserSession>()
+                .AddScoped<IAuthorizeRequestHandler, DefaultAuthorizeRequestHandler>()
+                .AddScoped<IAuthorizeRequestCompleteHandler, DefaultAuthorizeRequestCompleteHandler>()
 
-            builder.Services.AddCors();
-            builder.Services.AddTransientDecorator<ICorsPolicyProvider, CorsPolicyProvider>();
+                .AddTransient(typeof(MessageCookie<>))
+
+                .AddCors()
+                .AddTransientDecorator<ICorsPolicyProvider, CorsPolicyProvider>();
 
             return builder;
         }
@@ -151,6 +159,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IClaimsService, DefaultClaimsService>();
             builder.Services.TryAddTransient<IRefreshTokenService, DefaultRefreshTokenService>();
             builder.Services.TryAddTransient<IDeviceFlowCodeService, DefaultDeviceFlowCodeService>();
+            builder.Services.TryAddTransient<IUserValidator, DefaultUserValidator>();
             builder.Services.TryAddTransient<IConsentService, DefaultConsentService>();
             builder.Services.TryAddTransient<ICorsPolicyService, DefaultCorsPolicyService>();
             builder.Services.TryAddTransient<IProfileService, DefaultProfileService>();
@@ -172,15 +181,17 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IUserCodeGenerator, NumericUserCodeGenerator>();
             builder.Services.TryAddTransient<IBackChannelLogoutService, DefaultBackChannelLogoutService>();
             builder.Services.TryAddTransient<IResourceValidator, ResourceValidator>();
+            builder.Services.TryAddTransient<IAuthorizationParametersProcessor, DefaultAuthorizationParametersProcessor>();
 
             builder.AddJwtRequestUriHttpClient();
             builder.AddBackChannelLogoutHttpClient();
 
-            builder.Services.AddTransient<IClientSecretValidator, ClientSecretValidator>();
-            builder.Services.AddTransient<IApiSecretValidator, ApiSecretValidator>();
+            builder.Services
+                .AddTransient<IClientSecretValidator, ClientSecretValidator>()
+                .AddTransient<IApiSecretValidator, ApiSecretValidator>()
 
-            builder.Services.TryAddTransient<IDeviceFlowThrottlingService, DistributedDeviceFlowThrottlingService>();
-            builder.Services.AddDistributedMemoryCache();
+                .AddDistributedMemoryCache()
+                .TryAddTransient<IDeviceFlowThrottlingService, DistributedDeviceFlowThrottlingService>();
 
             return builder;
         }
@@ -210,7 +221,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // optional
             builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
             builder.Services.TryAddTransient<ICustomAuthorizeRequestValidator, DefaultCustomAuthorizeRequestValidator>();
-            
+
             return builder;
         }
 
@@ -240,8 +251,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddDefaultSecretParsers(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddTransient<ISecretParser, BasicAuthenticationSecretParser>();
-            builder.Services.AddTransient<ISecretParser, PostBodySecretParser>();
+            builder.Services
+                .AddTransient<ISecretParser, BasicAuthenticationSecretParser>()
+                .AddTransient<ISecretParser, PostBodySecretParser>();
 
             return builder;
         }
@@ -258,21 +270,21 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        internal static void AddTransientDecorator<TService, TImplementation>(this IServiceCollection services)
+        internal static IServiceCollection AddTransientDecorator<TService, TImplementation>(this IServiceCollection services)
             where TService : class
-            where TImplementation : class, TService
-        {
-            services.AddDecorator<TService>();
-            services.AddTransient<TService, TImplementation>();
-        }
+            where TImplementation : class, TService =>
+            services
+                .AddDecorator<TService>()
+                .AddTransient<TService, TImplementation>();
 
-        internal static void AddDecorator<TService>(this IServiceCollection services)
+        internal static IServiceCollection AddDecorator<TService>(this IServiceCollection services)
         {
             var registration = services.LastOrDefault(x => x.ServiceType == typeof(TService));
             if (registration == null)
             {
                 throw new InvalidOperationException("Service type: " + typeof(TService).Name + " not registered.");
             }
+
             if (services.Any(x => x.ServiceType == typeof(Decorator<TService>)))
             {
                 throw new InvalidOperationException("Decorator already registered for type: " + typeof(TService).Name + ".");
@@ -289,10 +301,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else if (registration.ImplementationFactory != null)
             {
-                services.Add(new ServiceDescriptor(typeof(Decorator<TService>), provider =>
-                {
-                    return new DisposableDecorator<TService>((TService)registration.ImplementationFactory(provider));
-                }, registration.Lifetime));
+                services.Add(new ServiceDescriptor(
+                    typeof(Decorator<TService>),
+                    provider => new DisposableDecorator<TService>((TService)registration.ImplementationFactory(provider)),
+                    registration.Lifetime));
             }
             else
             {
@@ -301,6 +313,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.Add(new ServiceDescriptor(typeof(Decorator<TService>), innerType, ServiceLifetime.Transient));
                 services.Add(new ServiceDescriptor(type, type, registration.Lifetime));
             }
+
+            return services;
         }
     }
 }

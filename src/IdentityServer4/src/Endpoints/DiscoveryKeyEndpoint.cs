@@ -1,23 +1,22 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using System.Net;
-using System.Threading.Tasks;
 using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Hosting;
 using IdentityServer4.ResponseHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints
 {
     internal class DiscoveryKeyEndpoint : IEndpointHandler
     {
         private readonly ILogger _logger;
-
         private readonly IdentityServerOptions _options;
-
         private readonly IDiscoveryResponseGenerator _responseGenerator;
 
         public DiscoveryKeyEndpoint(
@@ -25,9 +24,9 @@ namespace IdentityServer4.Endpoints
             IDiscoveryResponseGenerator responseGenerator,
             ILogger<DiscoveryKeyEndpoint> logger)
         {
-            _logger = logger;
-            _options = options;
-            _responseGenerator = responseGenerator;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _responseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
         }
 
         public async Task<IEndpointResult> ProcessAsync(HttpContext context)
@@ -41,9 +40,7 @@ namespace IdentityServer4.Endpoints
                 return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
-            _logger.LogDebug("Start key discovery request");
-
-            if (_options.Discovery.ShowKeySet == false)
+            if (!_options.Discovery.ShowKeySet)
             {
                 _logger.LogInformation("Key discovery disabled. 404.");
                 return new StatusCodeResult(HttpStatusCode.NotFound);
@@ -53,6 +50,7 @@ namespace IdentityServer4.Endpoints
             _logger.LogTrace("Calling into discovery response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.CreateJwkDocumentAsync();
 
+            _logger.LogTrace("Discovery request completed. Return JsonWebKeysResult");
             return new JsonWebKeysResult(response, _options.Discovery.ResponseCacheInterval);
         }
     }

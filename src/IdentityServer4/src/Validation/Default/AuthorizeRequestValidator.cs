@@ -573,11 +573,11 @@ namespace IdentityServer4.Validation
             //////////////////////////////////////////////////////////
             // check if scopes are valid/supported and check for resource scopes
             //////////////////////////////////////////////////////////
-            var parasedScopes = await _resourceValidator.ParseRequestedScopesAsync(request.RequestedScopes);
+            var parsedScopes = await _resourceValidator.ParseRequestedScopesAsync(request.RequestedScopes);
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = request.Client,
-                ParsedScopeValues = parasedScopes
+                ParsedScopeValues = parsedScopes
             });
 
             if (!validatedResources.Succeeded)
@@ -591,7 +591,7 @@ namespace IdentityServer4.Validation
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Identity scopes requested, but openid scope is missing");
             }
 
-            if (validatedResources.Resources.ApiScopes.Any())
+            if (validatedResources.Resources.ApiScopes.Any() || validatedResources.Resources.ApiResources.Any())
             {
                 request.IsApiResourceRequest = true;
             }
@@ -610,14 +610,14 @@ namespace IdentityServer4.Validation
                     }
                     break;
                 case Constants.ScopeRequirement.IdentityOnly:
-                    if (!validatedResources.Resources.IdentityResources.Any() || validatedResources.Resources.ApiScopes.Any())
+                    if (!validatedResources.Resources.IdentityResources.Any() || validatedResources.Resources.ApiScopes.Any() || validatedResources.Resources.ApiResources.Any())
                     {
                         _logger.LogError("Requests for id_token response type only must not include resource scopes");
                         responseTypeValidationCheck = false;
                     }
                     break;
                 case Constants.ScopeRequirement.ResourceOnly:
-                    if (validatedResources.Resources.IdentityResources.Any() || !validatedResources.Resources.ApiScopes.Any())
+                    if (validatedResources.Resources.IdentityResources.Any() || !(validatedResources.Resources.ApiScopes.Any() || validatedResources.Resources.ApiResources.Any()))
                     {
                         _logger.LogError("Requests for token response type only must include resource scopes, but no identity scopes.");
                         responseTypeValidationCheck = false;
