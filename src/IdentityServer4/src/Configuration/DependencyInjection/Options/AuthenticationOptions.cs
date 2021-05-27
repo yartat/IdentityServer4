@@ -40,6 +40,11 @@ namespace IdentityServer4.Configuration
         public SameSiteMode CookieSameSiteMode { get; set; } = SameSiteMode.None;
 
         /// <summary>
+        /// Gets or sets a HTTP only value for the internal authentication and temp cookie.
+        /// </summary>
+        public bool HttpOnly { get; set; } = true;
+
+        /// <summary>
         /// Indicates if user must be authenticated to accept parameters to end session endpoint. Defaults to false.
         /// </summary>
         /// <value>

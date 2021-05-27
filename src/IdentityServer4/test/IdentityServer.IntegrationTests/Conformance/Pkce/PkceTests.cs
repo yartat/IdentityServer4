@@ -67,9 +67,9 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
                 AllowedScopes = { "openid" },
 
                 RequireConsent = false,
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    redirect_uri
+                    new Uri(redirect_uri)
                 }
             });
             _pipeline.Clients.Add(client = new Client
@@ -87,9 +87,9 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
                 AllowedScopes = { "openid" },
 
                 RequireConsent = false,
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    redirect_uri
+                    new Uri(redirect_uri)
                 }
             });
 
@@ -110,9 +110,9 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
                 AllowedScopes = { "openid" },
 
                 RequireConsent = false,
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    redirect_uri
+                    new Uri(redirect_uri)
                 }
             });
             _pipeline.Clients.Add(client = new Client
@@ -131,9 +131,9 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
                 AllowedScopes = { "openid" },
 
                 RequireConsent = false,
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    redirect_uri
+                    new Uri(redirect_uri)
                 }
             });
 

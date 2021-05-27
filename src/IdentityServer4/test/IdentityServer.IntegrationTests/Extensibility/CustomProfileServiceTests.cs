@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace IdentityServer.IntegrationTests.Extensibility
             {
                 ClientId = "implicit",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "https://client/callback" },
+                RedirectUris = { new Uri("https://client/callback") },
                 RequireConsent = false,
                 AllowedScopes = { "openid", "custom_identity" }
             });

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
@@ -39,9 +40,9 @@ namespace IdentityServer.UnitTests.Validation
 
                 RequireConsent = false,
 
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    "https://server/cb"
+                    new Uri("https://server/cb")
                 },
 
                 AuthorizationCodeLifetime = 60

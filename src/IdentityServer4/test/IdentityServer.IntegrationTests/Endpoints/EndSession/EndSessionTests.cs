@@ -38,9 +38,9 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "openid" },
-                RedirectUris = new List<string> { "https://client1/callback" },
+                RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                 FrontChannelLogoutUri = "https://client1/signout",
-                PostLogoutRedirectUris = new List<string> { "https://client1/signout-callback" },
+                PostLogoutRedirectUris = new List<Uri> { new Uri("https://client1/signout-callback") },
                 AllowAccessTokensViaBrowser = true
             });
 
@@ -50,11 +50,11 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "openid" },
-                RedirectUris = new List<string> { "https://client2/callback" },
+                RedirectUris = new List<Uri> { new Uri("https://client2/callback") },
                 FrontChannelLogoutUri = "https://client2/signout",
-                PostLogoutRedirectUris = new List<string> {
-                    "https://client2/signout-callback",
-                    "https://client2/signout-callback2"
+                PostLogoutRedirectUris = new List<Uri> {
+                    new Uri("https://client2/signout-callback"),
+                    new Uri("https://client2/signout-callback2")
                 },
                 AllowAccessTokensViaBrowser = true
             });
@@ -65,7 +65,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "openid" },
-                RedirectUris = new List<string> { "https://client3/callback" },
+                RedirectUris = new List<Uri> { new Uri("https://client3/callback") },
                 BackChannelLogoutUri = "https://client3/signout",
                 AllowAccessTokensViaBrowser = true
             });
@@ -76,7 +76,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "openid" },
-                RedirectUris = new List<string> { "https://client4/callback" },
+                RedirectUris = new List<Uri> { new Uri("https://client4/callback") },
                 FrontChannelLogoutUri = "https://client4/signout",
                 AllowAccessTokensViaBrowser = true
             });

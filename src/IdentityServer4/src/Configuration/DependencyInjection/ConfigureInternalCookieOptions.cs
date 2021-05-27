@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +30,7 @@ namespace IdentityServer4.Configuration
                 options.ExpireTimeSpan = _idsrv.Authentication.CookieLifetime;
                 options.Cookie.Name = IdentityServerConstants.DefaultCookieAuthenticationScheme;
                 options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = _idsrv.Authentication.HttpOnly;
                 options.Cookie.SameSite = _idsrv.Authentication.CookieSameSiteMode;
                 if (_idsrv.Authentication.SecureCookies != null)
                 {
@@ -49,6 +49,7 @@ namespace IdentityServer4.Configuration
             {
                 options.Cookie.Name = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                 options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = _idsrv.Authentication.HttpOnly;
                 // https://github.com/IdentityServer/IdentityServer4/issues/2595
                 // need to set None because iOS 12 safari considers the POST back to the client from the 
                 // IdP as not safe, so cookies issued from response (with lax) then should not be honored.

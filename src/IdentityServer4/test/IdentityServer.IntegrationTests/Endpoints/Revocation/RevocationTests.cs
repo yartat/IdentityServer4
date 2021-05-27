@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -40,7 +41,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Revocation
                 RequirePkce = false,
                 AllowOfflineAccess = true,
                 AllowedScopes = new List<string> { "api" },
-                RedirectUris = new List<string> { redirect_uri },
+                RedirectUris = new List<Uri> { new Uri(redirect_uri) },
                 AllowAccessTokensViaBrowser = true,
                 AccessTokenType = AccessTokenType.Reference,
                 RefreshTokenUsage = TokenUsage.ReUse
@@ -51,7 +52,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Revocation
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "api" },
-                RedirectUris = new List<string> { redirect_uri },
+                RedirectUris = new List<Uri> { new Uri(redirect_uri) },
                 AllowAccessTokensViaBrowser = true,
                 AccessTokenType = AccessTokenType.Reference
             });
@@ -62,7 +63,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Revocation
                 ClientSecrets = { new Secret("secret".Sha256()) },
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "api" },
-                RedirectUris = new List<string> { redirect_uri },
+                RedirectUris = new List<Uri> { new Uri(redirect_uri) },
                 AllowAccessTokensViaBrowser = true,
                 AccessTokenType = AccessTokenType.Reference
             });

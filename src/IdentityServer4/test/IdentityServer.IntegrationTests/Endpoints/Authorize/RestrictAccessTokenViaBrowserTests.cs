@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
@@ -32,7 +33,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = false,
                     AllowedScopes = new List<string> { "openid" },
-                    RedirectUris = new List<string> { "https://client1/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -41,7 +42,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = false,
                     AllowedScopes = new List<string> { "openid" },
-                    RedirectUris = new List<string> { "https://client2/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client2/callback") },
                     AllowAccessTokensViaBrowser = false
                 },
                 new Client
@@ -52,7 +53,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = false,
                     RequirePkce = false,
                     AllowedScopes = new List<string> { "openid" },
-                    RedirectUris = new List<string> { "https://client3/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client3/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -63,7 +64,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = false,
                     RequirePkce = false,
                     AllowedScopes = new List<string> { "openid" },
-                    RedirectUris = new List<string> { "https://client4/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client4/callback") },
                     AllowAccessTokensViaBrowser = false
                 }
             });

@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IdentityModel.Client;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
@@ -33,7 +34,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = false,
                     AllowedScopes = new List<string> { "openid", "profile" },
-                    RedirectUris = new List<string> { "https://client1/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -42,7 +43,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = true,
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client2/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client2/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -51,7 +52,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = false,
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client3/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client3/callback") },
                     AllowAccessTokensViaBrowser = true,
                     IdentityProviderRestrictions = new List<string> { "google" }
                 }
@@ -142,11 +143,11 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 state: "123_state",
                 nonce: "123_nonce",
                 acrValues: "acr_1 acr_2 tenant:tenant_value",
-                extra: new
+                extra: new Parameters
                 {
-                    display = "popup", // must use a valid value form the spec for display
-                    ui_locales = "ui_locale_value",
-                    custom_foo = "foo_value"
+                    { "display", "popup" }, // must use a valid value form the spec for display
+                    { "ui_locales", "ui_locale_value" },
+                    { "custom_foo", "foo_value" }
                 }
             );
             var response = await _mockPipeline.BrowserClient.GetAsync(url);

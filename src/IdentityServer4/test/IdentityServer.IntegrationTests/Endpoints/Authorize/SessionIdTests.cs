@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = false,
                     AllowedScopes = new List<string> { "openid", "profile" },
-                    RedirectUris = new List<string> { "https://client1/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -37,7 +38,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = true,
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client2/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client2/callback") },
                     AllowAccessTokensViaBrowser = true
                 }
             });

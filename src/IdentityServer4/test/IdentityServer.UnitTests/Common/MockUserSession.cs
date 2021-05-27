@@ -32,12 +32,12 @@ namespace IdentityServer.UnitTests.Common
             return Task.FromResult(SessionId);
         }
 
-        public Task<ClaimsPrincipal> GetUserAsync()
+        public Task<ClaimsPrincipal> GetUserAsync(bool recheck = false)
         {
             return Task.FromResult(User);
         }
 
-        Task<string> IUserSession.GetSessionIdAsync()
+        Task<string> IUserSession.GetSessionIdAsync(bool recheck = false)
         {
             return Task.FromResult(SessionId);
         }

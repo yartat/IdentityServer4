@@ -4,10 +4,13 @@
 using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Hosting;
+using IdentityServer4.Models;
 using IdentityServer4.ResponseHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -15,6 +18,8 @@ namespace IdentityServer4.Endpoints
 {
     internal class DiscoveryKeyEndpoint : IEndpointHandler
     {
+        private static readonly ConcurrentDictionary<int, IEnumerable<JsonWebKey>> _responseCache = new ConcurrentDictionary<int, IEnumerable<JsonWebKey>>();
+
         private readonly ILogger _logger;
         private readonly IdentityServerOptions _options;
         private readonly IDiscoveryResponseGenerator _responseGenerator;
@@ -29,7 +34,7 @@ namespace IdentityServer4.Endpoints
             _responseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
         }
 
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing discovery request.");
 
@@ -37,21 +42,21 @@ namespace IdentityServer4.Endpoints
             if (!HttpMethods.IsGet(context.Request.Method))
             {
                 _logger.LogWarning("Discovery endpoint only supports GET requests");
-                return new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
+                return Task.FromResult((IEndpointResult) new StatusCodeResult(HttpStatusCode.MethodNotAllowed));
             }
 
             if (!_options.Discovery.ShowKeySet)
             {
                 _logger.LogInformation("Key discovery disabled. 404.");
-                return new StatusCodeResult(HttpStatusCode.NotFound);
+                return Task.FromResult((IEndpointResult) new StatusCodeResult(HttpStatusCode.NotFound));
             }
 
             // generate response
             _logger.LogTrace("Calling into discovery response generator: {type}", _responseGenerator.GetType().FullName);
-            var response = await _responseGenerator.CreateJwkDocumentAsync();
+            var response = _responseCache.GetOrAdd(1, _ => _responseGenerator.CreateJwkDocumentAsync().GetAwaiter().GetResult());
 
             _logger.LogTrace("Discovery request completed. Return JsonWebKeysResult");
-            return new JsonWebKeysResult(response, _options.Discovery.ResponseCacheInterval);
+            return Task.FromResult((IEndpointResult) new JsonWebKeysResult(response, _options.Discovery.ResponseCacheInterval));
         }
     }
 }

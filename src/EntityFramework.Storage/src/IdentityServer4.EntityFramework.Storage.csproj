@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
 
-    <PackageReference Include="IdentityServer4.Storage" Version="4.0.15-ideals" />
+    <PackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4)" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
@@ -41,18 +41,18 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary3xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary3xx)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary3xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary3xx)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary22x)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary22x)" />
   </ItemGroup>
 
 </Project>

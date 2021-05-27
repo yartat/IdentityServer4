@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -32,7 +33,7 @@ namespace IdentityServer.IntegrationTests.Pipeline
                     AllowedGrantTypes = GrantTypes.Implicit,
                     RequireConsent = true,
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client/callback") },
                     AllowedCorsOrigins = new List<string> { "https://client" }
                 }
             });
