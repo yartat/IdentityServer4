@@ -6,12 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="3.1.12" />
-    
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonJson)" />
 
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.12" />
-    <PackageReference Include="IdentityServer4.EntityFramework" Version="4.0.12-ideals" />
+    <PackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4)" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(DotNetLibrary3xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetLibrary3xx)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.12" PrivateAssets="All" />
     <PackageReference Include="System.Security.Principal.Windows" Version="4.7.0" />
     

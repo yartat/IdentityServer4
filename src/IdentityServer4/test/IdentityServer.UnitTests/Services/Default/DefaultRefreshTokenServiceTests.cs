@@ -15,6 +15,8 @@ namespace IdentityServer.UnitTests.Services.Default
 {
     public class DefaultRefreshTokenServiceTests
     {
+        private const string IpAddress = "192.168.0.1";
+        private const string Device = "test";
         private DefaultRefreshTokenService _subject;
         private DefaultRefreshTokenStore _store;
 
@@ -41,7 +43,7 @@ namespace IdentityServer.UnitTests.Services.Default
             var client = new Client();
             var accessToken = new Token();
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, accessToken, client);
+            var handle = await _subject.CreateRefreshTokenAsync(_user, accessToken, client, IpAddress, Device);
 
             (await _store.GetRefreshTokenAsync(handle)).Should().NotBeNull();
         }
@@ -57,7 +59,7 @@ namespace IdentityServer.UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client, IpAddress, Device);
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -77,7 +79,7 @@ namespace IdentityServer.UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client, IpAddress, Device);
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -96,7 +98,7 @@ namespace IdentityServer.UnitTests.Services.Default
                 SlidingRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client, IpAddress, Device);
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 

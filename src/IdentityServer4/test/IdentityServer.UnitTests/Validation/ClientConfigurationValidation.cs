@@ -148,7 +148,7 @@ namespace IdentityServer.UnitTests.Validation
             {
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.ImplicitAndClientCredentials,
-                RedirectUris = { "https://foo" },
+                RedirectUris = { new Uri("https://foo") },
                 AllowedScopes = { "foo" },
             };
 
@@ -163,7 +163,7 @@ namespace IdentityServer.UnitTests.Validation
             {
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Hybrid,
-                RedirectUris = { "https://foo" },
+                RedirectUris = { new Uri("https://foo") },
                 AllowedScopes = { "foo" },
             };
 
@@ -178,7 +178,7 @@ namespace IdentityServer.UnitTests.Validation
             {
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Code,
-                RedirectUris = { "https://foo" },
+                RedirectUris = { new Uri("https://foo") },
                 AllowedScopes = { "foo" },
             };
 
@@ -194,7 +194,7 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Hybrid,
                 RequireClientSecret = false,
-                RedirectUris = { "https://foo" },
+                RedirectUris = { new Uri("https://foo") },
                 AllowedScopes = { "foo" },
             };
 
@@ -211,7 +211,7 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "foo" },
-                RedirectUris = { "https://foo" }
+                RedirectUris = { new Uri("https://foo") }
             };
 
             var context = await ValidateAsync(client);
@@ -227,7 +227,7 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = { },
                 AllowedScopes = { "foo" },
-                RedirectUris = { "https://foo" }
+                RedirectUris = { new Uri("https://foo") }
             };
 
             var context = await ValidateAsync(client);
@@ -280,7 +280,7 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "foo" },
-                RedirectUris = { "http://callback", "custom://callback" }
+                RedirectUris = { new Uri("http://callback"), new Uri("custom://callback") }
             };
 
             var result = await ValidateAsync(client);
@@ -312,7 +312,7 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "foo" },
-                RedirectUris = { "http://callback", "custom://callback" }
+                RedirectUris = { new Uri("http://callback"), new Uri("custom://callback") }
             };
 
             var result = await ValidateAsync(client);
@@ -329,8 +329,8 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "foo" },
-                RedirectUris = { "http://callback" },
-                PostLogoutRedirectUris = { "http://postcallback", "custom://postcallback" }
+                RedirectUris = { new Uri("http://callback") },
+                PostLogoutRedirectUris = { new Uri("http://postcallback"), new Uri("custom://postcallback") }
             };
 
             var result = await ValidateAsync(client);
@@ -346,8 +346,8 @@ namespace IdentityServer.UnitTests.Validation
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "foo" },
-                RedirectUris = { "http://callback" },
-                PostLogoutRedirectUris = { "http://postcallback", "custom://postcallback" }
+                RedirectUris = { new Uri("http://callback") },
+                PostLogoutRedirectUris = { new Uri("http://postcallback"), new Uri("custom://postcallback") }
             };
 
             var result = await ValidateAsync(client);
@@ -377,7 +377,7 @@ namespace IdentityServer.UnitTests.Validation
             {
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "http://client" },
+                RedirectUris = { new Uri("http://client") },
                 AllowedCorsOrigins = { origin }
             };
 
@@ -410,7 +410,7 @@ namespace IdentityServer.UnitTests.Validation
             {
                 ClientId = "id",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "http://client" },
+                RedirectUris = { new Uri("http://client") },
                 AllowedCorsOrigins = { origin }
             };
 

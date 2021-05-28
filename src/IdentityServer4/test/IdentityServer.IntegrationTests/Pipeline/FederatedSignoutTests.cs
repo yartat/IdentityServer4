@@ -45,9 +45,9 @@ namespace IdentityServer.IntegrationTests.Pipeline
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RequireConsent = false,
                 AllowedScopes = new List<string> { "openid" },
-                RedirectUris = new List<string> { "https://client1/callback" },
+                RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                 FrontChannelLogoutUri = "https://client1/signout",
-                PostLogoutRedirectUris = new List<string> { "https://client1/signout-callback" },
+                PostLogoutRedirectUris = new List<Uri> { new Uri("https://client1/signout-callback") },
                 AllowAccessTokensViaBrowser = true
             });
 

@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityModel;
+using IdentityModel.Client;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -39,7 +40,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = false,
                     
                     AllowedScopes = new List<string> { "openid", "profile" },
-                    RedirectUris = new List<string> { "https://client1/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client1/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -49,7 +50,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = true,
                     
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client2/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client2/callback") },
                     AllowAccessTokensViaBrowser = true
                 },
                 new Client
@@ -59,7 +60,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = false,
                     
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client3/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client3/callback") },
                     AllowAccessTokensViaBrowser = true,
                     EnableLocalLogin = false,
                     IdentityProviderRestrictions = new List<string> { "google" }
@@ -72,7 +73,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                     RequireConsent = false,
                     RequirePkce = false,
                     AllowedScopes = new List<string> { "openid", "profile", "api1", "api2" },
-                    RedirectUris = new List<string> { "https://client4/callback" },
+                    RedirectUris = new List<Uri> { new Uri("https://client4/callback") },
                 },
 
             });
@@ -194,11 +195,11 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 nonce: "123_nonce",
                 loginHint: "login_hint_value",
                 acrValues: "acr_1 acr_2 tenant:tenant_value idp:idp_value",
-                extra: new
+                extra: new Parameters
                 {
-                    display = "popup", // must use a valid value from the spec for display
-                    ui_locales = "ui_locale_value",
-                    custom_foo = "foo_value"
+                    { "display", "popup" }, // must use a valid value from the spec for display
+                    { "ui_locales", "ui_locale_value" },
+                    { "custom_foo", "foo_value" }
                 });
             var response = await _mockPipeline.BrowserClient.GetAsync(url + "&foo=bar");
 
@@ -938,7 +939,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 redirectUri: "https://client1/callback",
                 state: "123_state",
                 nonce: "123_nonce",
-                extra: new { ui_locales = new string('x', 500) });
+                extra: new Parameters { { "ui_locales", new string('x', 500) } });
             await _mockPipeline.BrowserClient.GetAsync(url);
 
             _mockPipeline.ErrorWasCalled.Should().BeTrue();
@@ -961,7 +962,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 redirectUri: "https://client1/callback",
                 state: "123_state",
                 nonce: "123_nonce",
-                extra: new { max_age = "invalid" });
+                extra: new Parameters { { "max_age", "invalid" } });
             await _mockPipeline.BrowserClient.GetAsync(url);
 
             _mockPipeline.ErrorWasCalled.Should().BeTrue();
@@ -984,7 +985,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 redirectUri: "https://client1/callback",
                 state: "123_state",
                 nonce: "123_nonce",
-                extra: new { max_age = "-10" });
+                extra: new Parameters { { "max_age", "-10" } });
             await _mockPipeline.BrowserClient.GetAsync(url);
 
             _mockPipeline.ErrorWasCalled.Should().BeTrue();
@@ -1077,7 +1078,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 state: "123_state",
                 nonce: "123_nonce",
                 acrValues: new string('x', 500),
-                extra: new { ui_locales = "fr-FR" });
+                extra: new Parameters { { "ui_locales", "fr-FR" } });
             await _mockPipeline.BrowserClient.GetAsync(url);
 
             _mockPipeline.ErrorWasCalled.Should().BeTrue();
@@ -1098,7 +1099,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
                 state: "123_state",
                 nonce: "123_nonce",
                 acrValues: new string('x', 500),
-                extra: new { display = "popup" });
+                extra: new Parameters { { "display", "popup" } });
             await _mockPipeline.BrowserClient.GetAsync(url);
 
             _mockPipeline.ErrorWasCalled.Should().BeTrue();

@@ -39,10 +39,10 @@ namespace IdentityServer.IntegrationTests.Conformance.Basic
 
                 RequireConsent = false,
                 RequirePkce = false,
-                RedirectUris = new List<string>
+                RedirectUris = new List<Uri>
                 {
-                    "https://code_pipeline.Client/callback",
-                    "https://code_pipeline.Client/callback?foo=bar&baz=quux"
+                    new Uri("https://code_pipeline.Client/callback"),
+                    new Uri("https://code_pipeline.Client/callback?foo=bar&baz=quux")
                 }
             });
 

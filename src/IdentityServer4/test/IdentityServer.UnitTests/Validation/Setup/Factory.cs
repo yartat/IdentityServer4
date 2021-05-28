@@ -104,14 +104,16 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 options,
                 authorizationCodeStore,
                 resourceOwnerValidator,
-                profile,
                 deviceCodeValidator,
                 aggregateExtensionGrantValidator,
                 customRequestValidator,
                 resourceValidator,
                 resourceStore,
                 tokenValidator,
-                new TestEventService(), new StubClock(), TestLogger.Create<TokenRequestValidator>());
+                new TestEventService(),
+                new StubClock(),
+
+                TestLogger.Create<TokenRequestValidator>());
         }
 
         internal static IResourceValidator CreateResourceValidator(IResourceStore store = null)
@@ -266,9 +268,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 clock: clock,
                 profile: profile,
                 referenceTokenStore: store,
-                refreshTokenStore: refreshTokenStore,
+                refreshTokenService: refreshTokenStore,
                 customValidator: new DefaultCustomTokenValidator(),
-                    keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
+                keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
                 logger: logger,
                 options: options,
                 context: context);

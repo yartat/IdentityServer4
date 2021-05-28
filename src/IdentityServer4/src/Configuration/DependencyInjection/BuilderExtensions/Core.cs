@@ -1,31 +1,30 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4;
 using IdentityServer4.Configuration;
 using IdentityServer4.Configuration.DependencyInjection;
 using IdentityServer4.Endpoints;
 using IdentityServer4.Events;
+using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
+using IdentityServer4.Hosting.FederatedSignOut;
+using IdentityServer4.Models;
 using IdentityServer4.ResponseHandling;
 using IdentityServer4.Services;
+using IdentityServer4.Services.Default;
 using IdentityServer4.Stores;
 using IdentityServer4.Stores.Serialization;
 using IdentityServer4.Validation;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
 using static IdentityServer4.Constants;
-using IdentityServer4.Extensions;
-using IdentityServer4.Hosting.FederatedSignOut;
-using IdentityServer4.Services.Default;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -41,9 +40,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddRequiredPlatformServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services
                 .AddOptions()
+                .AddHttpContextAccessor()
                 .AddSingleton(resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value)
                 .AddHttpClient();
 
@@ -65,8 +64,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services
                 .AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>()
                 .AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>()
-                .AddTransientDecorator<IAuthenticationService, IdentityServerAuthenticationService>()
-                .AddTransientDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
+                .AddScopedDecorator<IAuthenticationService, IdentityServerAuthenticationService>()
+                .AddScopedDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
 
             return builder;
         }
@@ -140,7 +139,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddTransient(typeof(MessageCookie<>))
 
                 .AddCors()
-                .AddTransientDecorator<ICorsPolicyProvider, CorsPolicyProvider>();
+                .AddScopedDecorator<ICorsPolicyProvider, CorsPolicyProvider>();
 
             return builder;
         }
@@ -276,6 +275,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .AddDecorator<TService>()
                 .AddTransient<TService, TImplementation>();
+
+        internal static IServiceCollection AddScopedDecorator<TService, TImplementation>(this IServiceCollection services)
+            where TService : class
+            where TImplementation : class, TService =>
+            services
+                .AddDecorator<TService>()
+                .AddScoped<TService, TImplementation>();
 
         internal static IServiceCollection AddDecorator<TService>(this IServiceCollection services)
         {

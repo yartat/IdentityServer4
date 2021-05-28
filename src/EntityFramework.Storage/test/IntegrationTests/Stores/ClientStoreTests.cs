@@ -80,9 +80,9 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
                 Claims = {new ClientClaim("test", "value")},
                 ClientSecrets = {new Secret("secret".Sha256())},
                 IdentityProviderRestrictions = {"AD"},
-                PostLogoutRedirectUris = {"https://locahost/signout-callback"},
+                PostLogoutRedirectUris = { new Uri("https://locahost/signout-callback") },
                 Properties = {{"foo1", "bar1"}, {"foo2", "bar2"},},
-                RedirectUris = {"https://locahost/signin"}
+                RedirectUris = { new Uri("https://locahost/signin") }
             };
 
             using (var context = new ConfigurationDbContext(options, StoreOptions))
@@ -114,8 +114,8 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
 
             for (int i = 0; i < 50; i++)
             {
-                testClient.RedirectUris.Add($"https://localhost/{i}");
-                testClient.PostLogoutRedirectUris.Add($"https://localhost/{i}");
+                testClient.RedirectUris.Add(new Uri($"https://localhost/{i}"));
+                testClient.PostLogoutRedirectUris.Add(new Uri($"https://localhost/{i}"));
                 testClient.AllowedCorsOrigins.Add($"https://localhost:{i}");
             }
 

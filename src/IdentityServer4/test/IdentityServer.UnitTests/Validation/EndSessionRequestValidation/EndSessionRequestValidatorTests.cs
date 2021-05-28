@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
@@ -97,7 +98,7 @@ namespace IdentityServer.UnitTests.Validation.EndSessionRequestValidation
             {
                 IsError = false,
                 Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo" } }
+                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo") } }
             };
             _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
@@ -116,7 +117,7 @@ namespace IdentityServer.UnitTests.Validation.EndSessionRequestValidation
             {
                 IsError = false,
                 Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo", "bar" } }
+                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo"), new Uri("bar") } }
             };
             _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 

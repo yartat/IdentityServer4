@@ -23,25 +23,14 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
         private const string Category = "Authorize Endpoint";
 
         private HttpContext _context;
-
         private TestEventService _fakeEventService = new TestEventService();
-
         private ILogger<AuthorizeEndpoint> _fakeLogger = TestLogger.Create<AuthorizeEndpoint>();
-
         private MockUserSession _mockUserSession = new MockUserSession();
-
         private NameValueCollection _params = new NameValueCollection();
-
         private StubAuthorizeRequestValidator _stubAuthorizeRequestValidator = new StubAuthorizeRequestValidator();
-
         private StubAuthorizeResponseGenerator _stubAuthorizeResponseGenerator = new StubAuthorizeResponseGenerator();
-
-        private StubAuthorizeInteractionResponseGenerator _stubInteractionGenerator = new StubAuthorizeInteractionResponseGenerator();
-
         private AuthorizeEndpoint _subject;
-
         private ClaimsPrincipal _user = new IdentityServerUser("bob").CreatePrincipal();
-
         private ValidatedAuthorizeRequest _validatedAuthorizeRequest;
 
         public AuthorizeEndpointTests()
@@ -100,9 +89,6 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
             _subject = new AuthorizeEndpoint(
                 _fakeEventService,
                 _fakeLogger,
-                _stubAuthorizeRequestValidator,
-                _stubInteractionGenerator,
-                _stubAuthorizeResponseGenerator,
                 _mockUserSession);
         }
     }

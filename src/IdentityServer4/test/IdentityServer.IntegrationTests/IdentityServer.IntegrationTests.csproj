@@ -14,10 +14,10 @@
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
 
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(DotNetLibrary5xx)" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="$(OpenIdConnect)" />
     
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdk)" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>

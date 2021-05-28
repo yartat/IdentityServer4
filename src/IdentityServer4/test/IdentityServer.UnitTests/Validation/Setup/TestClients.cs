@@ -1,7 +1,7 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using System;
 using System.Collections.Generic;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -30,9 +30,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                     RequireConsent = false,
                     RequirePkce = false,
 
-                    RedirectUris = new List<string>
+                    RedirectUris = new List<Uri>
                     {
-                        "https://server/cb"
+                        new Uri("https://server/cb")
                     },
 
                     AuthorizationCodeLifetime = 60
@@ -53,9 +53,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                     RequireConsent = false,
 
-                    RedirectUris = new List<string>
+                    RedirectUris = new List<Uri>
                     {
-                        "https://server/cb"
+                        new Uri("https://server/cb")
                     },
 
                     AuthorizationCodeLifetime = 60
@@ -76,9 +76,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                     RequireConsent = false,
 
-                    RedirectUris = new List<string>
+                    RedirectUris = new List<Uri>
                     {
-                        "https://server/cb"
+                        new Uri("https://server/cb")
                     },
 
                     AuthorizationCodeLifetime = 60
@@ -100,9 +100,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                     RequireConsent = false,
 
-                    RedirectUris = new List<string>
+                    RedirectUris = new List<Uri>
                     {
-                        "https://server/cb"
+                        new Uri("https://server/cb")
                     },
 
                     AuthorizationCodeLifetime = 60
@@ -124,9 +124,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         RequireConsent = false,
                         RequirePkce = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "https://server/cb"
+                            new Uri("https://server/cb")
                         },
 
                         AuthorizationCodeLifetime = 60
@@ -148,9 +148,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                         RequireConsent = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "https://server/cb"
+                            new Uri("https://server/cb")
                         },
 
                         AuthorizationCodeLifetime = 60
@@ -172,9 +172,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         RequireConsent = false,
                         RequirePkce = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "https://server/cb"
+                            new Uri("https://server/cb")
                         },
 
                         AuthorizationCodeLifetime = 60
@@ -190,9 +190,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                         RequireConsent = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "oob://implicit/cb"
+                            new Uri("oob://implicit/cb")
                         }
                     },
                     new Client
@@ -206,9 +206,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
                         RequireConsent = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "oob://implicit/cb"
+                            new Uri("oob://implicit/cb")
                         }
                     },
                     new Client
@@ -225,9 +225,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         AllowedScopes = { "openid", "profile", "resource", "resource2" },
                         RequireConsent = false,
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "oob://implicit/cb"
+                            new Uri("oob://implicit/cb")
                         }
                     },
                     new Client
@@ -249,9 +249,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                             "openid"
                         },
 
-                        RedirectUris = new List<string>
+                        RedirectUris = new List<Uri>
                         {
-                            "https://server/cb"
+                            new Uri("https://server/cb")
                         }
                     },
                     new Client
@@ -457,7 +457,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         },
 
                         AllowedGrantTypes = GrantTypes.Implicit,
-                        RedirectUris = { "https://notused" },
+                        RedirectUris = { new Uri("https://notused") },
                         AllowedScopes = { "openid", "profile", "resource", "resource2" },
 
                         AccessTokenType = AccessTokenType.Reference
@@ -470,7 +470,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         AllowedGrantTypes = GrantTypes.Implicit,
                         Enabled = true,
                         AllowedScopes = { "openid", "profile", "resource", "resource2" },
-                        RedirectUris = { "http://wsfed/callback"  }
+                        RedirectUris = { new Uri("http://wsfed/callback") }
                     },
                     new Client
                     {
@@ -488,14 +488,14 @@ namespace IdentityServer.UnitTests.Validation.Setup
                         ClientId = "client.implicit",
                         ClientName = "Implicit Client",
                         AllowedGrantTypes = GrantTypes.Implicit,
-                        RedirectUris = { "https://notused" },
+                        RedirectUris = { new Uri("https://notused") },
                         AllowedScopes = { "openid", "profile", "resource", "resource2" }
                     },
                     new Client
                     {
                         ClientId = "implicit_and_client_creds",
                         AllowedGrantTypes = GrantTypes.ImplicitAndClientCredentials,
-                        RedirectUris = { "https://notused" },
+                        RedirectUris = { new Uri("https://notused") },
                         AllowedScopes = {"api1"}
                     },
                     new Client
