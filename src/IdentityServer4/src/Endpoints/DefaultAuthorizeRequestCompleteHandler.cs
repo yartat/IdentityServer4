@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Specialized;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints
@@ -51,7 +52,10 @@ namespace IdentityServer4.Endpoints
         }
 
         /// <inheritdoc/>
-        public async Task<IEndpointResult> ProcessCompleteAuthorizeRequestAsync(NameValueCollection parameters, HttpContext context)
+        public async Task<IEndpointResult> ProcessCompleteAuthorizeRequestAsync(
+            NameValueCollection parameters,
+            HttpContext context,
+            ClaimsPrincipal principal = null)
         {
             _logger.LogTrace("Processing complete authorize request");
             if (_authorizationParametersMessageStore != null)
@@ -66,7 +70,7 @@ namespace IdentityServer4.Endpoints
             }
 
             _logger.LogTrace("Get user session");
-            var user = await _userSession.GetUserAsync();
+            var user = principal ?? await _userSession.GetUserAsync();
             var consentRequest = new ConsentRequest(parameters, user?.GetSubjectId());
             var consent = await _consentResponseStore.ReadAsync(consentRequest.Id);
 

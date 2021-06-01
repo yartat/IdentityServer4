@@ -28,6 +28,11 @@ namespace IdentityServer4
             /// The authentication item device
             /// </summary>
             public const string Device = "device";
+
+            /// <summary>
+            /// The authentication skip create session
+            /// </summary>
+            public const string SkipCreateSession = "skipSession";
         }
     }
 
@@ -287,7 +292,7 @@ namespace IdentityServer4
             public const string UnsupportedTokenType = "unsupported_token_type";
         }
 
-        public class Filters
+        public static class Filters
         {
             // filter for claims from an incoming access token (e.g. used at the user profile endpoint)
             public static readonly string[] ProtocolClaimsFilter = {
