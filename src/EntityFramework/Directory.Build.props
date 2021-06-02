@@ -8,7 +8,7 @@
     <DotNetLibrary5xx>5.0.6</DotNetLibrary5xx>
     <OpenIdConnect>6.11.1</OpenIdConnect>
     <JsonLib>5.0.2</JsonLib>
-    <IdentityServer4>4.0.16-ideals</IdentityServer4>
+    <IdentityServer4>4.0.17-ideals</IdentityServer4>
     <IdentityModel>5.1.0</IdentityModel>
     <NewtonJson>12.0.3</NewtonJson>
     <TestSdk>16.9.4</TestSdk>
