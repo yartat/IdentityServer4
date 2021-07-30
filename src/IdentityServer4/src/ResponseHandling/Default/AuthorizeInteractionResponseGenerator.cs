@@ -120,7 +120,8 @@ namespace IdentityServer4.ResponseHandling
             var isAuthenticated = request.Subject.IsAuthenticated();
 
             // user de-activated
-            bool isActive = false;
+            var isActive = false;
+            string errorCode = null;
 
             if (isAuthenticated)
             {
@@ -130,6 +131,7 @@ namespace IdentityServer4.ResponseHandling
                     await Profile.IsActiveAsync(isActiveCtx);
 
                     isActive = isActiveCtx.IsActive;
+                    errorCode = isActiveCtx.Error;
                 }
                 else
                 {
@@ -154,7 +156,7 @@ namespace IdentityServer4.ResponseHandling
 
                     return new InteractionResponse
                     {
-                        Error = OidcConstants.AuthorizeErrors.LoginRequired
+                        Error = errorCode ?? OidcConstants.AuthorizeErrors.LoginRequired
                     };
                 }
 
