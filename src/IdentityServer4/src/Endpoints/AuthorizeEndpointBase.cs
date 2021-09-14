@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityModel;
+using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -24,6 +25,7 @@ namespace IdentityServer4.Endpoints
     {
         private readonly IAuthorizeResponseGenerator _authorizeResponseGenerator;
         private readonly IEventService _events;
+        private readonly IdentityServerOptions _options;
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
         private readonly IAuthorizeRequestValidator _validator;
         private readonly ILoginUrlProcessor _loginUrlProcessor;
@@ -31,6 +33,7 @@ namespace IdentityServer4.Endpoints
         protected AuthorizeEndpointBase(
             IEventService events,
             ILogger<AuthorizeEndpointBase> logger,
+            IdentityServerOptions options,
             IAuthorizeRequestValidator validator,
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
@@ -38,6 +41,7 @@ namespace IdentityServer4.Endpoints
             ILoginUrlProcessor loginUrlProcessor = null)
         {
             _events = events;
+            _options = options;
             Logger = logger;
             _validator = validator;
             _interactionGenerator = interactionGenerator;
@@ -124,7 +128,7 @@ namespace IdentityServer4.Endpoints
 
             if (request != null)
             {
-                var details = new AuthorizeRequestValidationLog(request);
+                var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
                 Logger.LogInformation("{@validationDetails}", details);
             }
 
@@ -142,7 +146,7 @@ namespace IdentityServer4.Endpoints
 
         private void LogRequest(ValidatedAuthorizeRequest request)
         {
-            var details = new AuthorizeRequestValidationLog(request);
+            var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
             Logger.LogDebug(nameof(ValidatedAuthorizeRequest) + Environment.NewLine + "{@validationDetails}", details);
         }
 
@@ -183,10 +187,8 @@ namespace IdentityServer4.Endpoints
                 LogTokens(response);
                 return _events.RaiseAsync(new TokenIssuedSuccessEvent(response));
             }
-            else
-            {
-                return RaiseFailureEventAsync(response.Request, response.Error, response.ErrorDescription);
-            }
+
+            return RaiseFailureEventAsync(response.Request, response.Error, response.ErrorDescription);
         }
     }
 }

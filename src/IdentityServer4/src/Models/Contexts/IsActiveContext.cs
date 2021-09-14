@@ -17,14 +17,14 @@ namespace IdentityServer4.Models
         /// </summary>
         public IsActiveContext(ClaimsPrincipal subject, Client client, string caller)
         {
-            if (caller.IsMissing())
-            {
-                throw new ArgumentNullException(nameof(caller));
-            }
+            if (subject == null) throw new ArgumentNullException(nameof(subject));
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            if (caller.IsMissing()) throw new ArgumentNullException(nameof(caller));
 
-            Subject = subject ?? throw new ArgumentNullException(nameof(subject));
-            Client = client ?? throw new ArgumentNullException(nameof(client));
+            Subject = subject;
+            Client = client;
             Caller = caller;
+            
             IsActive = true;
         }
 

@@ -29,8 +29,11 @@ IIdentityServerInteractionService APIs
 ``GrantConsentAsync``
     Accepts a ``ConsentResponse`` to inform IdentityServer of the user's consent to a particular ``AuthorizationRequest``.
 
-``GetAllUserConsentsAsync``
-    Returns a collection of ``Consent`` for the user.
+``DenyAuthorizationAsync``
+    Accepts a ``AuthorizationError`` to inform IdentityServer of the error to return to the client for a particular ``AuthorizationRequest``.
+
+``GetAllUserGrantsAsync``
+    Returns a collection of ``Grant`` for the user. These represent a user's consent or a clients access to a user's resource.
 
 ``RevokeUserConsentAsync``
     Revokes all of a user's consents and grants for a client.
@@ -40,8 +43,8 @@ IIdentityServerInteractionService APIs
 
 AuthorizationRequest
 ^^^^^^^^^^^^^^^^^^^^
-``ClientId``
-    The client identifier that initiated the request.
+``Client``
+    The client that initiated the request.
 ``RedirectUri``
     The URI to redirect the user to after successful authorization.
 ``DisplayMode``
@@ -49,23 +52,34 @@ AuthorizationRequest
 ``UiLocales``
     The UI locales passed from the authorization request.
 ``IdP``
-    The external identity provider requested. 
-    This is used to bypass home realm discovery (HRD). 
+    The external identity provider requested.
+    This is used to bypass home realm discovery (HRD).
     This is provided via the "idp:" prefix to the ``acr_values`` parameter on the authorize request.
 ``Tenant``
     The tenant requested.
     This is provided via the "tenant:" prefix to the ``acr_values`` parameter on the authorize request.
 ``LoginHint``
-    The expected username the user will use to login. 
+    The expected username the user will use to login.
     This is requested from the client via the ``login_hint`` parameter on the authorize request.
 ``PromptMode``
     The prompt mode requested from the authorization request.
 ``AcrValues``
     The acr values passed from the authorization request.
-``ScopesRequested``
-    The scopes requested from the authorization request.
+``ValidatedResources``
+    The ``ResourceValidationResult`` which represents the validated resources from the authorization request.
 ``Parameters``
     The entire parameter collection passed to the authorization request.
+``RequestObjectValues``
+    The validated contents of the request object (if present).
+
+ResourceValidationResult
+^^^^^^^^^^^^^^^^^^^^^^^^
+``Resources``
+    The resources of the result.
+``ParsedScopes``
+    The parsed scopes represented by the result.
+``RawScopeValues``
+    The original (raw) scope values represented by the validated result.
 
 ErrorMessage
 ^^^^^^^^^^^^
@@ -95,20 +109,28 @@ LogoutRequest
 
 ConsentResponse
 ^^^^^^^^^^^^^^^
-``ScopesConsented``
+``ScopesValuesConsented``
     The collection of scopes the user consented to.
 ``RememberConsent``
     Flag indicating if the user's consent is to be persisted.
+``Description``
+    Optional description the user can set for the grant (e.g. the name of the device being used when consent is given). This can be presented back to the user from the :ref:`persisted grant service <refPersistedGrants>`.
+``Error``
+    Error, if any, for the consent response. This will be returned to the client in the authorization response.
+``ErrorDescription``
+    Error description. This will be returned to the client in the authorization response.
 
-Consent
-^^^^^^^
+Grant
+^^^^^
 ``SubjectId``
-    The subject id that granted the consent.
+    The subject id that allowed the grant.
 ``ClientId``
-    The client identifier for the consent.
+    The client identifier for the grant.
+``Description``
+    The description the user assigned to the client or device being authorized.
 ``Scopes``
-    The collection of scopes consented to.
+    The collection of scopes granted.
 ``CreationTime``
-    The date and time when the consent was granted.
+    The date and time when the grant was granted.
 ``Expiration``
-    The date and time when the consent will expire.
+    The date and time when the grant will expire.

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <AssemblyOriginatorKeyFile>../../../../key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -17,20 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="5.10.3" />
-
-    <PackageReference Include="IdentityServer4" Version="$(IdentityServer4)" />
-    <PackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4)" />
+    <PackageReference Include="IdentityServer4" />
+    <PackageReference Include="IdentityServer4.Storage" />
     
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetLibrary5xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(DotNetLibrary5xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetLibrary5xx)" />
-
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdk)" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>  
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
   </ItemGroup>
 </Project>

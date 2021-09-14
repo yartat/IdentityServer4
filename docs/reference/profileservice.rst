@@ -42,13 +42,13 @@ The scopes requested by the client control what user claims are returned in the 
 The ``GetProfileDataAsync`` method is responsible for dynamically obtaining those claims based on the ``RequestedClaimTypes`` collection on the ``ProfileDataRequestContext``.
 
 The ``RequestedClaimTypes`` collection is populated based on the user claims defined on the :ref:`resources <refResources>` that model the scopes.
-If the scopes requested are an :ref:`identity resources <refIdentityResource>`, then the claims in the ``RequestedClaimTypes`` will be populated based on the user claim types defined in the ``IdentityResource``.
-If the scopes requested are an :ref:`API resources <refApiResource>`, then the claims in the ``RequestedClaimTypes`` will be populated based on the user claim types defined in the ``ApiResource`` and/or the ``Scope``.
+If requesting an identity token and the scopes requested are an :ref:`identity resources <refIdentityResource>`, then the claims in the ``RequestedClaimTypes`` will be populated based on the user claim types defined in the ``IdentityResource``.
+If requesting an access token and the scopes requested are an :ref:`API resources <refApiResource>`, then the claims in the ``RequestedClaimTypes`` will be populated based on the user claim types defined in the ``ApiResource`` and/or the ``Scope``.
 
 IsActiveContext
 ^^^^^^^^^^^^^^^
 
-Models the request to determine is the user is currently allowed to obtain tokens. It contains these properties:
+Models the request to determine if the user is currently allowed to obtain tokens. It contains these properties:
 
 ``Subject``
     The ``ClaimsPrincipal`` modeling the user.

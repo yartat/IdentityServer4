@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.Events;
+using IdentityServer4.Extensions;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -36,11 +37,31 @@ namespace IdentityServer4.Hosting
         /// <param name="router">The router.</param>
         /// <param name="session">The user session.</param>
         /// <param name="events">The event service.</param>
-        public async Task Invoke(HttpContext context, IEndpointRouter router, IUserSession session, IEventService events)
+        /// <param name="backChannelLogoutService"></param>
+        /// <returns></returns>
+        public async Task Invoke(HttpContext context, IEndpointRouter router, IUserSession session, IEventService events, IBackChannelLogoutService backChannelLogoutService)
         {
             // this will check the authentication session and from it emit the check session
             // cookie needed from JS-based signout clients.
             await session.EnsureSessionIdCookieAsync();
+
+            context.Response.OnStarting(async () =>
+            {
+                if (context.GetSignOutCalled())
+                {
+                    _logger.LogDebug("SignOutCalled set; processing post-signout session cleanup.");
+
+                    // this clears our session id cookie so JS clients can detect the user has signed out
+                    await session.RemoveSessionIdCookieAsync();
+
+                    // back channel logout
+                    var logoutContext = await session.GetLogoutNotificationContext();
+                    if (logoutContext != null)
+                    {
+                        await backChannelLogoutService.SendLogoutNotificationsAsync(logoutContext);
+                    }
+                }
+            });
 
             try
             {
@@ -50,6 +71,7 @@ namespace IdentityServer4.Hosting
                 {
                     _logger.LogTrace("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
                     var result = await endpoint.ProcessAsync(context);
+
                     if (result != null)
                     {
                         _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);

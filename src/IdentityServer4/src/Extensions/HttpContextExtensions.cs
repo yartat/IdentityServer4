@@ -175,21 +175,21 @@ namespace IdentityServer4.Extensions
             var user = await userSession.GetUserAsync();
             var currentSubId = user?.GetSubjectId();
 
-            EndSession endSessionMsg = null;
+            LogoutNotificationContext endSessionMsg = null;
 
             // if we have a logout message, then that take precedence over the current user
             if (logoutMessage?.ClientIds?.Any() == true)
             {
                 var clientIds = logoutMessage?.ClientIds;
 
-                // check if current user is same, since we migth have new clients (albeit unlikely)
+                // check if current user is same, since we might have new clients (albeit unlikely)
                 if (currentSubId == logoutMessage?.SubjectId)
                 {
                     clientIds = clientIds.Union(await userSession.GetClientListAsync());
                     clientIds = clientIds.Distinct();
                 }
 
-                endSessionMsg = new EndSession
+                endSessionMsg = new LogoutNotificationContext
                 {
                     SubjectId = logoutMessage.SubjectId,
                     SessionId = logoutMessage.SessionId,
@@ -202,7 +202,7 @@ namespace IdentityServer4.Extensions
                 var clientIds = await userSession.GetClientListAsync();
                 if (clientIds.Any())
                 {
-                    endSessionMsg = new EndSession
+                    endSessionMsg = new LogoutNotificationContext
                     {
                         SubjectId = currentSubId,
                         SessionId = await userSession.GetSessionIdAsync(),
@@ -214,12 +214,12 @@ namespace IdentityServer4.Extensions
             if (endSessionMsg != null)
             {
                 var clock = context.RequestServices.GetRequiredService<ISystemClock>();
-                var msg = new Message<EndSession>(endSessionMsg, clock.UtcNow.UtcDateTime);
+                var msg = new Message<LogoutNotificationContext>(endSessionMsg, clock.UtcNow.UtcDateTime);
 
-                var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<EndSession>>();
+                var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<LogoutNotificationContext>>();
                 var id = await endSessionMessageStore.WriteAsync(msg);
 
-                var signoutIframeUrl = context.GetIdentityServerBaseUri() + Constants.ProtocolRoutePaths.EndSessionCallback;
+                var signoutIframeUrl = context.GetIdentityServerBaseUri().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
                 signoutIframeUrl = signoutIframeUrl.AddQueryString(Constants.UIConstants.DefaultRoutePathParams.EndSessionCallback, id);
 
                 return signoutIframeUrl;

@@ -1,3 +1,7 @@
+# Important update
+As of Oct 1st 2020, we started a new [company](https://duendesoftware.com/). All new feature work will happen in our new [organization](https://github.com/duendesoftware).
+The new Duende IdentityServer is available under both a FOSS (RPL) and a commercial license. Development and testing is always free. [Contact](https://duendesoftware.com/contact) us for more information. This repo will be maintained with bug fixes and security updates until November 2022.
+
 ## About IdentityServer4
 [<img align="right" width="100px" src="https://dotnetfoundation.org/img/logo_big.svg" />](https://dotnetfoundation.org/projects?searchquery=IdentityServer&type=project)
 
@@ -8,18 +12,15 @@ It is part of the [.NET Foundation](https://www.dotnetfoundation.org/), and oper
 
 For project documentation, please visit [readthedocs](https://identityserver4.readthedocs.io).
 
-[![Build Status](https://dev.azure.com/netidentity/IdentityServer/_apis/build/status/IdentityServer4?branchName=master)](https://dev.azure.com/netidentity/IdentityServer/_build/latest?definitionId=1&branchName=master)
-[![Documentation Status](https://readthedocs.org/projects/identityserver4/badge/?version=latest)](http://docs.identityserver.io/en/latest/?badge=latest)
-
 ## Branch structure
-Active development happens on the master branch. This always contains the latest version. Each (pre-) release is tagged with the corresponding version. The [aspnetcore1](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore1) and [aspnetcore2](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore2) branches contain the latest versions of the older ASP.NET Core based versions.
+Active development happens on the main branch. This always contains the latest version. Each (pre-) release is tagged with the corresponding version. The [aspnetcore1](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore1) and [aspnetcore2](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore2) branches contain the latest versions of the older ASP.NET Core based versions.
 
 ## How to build
-IdentityServer is built against the latest ASP.NET Core 3.
 
-* [Install](https://www.microsoft.com/net/download/core#/current) the [required](https://github.com/IdentityServer/IdentityServer4/blob/master/global.json) .NET Core SDK
+* [Install](https://www.microsoft.com/net/download/core#/current) the latest .NET Core 3.1 SDK
 * Install Git
-* Run `build.ps1` or `build.sh` in the root of the repo
+* Clone this repo
+* Run `build.ps1` or `build.sh` in the root of the cloned repo
 
 ## Documentation
 For project documentation, please visit [readthedocs](https://identityserver4.readthedocs.io).
@@ -44,15 +45,15 @@ This will help us devote more time to answering questions and doing feature deve
 
 ### Corporate Sponsors
 [Ritter Insurance Marketing](https://www.ritterim.com)  
-[Intuit](https://www.intuit.com)  
 [ExtraNetUserManager](https://www.extranetusermanager.com/)  
+[Knab](https://www.knab.nl/)
 
-You can see a list of our current sponsors [here](https://github.com/IdentityServer/IdentityServer4/blob/master/SPONSORS.md) - and for companies we have some nice advertisement options as well.
+You can see a list of our current sponsors [here](https://github.com/IdentityServer/IdentityServer4/blob/main/SPONSORS.md) - and for companies we have some nice advertisement options as well.
 
 ## Acknowledgements
 IdentityServer4 is built using the following great open source projects and free services:
 
-* [ASP.NET Core](https://github.com/aspnet)
+* [ASP.NET Core](https://github.com/dotnet/aspnetcore)
 * [Bullseye](https://github.com/adamralph/bullseye)
 * [SimpleExec](https://github.com/adamralph/simple-exec)
 * [MinVer](https://github.com/adamralph/minver)

@@ -81,7 +81,7 @@ namespace IdentityServer4.Services
                     IdentityServerConstants.ProfileDataCallers.ClaimsProviderIdentityToken,
                     additionalClaimTypes)
                 {
-                    RequestedResources = request.ValidatedResources,
+                    RequestedResources = resources,
                     ValidatedRequest = request
                 };
 
@@ -102,7 +102,7 @@ namespace IdentityServer4.Services
         }
 
         /// <summary>
-        /// Returns claims for an identity token.
+        /// Returns claims for an access token.
         /// </summary>
         /// <param name="subject">The subject.</param>
         /// <param name="resourceResult">The validated resource result</param>
@@ -114,7 +114,7 @@ namespace IdentityServer4.Services
         {
             Logger.LogDebug("Getting claims for access token for client: {clientId}", request.Client.ClientId);
 
-            var outputClaims = new List<Claim>()
+            var outputClaims = new List<Claim>
             {
                 new Claim(JwtClaimTypes.ClientId, request.ClientId)
             };
@@ -147,7 +147,7 @@ namespace IdentityServer4.Services
             // add scopes (filter offline_access)
             // we use the ScopeValues collection rather than the Resources.Scopes because we support dynamic scope values 
             // from the request, so this issues those in the token.
-            foreach (var scope in resourceResult.ScopeValues.Where(x => x != IdentityServerConstants.StandardScopes.OfflineAccess))
+            foreach (var scope in resourceResult.RawScopeValues.Where(x => x != IdentityServerConstants.StandardScopes.OfflineAccess))
             {
                 outputClaims.Add(new Claim(JwtClaimTypes.Scope, scope));
             }

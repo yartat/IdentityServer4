@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -41,10 +41,12 @@ namespace IdentityServer4.Models
             {
                 IdentityResources = new HashSet<IdentityResource>(identityResources.ToArray());
             }
+
             if (apiResources?.Any() == true)
             {
                 ApiResources = new HashSet<ApiResource>(apiResources.ToArray());
             }
+
             if (apiScopes?.Any() == true)
             {
                 ApiScopes = new HashSet<ApiScope>(apiScopes.ToArray());

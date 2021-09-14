@@ -3,12 +3,25 @@ Blog posts
 
 Team posts
 ^^^^^^^^^^
+2020
+----
+* `Flexible Access Token Validation in ASP.NET Core <https://leastprivilege.com/2020/07/06/flexible-access-token-validation-in-asp-net-core/>`_
+* `Resource Access in IdentityServer4 v4 and going forward <https://leastprivilege.com/2020/06/18/resource-access-in-identityserver4-v4-and-going-forward/>`_
+* `Automatic Token Management for ASP.NET Core and Worker Services 1.0 <https://leastprivilege.com/2020/05/18/automatic-token-management-for-asp-net-core-and-worker-services-1-0/>`_
+* `Mutual TLS and Proof-of-Possession Tokens: Summary <https://leastprivilege.com/2020/02/12/mutual-tls-and-proof-of-possession-tokens-summary/>`_
+* `Mutual TLS and Proof-of-Possession Access Tokens – Part 1: Setup <https://leastprivilege.com/2020/02/07/mutual-tls-and-proof-of-possession-access-tokens-part-1-setup/>`_
+* `Hardening OpenID Connect/OAuth Authorize Requests (and Responses) <https://leastprivilege.com/2020/02/04/hardening-openid-connect-oauth-authorize-requests-and-responses/>`_
+* `Hardening Refresh Tokens <https://leastprivilege.com/2020/01/21/hardening-refresh-tokens/>`_
+* `OAuth 2.0: The long Road to Proof-of-Possession Access Tokens <https://leastprivilege.com/2020/01/15/oauth-2-0-the-long-road-to-proof-of-possession-access-tokens/>`_
+* `Outsourcing IdentityServer4 Token Signing to Azure Key Vault <https://www.scottbrady91.com/Identity-Server/Outsourcing-IdentityServer4-Token-Signing-to-Azure-Key-Vault>`_
+* `Using ECDSA in IdentityServer4 <https://www.scottbrady91.com/Identity-Server/Using-ECDSA-in-IdentityServer4>`_
+
 2019
 ----
 * `Scope and claims design in IdentityServer <https://brockallen.com/2019/02/25/scope-and-claims-design-in-identityserver/>`_
 * `Try Device Flow with IdentityServer4 <https://leastprivilege.com/2019/02/08/try-device-flow-with-identityserver4/>`_
 * `The State of the Implicit Flow in OAuth2 <https://brockallen.com/2019/01/03/the-state-of-the-implicit-flow-in-oauth2/>`_
-* `An alternative way to secure SPAs (with ASP.NET Core, OpenID Connect, OAuth 2.0 and ProxyKit  <https://leastprivilege.com/2019/01/18/an-alternative-way-to-secure-spas-with-asp-net-core-openid-connect-oauth-2-0-and-proxykit/>`_
+* `An alternative way to secure SPAs (with ASP.NET Core, OpenID Connect, OAuth 2.0 and ProxyKit) <https://leastprivilege.com/2019/01/18/an-alternative-way-to-secure-spas-with-asp-net-core-openid-connect-oauth-2-0-and-proxykit/>`_
 * `Automatic OAuth 2.0 Token Management in ASP.NET Core <https://leastprivilege.com/2019/01/14/automatic-oauth-2-0-token-management-in-asp-net-core/>`_
 * `Encrypting Identity Tokens in IdentityServer4 <https://www.scottbrady91.com/Identity-Server/Encrypting-Identity-Tokens-in-IdentityServer4>`_
 
@@ -16,7 +29,7 @@ Team posts
 ----
 * `IdentityServer4 Update <https://leastprivilege.com/2018/01/17/ndc-london-2018-identityserver-update/>`_ 
 * `IdentityServer and Swagger <https://www.scottbrady91.com/Identity-Server/ASPNET-Core-Swagger-UI-Authorization-using-IdentityServer4>`_
-* `https://www.scottbrady91.com/OAuth/Removing-Shared-Secrets-for-OAuth-Client-Authentication <https://www.scottbrady91.com/OAuth/Removing-Shared-Secrets-for-OAuth-Client-Authentication>`_
+* `Removing Shared Secrets for OAuth Client Authentication <https://www.scottbrady91.com/OAuth/Removing-Shared-Secrets-for-OAuth-Client-Authentication>`_
 * `Creating Your Own IdentityServer4 Storage Library <https://www.scottbrady91.com/Identity-Server/Creating-Your-Own-IdentityServer4-Storage-Library>`_
 
 2017
@@ -30,18 +43,11 @@ Team posts
 * `Getting Started with IdentityServer 4 <https://www.scottbrady91.com/Identity-Server/Getting-Started-with-IdentityServer-4>`_
 * `IdentityServer 4 SharePoint Integration using WS-Federation <https://www.scottbrady91.com/Identity-Server/IdentityServer-4-SharePoint-Integration-using-WS-Federation>`_
 
-What's new posts
-^^^^^^^^^^^^^^^^
-* `New in IdentityServer4 v2: Simplified Configuration behind Load-balancers or Reverse-Proxies <https://leastprivilege.com/2017/10/09/new-in-identityserver4-v2-simplified-configuration-behind-load-balancers-or-reverse-proxies/>`_
-* `New in IdentityServer4: Clients without Secrets <https://leastprivilege.com/2016/09/13/new-in-identityserver4-clients-without-secrets/>`_
-* `New in IdentityServer4: Default Scopes <https://leastprivilege.com/2016/09/14/new-in-identityserver4-default-scopes/>`_
-* `New in IdentityServer4: Support for Extension Grants <https://leastprivilege.com/2016/09/20/new-in-identityserver4-support-for-extension-grants/>`_
-* `New in IdentityServer4: Resource Owner Password Validation <https://leastprivilege.com/2016/09/29/new-in-identityserver4-resource-owner-password-validation/>`_
-* `New in IdentityServer4: Resource-based Configuration <https://leastprivilege.com/2016/12/01/new-in-identityserver4-resource-based-configuration/>`_
-* `New in IdentityServer4: Events <https://leastprivilege.com/2017/03/30/new-in-identityserver4-events/>`_
-
 Community posts
 ^^^^^^^^^^^^^^^
+* `Blazor WebAssembly authentication and authorization with IdentityServer4 <https://nahidfa.com/posts/blazor-webassembly-authentication-and-authorization-with-identityserver4/>`_
+* `Additional API Endpoints to IdentityServer 4 <https://lurumad.github.io/aditional-api-endpoints-to-identityserver4>`_
+* `Securing Hangfire Dashboard using an OpenID Connect server (IdentityServer 4) <https://lurumad.github.io/securing-hangfire-dashboard-using-an-openid-connect-server-identityserver-4>`_
 * `OAuth 2.0 - OpenID Connect & IdentityServer <https://wp.me/p3mRWu-1Ag/>`_
 * `Running IdentityServer4 in a Docker Container <https://espressocoder.com/2019/01/29/running-identityserver4-in-a-docker-container/>`_
 * `Connecting Zendesk and IdentityServer 4 SAML 2.0 Identity Provider <https://lurumad.github.io/connecting-zendesk-and-identityserver-4-saml2p-identity-provider>`_
@@ -61,7 +67,7 @@ Community posts
 * `Securing a Vue.js app using OpenID Connect Code Flow with PKCE and IdentityServer4 <https://damienbod.com/2019/01/29/securing-a-vue-js-app-using-openid-connect-code-flow-with-pkce-and-identityserver4/>`_
 * `Using an OData Client with an ASP.NET Core API <https://damienbod.com/2018/10/18/using-an-odata-client-with-an-asp-net-core-api/>`_
 * `OpenID Connect back-channel logout using Azure Redis Cache and IdentityServer4 <https://damienbod.com/2018/12/18/openid-connect-back-channel-logout-using-azure-redis-cache-and-identityserver4/>`_
-* `Single Sign Out in IdentityServer4 with Back Channel Logout <https://blog.tretainfotech.com/posts/2018/august/single-sign-out-in-identityserver4-with-back-channel-logout/>`_
+* `Single Sign Out in IdentityServer4 with Back Channel Logout <https://blog.tretainfotech.com/posts/2018/august/single-sign-out-in-identityserver4-with-back-channel-logout>`_
 
 
 

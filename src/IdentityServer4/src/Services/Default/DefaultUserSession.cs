@@ -75,6 +75,14 @@ namespace IdentityServer4.Services
         protected string CheckSessionCookieDomain => Options.Authentication.CheckSessionCookieDomain;
 
         /// <summary>
+        /// Gets the SameSite mode of the check session cookie.
+        /// </summary>
+        /// <value>
+        /// The SameSite mode of the check session cookie.
+        /// </value>
+        protected SameSiteMode CheckSessionCookieSameSiteMode => Options.Authentication.CheckSessionCookieSameSiteMode;
+
+        /// <summary>
         /// The principal
         /// </summary>
         protected ClaimsPrincipal Principal;
@@ -159,17 +167,18 @@ namespace IdentityServer4.Services
             var currentSubjectId = (await GetUserAsync())?.GetSubjectId();
             var newSubjectId = principal.GetSubjectId();
 
-            if (!properties.Items.ContainsKey(SessionIdKey) || currentSubjectId != newSubjectId)
+            if (properties.GetSessionId() == null || currentSubjectId != newSubjectId)
             {
-                properties.Items[SessionIdKey] = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex);
+                properties.SetSessionId(CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex));
             }
 
-            IssueSessionIdCookie(properties.Items[SessionIdKey]);
+            var sid = properties.GetSessionId();
+            IssueSessionIdCookie(sid);
 
             Principal = principal;
             Properties = properties;
 
-            return properties.Items[SessionIdKey];
+            return sid;
         }
 
         /// <inheritdoc/>
@@ -187,7 +196,7 @@ namespace IdentityServer4.Services
 
             if (Properties?.Items.ContainsKey(SessionIdKey) == true)
             {
-                return Properties.Items[SessionIdKey];
+                return Properties.GetSessionId();
             }
 
             return null;
@@ -238,7 +247,7 @@ namespace IdentityServer4.Services
                 Path = HttpContext.GetIdentityServerBasePath().CleanUrlPath(),
                 IsEssential = true,
                 Domain = CheckSessionCookieDomain,
-                SameSite = SameSiteMode.None
+                SameSite = CheckSessionCookieSameSiteMode
             };
 
         /// <summary>
@@ -269,13 +278,15 @@ namespace IdentityServer4.Services
         {
             if (clientId == null) throw new ArgumentNullException(nameof(clientId));
 
-            var clients = await GetClientListAsync();
-            if (!clients.Contains(clientId))
+            await AuthenticateAsync();
+            if (Properties != null)
             {
-                var update = clients.ToList();
-                update.Add(clientId);
-
-                await SetClientsAsync(update);
+                var clientIds = Properties.GetClientList();
+                if (!clientIds.Contains(clientId))
+                {
+                    Properties.AddClientId(clientId);
+                    await UpdateSessionCookie();
+                }
             }
         }
 
@@ -285,82 +296,35 @@ namespace IdentityServer4.Services
         /// <returns></returns>
         public virtual async Task<IEnumerable<string>> GetClientListAsync()
         {
-            var value = await GetClientListPropertyValueAsync();
-            try
+            await AuthenticateAsync();
+
+            if (Properties != null)
             {
-                return DecodeList(value);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error decoding client list");
-                // clear so we don't keep failing
-                await SetClientsAsync(null);
+                try
+                {
+                    return Properties.GetClientList();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error decoding client list");
+                    // clear so we don't keep failing
+                    Properties.RemoveClientList();
+                    await UpdateSessionCookie();
+                }
             }
 
             return Enumerable.Empty<string>();
         }
 
         // client list helpers
-        private async Task<string> GetClientListPropertyValueAsync()
-        {
-            await AuthenticateAsync();
-
-            if (Properties?.Items.ContainsKey(ClientListKey) == true)
-            {
-                return Properties.Items[ClientListKey];
-            }
-
-            return null;
-        }
-
-        private async Task SetClientsAsync(IEnumerable<string> clients)
-        {
-            var value = EncodeList(clients);
-            await SetClientListPropertyValueAsync(value);
-        }
-
-        private async Task SetClientListPropertyValueAsync(string value)
+        private async Task UpdateSessionCookie()
         {
             await AuthenticateAsync();
 
             if (Principal == null || Properties == null) throw new InvalidOperationException("User is not currently authenticated");
 
-            if (value == null)
-            {
-                Properties.Items.Remove(ClientListKey);
-            }
-            else
-            {
-                Properties.Items[ClientListKey] = value;
-            }
-
             var scheme = await HttpContext.GetCookieAuthenticationSchemeAsync();
             await HttpContext.SignInAsync(scheme, Principal, Properties);
-        }
-
-        private IEnumerable<string> DecodeList(string value)
-        {
-            if (value.IsPresent())
-            {
-                var bytes = Base64Url.Decode(value);
-                value = Encoding.UTF8.GetString(bytes);
-                return ObjectSerializer.FromString<string[]>(value);
-            }
-
-            return Enumerable.Empty<string>();
-        }
-
-        private string EncodeList(IEnumerable<string> list)
-        {
-            if (list != null && list.Any())
-            {
-                var value = ObjectSerializer.ToString(list);
-                var bytes = Encoding.UTF8.GetBytes(value);
-                value = Base64Url.Encode(bytes);
-                return value;
-            }
-
-            return null;
         }
     }
 }

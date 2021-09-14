@@ -388,5 +388,21 @@ namespace IdentityServer4.Extensions
 
             return null;
         }
+
+        /// <summary>
+        /// Obfuscates the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>System.String.</returns>
+        public static string Obfuscate(this string value)
+        {
+            var last4Chars = "****";
+            if (value.IsPresent() && value.Length > 4)
+            {
+                last4Chars = value.Substring(value.Length - 4);
+            }
+
+            return "****" + last4Chars;
+        }
     }
 }

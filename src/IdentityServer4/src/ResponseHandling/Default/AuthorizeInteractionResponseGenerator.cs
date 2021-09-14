@@ -18,7 +18,7 @@ namespace IdentityServer4.ResponseHandling
     /// <summary>
     /// Default logic for determining if user must login or consent when making requests to the authorization endpoint.
     /// </summary>
-    /// <seealso cref="IdentityServer4.ResponseHandling.IAuthorizeInteractionResponseGenerator" />
+    /// <seealso cref="IAuthorizeInteractionResponseGenerator" />
     public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionResponseGenerator
     {
         /// <summary>
@@ -70,17 +70,20 @@ namespace IdentityServer4.ResponseHandling
         {
             Logger.LogTrace("ProcessInteractionAsync");
 
-            if (consent?.Granted == false && consent.Error.HasValue && !request.Subject.IsAuthenticated())
+            if (consent != null && consent.Granted == false && consent.Error.HasValue && request.Subject.IsAuthenticated() == false)
             {
                 // special case when anonymous user has issued an error prior to authenticating
                 Logger.LogInformation("Error: User consent result: {error}", consent.Error);
 
-                var error = consent.Error == AuthorizationError.AccountSelectionRequired ? OidcConstants.AuthorizeErrors.AccountSelectionRequired :
-                    consent.Error == AuthorizationError.ConsentRequired ? OidcConstants.AuthorizeErrors.ConsentRequired :
-                    consent.Error == AuthorizationError.InteractionRequired ? OidcConstants.AuthorizeErrors.InteractionRequired :
-                    consent.Error == AuthorizationError.LoginRequired ? OidcConstants.AuthorizeErrors.LoginRequired :
-                        OidcConstants.AuthorizeErrors.AccessDenied;
-
+                var error = consent.Error switch
+                {
+                    AuthorizationError.AccountSelectionRequired => OidcConstants.AuthorizeErrors.AccountSelectionRequired,
+                    AuthorizationError.ConsentRequired => OidcConstants.AuthorizeErrors.ConsentRequired,
+                    AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
+                    AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
+                    _ => OidcConstants.AuthorizeErrors.AccessDenied
+                };
+                
                 return new InteractionResponse
                 {
                     Error = error,
@@ -89,12 +92,25 @@ namespace IdentityServer4.ResponseHandling
             }
 
             var result = await ProcessLoginAsync(request);
-            if (result.IsLogin || result.IsError)
+            
+            if (!result.IsLogin && !result.IsError && !result.IsRedirect)
             {
-                return result;
+                result = await ProcessConsentAsync(request, consent);
             }
 
-            return await ProcessConsentAsync(request, consent);
+            if ((result.IsLogin || result.IsConsent || result.IsRedirect) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
+            {
+                // prompt=none means do not show the UI
+                Logger.LogInformation("Changing response to LoginRequired: prompt=none was requested");
+                result = new InteractionResponse
+                {
+                    Error = result.IsLogin ? OidcConstants.AuthorizeErrors.LoginRequired :
+                                result.IsConsent ? OidcConstants.AuthorizeErrors.ConsentRequired : 
+                                    OidcConstants.AuthorizeErrors.InteractionRequired
+                };
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -287,11 +303,16 @@ namespace IdentityServer4.ResponseHandling
                         // build error to return to client
                         Logger.LogInformation("Error: User consent result: {error}", consent.Error);
 
-                        response.Error = consent.Error == AuthorizationError.AccountSelectionRequired ? OidcConstants.AuthorizeErrors.AccountSelectionRequired :
-                            consent.Error == AuthorizationError.ConsentRequired ? OidcConstants.AuthorizeErrors.ConsentRequired :
-                            consent.Error == AuthorizationError.InteractionRequired ? OidcConstants.AuthorizeErrors.InteractionRequired :
-                            consent.Error == AuthorizationError.LoginRequired ? OidcConstants.AuthorizeErrors.LoginRequired :
-                                OidcConstants.AuthorizeErrors.AccessDenied;
+                        var error = consent.Error switch
+                        {
+                            AuthorizationError.AccountSelectionRequired => OidcConstants.AuthorizeErrors.AccountSelectionRequired,
+                            AuthorizationError.ConsentRequired => OidcConstants.AuthorizeErrors.ConsentRequired,
+                            AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
+                            AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
+                            _ => OidcConstants.AuthorizeErrors.AccessDenied
+                        };
+                        
+                        response.Error = error;
                         response.ErrorDescription = consent.ErrorDescription;
                     }
                     else
@@ -314,15 +335,15 @@ namespace IdentityServer4.ResponseHandling
                             if (request.Client.AllowRememberConsent)
                             {
                                 // remember consent
-                                var scopes = Enumerable.Empty<string>();
+                                var parsedScopes = Enumerable.Empty<ParsedScopeValue>();
                                 if (consent.RememberConsent)
                                 {
                                     // remember what user actually selected
-                                    scopes = request.ValidatedResources.ScopeValues;
-                                    Logger.LogDebug("User indicated to remember consent for scopes: {scopes}", scopes);
+                                    parsedScopes = request.ValidatedResources.ParsedScopes;
+                                    Logger.LogDebug("User indicated to remember consent for scopes: {scopes}", request.ValidatedResources.RawScopeValues);
                                 }
 
-                                await Consent.UpdateConsentAsync(request.Subject, request.Client, request.ValidatedResources.ParsedScopes);
+                                await Consent.UpdateConsentAsync(request.Subject, request.Client, parsedScopes);
                             }
                         }
                     }
