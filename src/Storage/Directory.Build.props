@@ -2,7 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <DotNetLibrary>3.1.18</DotNetLibrary>
+    <DotNetLibrary>3.1.19</DotNetLibrary>
     <JsonLib>5.0.2</JsonLib>
     <IdentityModel>5.1.0</IdentityModel>
     <NewtonJson>13.0.1</NewtonJson>

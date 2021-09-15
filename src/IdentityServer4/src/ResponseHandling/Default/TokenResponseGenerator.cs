@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
@@ -91,24 +90,16 @@ namespace IdentityServer4.ResponseHandling
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        public virtual async Task<TokenResponse> ProcessAsync(TokenRequestValidationResult request)
-        {
-            switch (request.ValidatedRequest.GrantType)
+        public virtual async Task<TokenResponse> ProcessAsync(TokenRequestValidationResult request) =>
+            request.ValidatedRequest.GrantType switch
             {
-                case OidcConstants.GrantTypes.ClientCredentials:
-                    return await ProcessClientCredentialsRequestAsync(request);
-                case OidcConstants.GrantTypes.Password:
-                    return await ProcessPasswordRequestAsync(request);
-                case OidcConstants.GrantTypes.AuthorizationCode:
-                    return await ProcessAuthorizationCodeRequestAsync(request);
-                case OidcConstants.GrantTypes.RefreshToken:
-                    return await ProcessRefreshTokenRequestAsync(request);
-                case OidcConstants.GrantTypes.DeviceCode:
-                    return await ProcessDeviceCodeRequestAsync(request);
-                default:
-                    return await ProcessExtensionGrantRequestAsync(request);
-            }
-        }
+                OidcConstants.GrantTypes.ClientCredentials => await ProcessClientCredentialsRequestAsync(request),
+                OidcConstants.GrantTypes.Password => await ProcessPasswordRequestAsync(request),
+                OidcConstants.GrantTypes.AuthorizationCode => await ProcessAuthorizationCodeRequestAsync(request),
+                OidcConstants.GrantTypes.RefreshToken => await ProcessRefreshTokenRequestAsync(request),
+                OidcConstants.GrantTypes.DeviceCode => await ProcessDeviceCodeRequestAsync(request),
+                _ => await ProcessExtensionGrantRequestAsync(request),
+            };
 
         /// <summary>
         /// Creates the response for an client credentials request.
@@ -305,7 +296,7 @@ namespace IdentityServer4.ResponseHandling
 
                 var parsedScopesResult = ScopeParser.ParseScopeValues(request.ValidatedRequest.DeviceCode.AuthorizedScopes);
                 var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-                
+
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.DeviceCode.Subject,

@@ -23,9 +23,9 @@ namespace IdentityServer4
         private readonly IDataProtector _protector;
 
         public MessageCookie(
-            ILogger<MessageCookie<TModel>> logger, 
+            ILogger<MessageCookie<TModel>> logger,
             IdentityServerOptions options,
-            IHttpContextAccessor context, 
+            IHttpContextAccessor context,
             IDataProtectionProvider provider)
         {
             _logger = logger;
