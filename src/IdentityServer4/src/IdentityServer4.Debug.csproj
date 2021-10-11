@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceDetector.NET" Version="4.2.0" />
+    <PackageReference Include="DeviceDetector.NET" Version="$(DeviceDetector)" />
 
     <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(OpenIdConnect)" />

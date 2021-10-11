@@ -56,7 +56,18 @@ namespace IdentityServer4.Configuration
         /// <summary>
         /// Emits an aud claim with the format issuer/resources. That's needed for some older access token validation plumbing. Defaults to false.
         /// </summary>
-        public bool EmitLegacyResourceAudienceClaim { get; set; } = false;
+        public bool EmitStaticAudienceClaim { get; set; } = false;
+
+        /// <summary>
+        /// Specifies whether scopes in JWTs are emitted as array or string
+        /// </summary>
+        public bool EmitScopesAsSpaceDelimitedStringInJwt { get; set; } = false;
+        
+        /// <summary>
+        /// Specifies whether the JWT typ and content-type for JWT secured authorization requests is checked according to IETF spec.
+        /// This might break older OIDC conformant request objects.
+        /// </summary>
+        public bool StrictJarValidation { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the endpoint configuration.
@@ -136,6 +147,11 @@ namespace IdentityServer4.Configuration
         /// Gets or sets the device flow options.
         /// </summary>
         public DeviceFlowOptions DeviceFlow { get; set; } = new DeviceFlowOptions();
+        
+        /// <summary>
+        /// Gets or sets the logging options
+        /// </summary>
+        public LoggingOptions Logging { get; set; } = new LoggingOptions();
 
         /// <summary>
         /// Gets or sets the mutual TLS options.

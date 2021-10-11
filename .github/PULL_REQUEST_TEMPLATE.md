@@ -1,3 +1,5 @@
+**At this point we cannot accept PRs for new features, only bugfixes. Thanks!**
+
 **What issue does this PR address?**
 
 
@@ -5,7 +7,7 @@
 
 
 **Please check if the PR fulfills these requirements**
-- [ ] The commit follows our [guidelines](https://github.com/IdentityServer/IdentityServer4/blob/master/.github/CONTRIBUTING.md)
+- [ ] The commit follows our [guidelines](https://github.com/IdentityServer/IdentityServer4/blob/main/.github/CONTRIBUTING.md)
 - [ ] Unit Tests for the changes have been added (for bug fixes / features)
 
 **Other information**:

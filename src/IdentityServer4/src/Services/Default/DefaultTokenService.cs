@@ -103,10 +103,10 @@ namespace IdentityServer4.Services
         /// </returns>
         public virtual async Task<Token> CreateIdentityTokenAsync(TokenCreationRequest request)
         {
-            Logger.LogDebug("Creating identity token. Validate request");
+            Logger.LogTrace("Creating identity token");
             request.Validate();
 
-            // TODO: Dom, add a test for this. validate the at and c hashes are correct for the id_token when the client's alg doesn't match the server default.
+            // todo: Dom, add a test for this. validate the at and c hashes are correct for the id_token when the client's alg doesn't match the server default.
             var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.ValidatedRequest.Client.AllowedIdentityTokenSigningAlgorithms);
             if (credential == null)
             {
@@ -203,6 +203,10 @@ namespace IdentityServer4.Services
             {
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
+            
+            // iat claim as required by JWT profile
+            claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(),
+                ClaimValueTypes.Integer64));
 
             if (request.IpAddress.IsPresent())
             {
@@ -233,7 +237,7 @@ namespace IdentityServer4.Services
                 token.Audiences.Add(aud);
             }
 
-            if (Options.EmitLegacyResourceAudienceClaim)
+            if (Options.EmitStaticAudienceClaim)
             {
                 token.Audiences.Add(string.Format(IdentityServerConstants.AccessTokenAudience, issuer.EnsureTrailingSlash()));
             }

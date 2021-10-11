@@ -49,7 +49,6 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
             _logger.LogTrace("HandleAuthenticateAsync called");
 
             string token = null;
-
             string authorization = Request.Headers["Authorization"];
 
             if (string.IsNullOrEmpty(authorization))
@@ -68,21 +67,18 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
             }
 
             _logger.LogTrace("Token found: {token}", token);
-
-            TokenValidationResult result = await _tokenValidator.ValidateAccessTokenAsync(token, Options.ExpectedScope);
-
+            var result = await _tokenValidator.ValidateAccessTokenAsync(token, Options.ExpectedScope);
             if (result.IsError)
             {
                 _logger.LogTrace("Failed to validate the token");
-
                 return AuthenticateResult.Fail(result.Error);
             }
 
             _logger.LogTrace("Successfully validated the token.");
 
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(result.Claims, Scheme.Name, JwtClaimTypes.Name, JwtClaimTypes.Role);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-            AuthenticationProperties authenticationProperties = new AuthenticationProperties();
+            var claimsIdentity = new ClaimsIdentity(result.Claims, Scheme.Name, JwtClaimTypes.Name, JwtClaimTypes.Role);
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            var authenticationProperties = new AuthenticationProperties();
 
             if (Options.SaveToken)
             {
@@ -99,9 +95,7 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
             };
 
             await Events.ClaimsTransformation(claimsTransformationContext);
-
-            AuthenticationTicket authenticationTicket = new AuthenticationTicket(claimsTransformationContext.Principal, authenticationProperties, Scheme.Name);
-            return AuthenticateResult.Success(authenticationTicket);
+            return AuthenticateResult.Success(new AuthenticationTicket(claimsTransformationContext.Principal, authenticationProperties, Scheme.Name));
         }
     }
 }

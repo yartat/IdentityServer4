@@ -20,11 +20,11 @@ namespace IdentityServer4.Extensions
     /// </summary>
     public static class StringExtensions
     {
-        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
+        private static readonly MemoryCache Cache = new MemoryCache(new MemoryCacheOptions
         {
             SizeLimit = 10 * 1024 * 1024 // 10 MB
         });
-        private static readonly TimeSpan _entryTtl = TimeSpan.FromHours(1);
+        private static readonly TimeSpan EntryTtl = TimeSpan.FromHours(1);
 
         /// <summary>
         /// Gets the device by user agent string.
@@ -38,9 +38,9 @@ namespace IdentityServer4.Extensions
                 return null;
             }
 
-            return _cache.GetOrCreate(userAgent, entry =>
+            return Cache.GetOrCreate(userAgent, entry =>
             {
-                entry.SlidingExpiration = _entryTtl;
+                entry.SlidingExpiration = EntryTtl;
                 entry.Size = userAgent.Length + 200;
                 var result = new DeviceDetector(userAgent);
                 result.SetCache(new DictionaryCache());
@@ -387,6 +387,22 @@ namespace IdentityServer4.Extensions
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Obfuscates the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>System.String.</returns>
+        public static string Obfuscate(this string value)
+        {
+            var last4Chars = "****";
+            if (value.IsPresent() && value.Length > 4)
+            {
+                last4Chars = value.Substring(value.Length - 4);
+            }
+
+            return "****" + last4Chars;
         }
     }
 }

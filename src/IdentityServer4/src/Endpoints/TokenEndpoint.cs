@@ -61,7 +61,7 @@ namespace IdentityServer4.Endpoints
             _logger.LogTrace("Processing token request.");
 
             // validate HTTP
-            if (!HttpMethods.IsPost(context.Request.Method) || !context.Request.HasFormContentType)
+            if (!HttpMethods.IsPost(context.Request.Method) || !context.Request.HasApplicationFormContentType())
             {
                 _logger.LogWarning("Invalid HTTP request for token endpoint");
                 return Error(OidcConstants.TokenErrors.InvalidRequest);
@@ -140,10 +140,12 @@ namespace IdentityServer4.Endpoints
             {
                 _logger.LogTrace("Identity token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.IdentityToken);
             }
+
             if (response.RefreshToken != null)
             {
                 _logger.LogTrace("Refresh token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.RefreshToken);
             }
+
             if (response.AccessToken != null)
             {
                 _logger.LogTrace("Access token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.AccessToken);

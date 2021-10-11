@@ -206,7 +206,7 @@ namespace IdentityServer4.Validation
                 var isActiveCtx = new IsActiveContext(principal, result.Client, IdentityServerConstants.ProfileIsActiveCallers.AccessTokenValidation);
                 await _profile.IsActiveAsync(isActiveCtx);
 
-                if (isActiveCtx.IsActive == false)
+                if (!isActiveCtx.IsActive)
                 {
                     _logger.LogError("User marked as not active: {subject}", subClaim.Value);
 
@@ -254,7 +254,7 @@ namespace IdentityServer4.Validation
             {
                 ValidIssuer = _context.HttpContext.GetIdentityServerIssuerUri(),
                 IssuerSigningKeys = validationKeys.Select(k => k.Key),
-                ValidateLifetime = validateLifetime,
+                ValidateLifetime = validateLifetime
             };
 
             if (audience.IsPresent())
@@ -308,11 +308,32 @@ namespace IdentityServer4.Validation
                     }
                 }
 
+                var claims = id.Claims.ToList();
+                
+                // check the scope format (array vs space delimited string)
+                var scopes = claims.Where(c => c.Type == JwtClaimTypes.Scope).ToArray();
+                if (scopes.Any())
+                {
+                    foreach (var scope in scopes)
+                    {
+                        if (scope.Value.Contains(" "))
+                        {
+                            claims.Remove(scope);
+                            
+                            var values = scope.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var value in values)
+                            {
+                                claims.Add(new Claim(JwtClaimTypes.Scope, value));
+                            }
+                        }
+                    }
+                }
+
                 return new TokenValidationResult
                 {
                     IsError = false,
 
-                    Claims = id.Claims,
+                    Claims = claims,
                     Client = client,
                     Jwt = jwt
                 };
@@ -430,7 +451,7 @@ namespace IdentityServer4.Validation
                 IdentityServerConstants.ProfileIsActiveCallers.RefreshTokenValidation);
             await _profile.IsActiveAsync(isActiveCtx);
 
-            if (isActiveCtx.IsActive == false)
+            if (!isActiveCtx.IsActive)
             {
                 _logger.LogError("{subjectId} has been disabled", refreshToken.Subject.GetSubjectId());
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);

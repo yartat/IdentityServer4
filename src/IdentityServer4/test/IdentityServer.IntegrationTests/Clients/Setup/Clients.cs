@@ -119,6 +119,7 @@ namespace IdentityServer.IntegrationTests.Clients.Setup
                     },
 
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
 
                     AllowOfflineAccess = true,
                     AllowedScopes =
@@ -241,14 +242,14 @@ namespace IdentityServer.IntegrationTests.Clients.Setup
                     ClientId = "implicit",
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowedScopes = {"api1"},
-                    RedirectUris = { new Uri("http://implicit") }
+                    RedirectUris = { "http://implicit" }
                 },
                 new Client
                 {
                     ClientId = "implicit_and_client_creds",
                     AllowedGrantTypes = GrantTypes.ImplicitAndClientCredentials,
                     AllowedScopes = {"api1"},
-                    RedirectUris = { new Uri("http://implicit_and_client_creds") }
+                    RedirectUris = { "http://implicit_and_client_creds" }
                 }
             };
         }

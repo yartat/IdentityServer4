@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -87,21 +87,18 @@ namespace IdentityServer4.ResponseHandling
         /// <exception cref="System.InvalidOperationException">invalid grant type: " + request.GrantType</exception>
         public virtual async Task<AuthorizeResponse> CreateResponseAsync(ValidatedAuthorizeRequest request)
         {
-            if (request.GrantType == GrantType.AuthorizationCode)
+            switch (request.GrantType)
             {
-                return await CreateCodeFlowResponseAsync(request);
+                case GrantType.AuthorizationCode:
+                    return await CreateCodeFlowResponseAsync(request);
+                case GrantType.Implicit:
+                    return await CreateImplicitFlowResponseAsync(request);
+                case GrantType.Hybrid:
+                    return await CreateHybridFlowResponseAsync(request);
+                default:
+                    Logger.LogError("Unsupported grant type: " + request.GrantType);
+                    throw new InvalidOperationException("invalid grant type: " + request.GrantType);
             }
-            if (request.GrantType == GrantType.Implicit)
-            {
-                return await CreateImplicitFlowResponseAsync(request);
-            }
-            if (request.GrantType == GrantType.Hybrid)
-            {
-                return await CreateHybridFlowResponseAsync(request);
-            }
-
-            Logger.LogError("Unsupported grant type: " + request.GrantType);
-            throw new InvalidOperationException("invalid grant type: " + request.GrantType);
         }
 
         /// <summary>
@@ -274,7 +271,7 @@ namespace IdentityServer4.ResponseHandling
                 CodeChallengeMethod = request.CodeChallengeMethod,
 
                 IsOpenId = request.IsOpenIdRequest,
-                RequestedScopes = request.ValidatedResources.ScopeValues,
+                RequestedScopes = request.ValidatedResources.RawScopeValues,
                 RedirectUri = request.RedirectUri,
                 Nonce = request.Nonce,
                 StateHash = stateHash,

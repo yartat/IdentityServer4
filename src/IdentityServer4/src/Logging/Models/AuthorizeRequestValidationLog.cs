@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System.Collections.Generic;
+using System.Linq;
 using IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Validation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace IdentityServer4.Logging.Models
 {
@@ -134,9 +134,10 @@ namespace IdentityServer4.Logging.Models
         /// Initializes a new instance of the <see cref="AuthorizeRequestValidationLog"/> class.
         /// </summary>
         /// <param name="request">The request.</param>
-        public AuthorizeRequestValidationLog(ValidatedAuthorizeRequest request)
+        /// <param name="sensitiveValuesFilter"></param>
+        public AuthorizeRequestValidationLog(ValidatedAuthorizeRequest request, IEnumerable<string> sensitiveValuesFilter)
         {
-            Raw = request.Raw.ToScrubbedDictionary(OidcConstants.AuthorizeRequest.IdTokenHint);
+            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter.ToArray());
 
             if (request.Client != null)
             {

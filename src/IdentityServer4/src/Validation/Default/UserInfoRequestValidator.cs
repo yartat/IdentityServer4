@@ -29,7 +29,7 @@ namespace IdentityServer4.Validation
         /// <param name="profile">The profile service</param>
         /// <param name="logger">The logger.</param>
         public UserInfoRequestValidator(
-            ITokenValidator tokenValidator, 
+            ITokenValidator tokenValidator,
             IProfileService profile,
             ILogger<UserInfoRequestValidator> logger)
         {
@@ -81,7 +81,7 @@ namespace IdentityServer4.Validation
             var isActiveContext = new IsActiveContext(subject, tokenResult.Client, IdentityServerConstants.ProfileIsActiveCallers.UserInfoRequestValidation);
             await _profile.IsActiveAsync(isActiveContext);
 
-            if (isActiveContext.IsActive == false)
+            if (!isActiveContext.IsActive)
             {
                 _logger.LogError("User is not active: {sub}", subject.GetSubjectId());
 

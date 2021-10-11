@@ -8,7 +8,7 @@ Furthermore the token endpoint can be extended to support extension grant types.
 .. Note:: IdentityServer supports a subset of the OpenID Connect and OAuth 2.0 token request parameters. For a full list, see `here <http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest>`_.
 
 ``client_id``
-    client identifier (required)
+    client identifier (required – Either in the body or as part of the authorization header.)
 ``client_secret``
     client secret either in the post body, or as a basic authentication header. Optional.
 ``grant_type``
@@ -42,6 +42,7 @@ Example
 ::
 
     POST /connect/token
+    CONTENT-TYPE application/x-www-form-urlencoded
 
         client_id=client1&
         client_secret=secret&
@@ -51,4 +52,4 @@ Example
 
 (Form-encoding removed and line breaks added for readability)
 
-.. Note:: You can use the `IdentityModel <https://github.com/IdentityModel/IdentityModel2>`_ client library to programmatically access the token endpoint from .NET code. For more information check the IdentityModel `docs <https://identitymodel.readthedocs.io/en/latest/client/token.html>`_.
+.. Note:: You can use the `IdentityModel <https://github.com/IdentityModel/IdentityModel>`_ client library to programmatically access the token endpoint from .NET code. For more information check the IdentityModel `docs <https://identitymodel.readthedocs.io/en/latest/client/token.html>`_.

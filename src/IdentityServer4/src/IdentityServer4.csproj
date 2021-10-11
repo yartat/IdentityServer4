@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceDetector.NET" Version="4.2.0" />
+    <PackageReference Include="DeviceDetector.NET" Version="$(DeviceDetector)" />
     <PackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4)" />
 
     <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />

@@ -1,15 +1,24 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.using System.Collections.Generic;
 
-using System;
 using System.Collections.Generic;
 using IdentityServer4;
 using IdentityServer4.Models;
 
-namespace Host.Configuration
+namespace IdentityServerHost.Configuration
 {
     public static class ClientsWeb
     {
+        static string[] allowedScopes = 
+        {
+            IdentityServerConstants.StandardScopes.OpenId,
+            IdentityServerConstants.StandardScopes.Profile,
+            IdentityServerConstants.StandardScopes.Email,
+            "resource1.scope1", 
+            "resource2.scope1",
+            "transaction"
+        };
+        
         public static IEnumerable<Client> Get()
         {
             return new List<Client>
@@ -28,22 +37,16 @@ namespace Host.Configuration
                     
                     RedirectUris = 
                     {
-                        new Uri("https://localhost:44300/index.html"),
-                        new Uri("https://localhost:44300/callback.html"),
-                        new Uri("https://localhost:44300/silent.html"),
-                        new Uri("https://localhost:44300/popup.html")
+                        "https://localhost:44300/index.html",
+                        "https://localhost:44300/callback.html",
+                        "https://localhost:44300/silent.html",
+                        "https://localhost:44300/popup.html"
                     },
 
-                    PostLogoutRedirectUris = { new Uri("https://localhost:44300/index.html") },
+                    PostLogoutRedirectUris = { "https://localhost:44300/index.html" },
                     AllowedCorsOrigins = { "https://localhost:44300" },
 
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "feature1", "feature2"
-                    }
+                    AllowedScopes = allowedScopes
                 },
                 
                 ///////////////////////////////////////////
@@ -63,19 +66,13 @@ namespace Host.Configuration
 
                     AccessTokenLifetime = 75,
 
-                    RedirectUris = { new Uri("https://localhost:44301/signin-oidc") },
+                    RedirectUris = { "https://localhost:44301/signin-oidc" },
                     FrontChannelLogoutUri = "https://localhost:44301/signout-oidc",
-                    PostLogoutRedirectUris = { new Uri("https://localhost:44301/signout-callback-oidc") },
+                    PostLogoutRedirectUris = { "https://localhost:44301/signout-callback-oidc" },
 
                     AllowOfflineAccess = true,
 
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "feature1", "feature2"
-                    }
+                    AllowedScopes = allowedScopes
                 },
                 
                 ///////////////////////////////////////////
@@ -95,20 +92,13 @@ namespace Host.Configuration
                     RequireConsent = true,
                     AllowedGrantTypes = GrantTypes.Code,
 
-                    RedirectUris = { new Uri("https://localhost:44302/signin-oidc") },
+                    RedirectUris = { "https://localhost:44302/signin-oidc" },
                     FrontChannelLogoutUri = "https://localhost:44302/signout-oidc",
-                    PostLogoutRedirectUris = { new Uri("https://localhost:44302/signout-callback-oidc") },
+                    PostLogoutRedirectUris = { "https://localhost:44302/signout-callback-oidc" },
 
                     AllowOfflineAccess = true,
 
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "feature1", "feature2", 
-                        "transaction"
-                    }
+                    AllowedScopes = allowedScopes
                 },
                 
                 ///////////////////////////////////////////
@@ -128,19 +118,13 @@ namespace Host.Configuration
                     AllowedGrantTypes = GrantTypes.Hybrid,
                     RequirePkce = false,
 
-                    RedirectUris = { new Uri("https://localhost:44303/signin-oidc") },
-                    BackChannelLogoutUri = "http://localhost:44303/logout",
-                    PostLogoutRedirectUris = { new Uri("https://localhost:44303/signout-callback-oidc") },
+                    RedirectUris = { "https://localhost:44303/signin-oidc" },
+                    BackChannelLogoutUri = "https://localhost:44303/logout",
+                    PostLogoutRedirectUris = { "https://localhost:44303/signout-callback-oidc" },
 
                     AllowOfflineAccess = true,
 
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "feature1", "feature2"
-                    }
+                    AllowedScopes = allowedScopes
                 }
             };
         }

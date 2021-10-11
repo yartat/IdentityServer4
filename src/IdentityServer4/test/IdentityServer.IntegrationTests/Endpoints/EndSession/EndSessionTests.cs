@@ -379,8 +379,8 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
 
             response = await _mockPipeline.BrowserClient.GetAsync(signoutFrameUrl);
             var html = await response.Content.ReadAsStringAsync();
-            html.Should().Contain("https://client1/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server"));
-            html.Should().Contain("https://client2/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server"));
+            html.Should().Contain(HtmlEncoder.Default.Encode("https://client1/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server")));
+            html.Should().Contain(HtmlEncoder.Default.Encode("https://client2/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server")));
         }
 
         [Fact]
@@ -545,9 +545,6 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
 
             await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
 
-            var signoutFrameUrl = _mockPipeline.LogoutRequest.SignOutIFrameUrl;
-            await _mockPipeline.BrowserClient.GetAsync(signoutFrameUrl);
-
             _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
         }
 
@@ -569,9 +566,6 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
             response.Should().NotBeNull();
 
             await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
-
-            var signoutFrameUrl = _mockPipeline.LogoutRequest.SignOutIFrameUrl;
-            await _mockPipeline.BrowserClient.GetAsync(signoutFrameUrl);
 
             _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
         }

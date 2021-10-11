@@ -37,6 +37,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
             IEnumerable<IExtensionGrantValidator> extensionGrantValidators = null,
             ICustomTokenRequestValidator customRequestValidator = null,
             ITokenValidator tokenValidator = null,
+            IRefreshTokenService refreshTokenService = null,
             IResourceValidator resourceValidator = null)
         {
             if (options == null)
@@ -93,42 +94,60 @@ namespace IdentityServer.UnitTests.Validation.Setup
             {
                 resourceValidator = CreateResourceValidator(resourceStore);
             }
-
-
+            
             if (tokenValidator == null)
             {
                 tokenValidator = CreateTokenValidator(refreshTokenStore: refreshTokenStore, profile: profile);
+            }
+
+            if (refreshTokenService == null)
+            {
+                refreshTokenService = CreateRefreshTokenService(
+                    refreshTokenStore,
+                    profile);
             }
 
             return new TokenRequestValidator(
                 options,
                 authorizationCodeStore,
                 resourceOwnerValidator,
+                profile,
                 deviceCodeValidator,
                 aggregateExtensionGrantValidator,
                 customRequestValidator,
                 resourceValidator,
                 resourceStore,
                 tokenValidator,
-                new TestEventService(),
-                new StubClock(),
-
+                refreshTokenService,
+                new TestEventService(), 
+                new StubClock(), 
                 TestLogger.Create<TokenRequestValidator>());
+        }
+
+        private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
+        {
+            var service = new DefaultRefreshTokenService(
+                store,
+                profile,
+                new StubClock(),
+                TestLogger.Create<DefaultRefreshTokenService>());
+
+            return service;
         }
 
         internal static IResourceValidator CreateResourceValidator(IResourceStore store = null)
         {
             store = store ?? new InMemoryResourcesStore(TestScopes.GetIdentity(), TestScopes.GetApis(), TestScopes.GetScopes());
-            return new ResourceValidator(store, TestLogger.Create<ResourceValidator>());
+            return new DefaultResourceValidator(store, new DefaultScopeParser(TestLogger.Create<DefaultScopeParser>()), TestLogger.Create<DefaultResourceValidator>());
         }
 
-        internal static ITokenCreationService CreateDefaultTokenCreator()
+        internal static ITokenCreationService CreateDefaultTokenCreator(IdentityServerOptions options = null)
         {
             return new DefaultTokenCreationService(
                 new StubClock(),
                 new DefaultKeyMaterialService(new IValidationKeysStore[] { },
                     new ISigningCredentialStore[] { new InMemorySigningCredentialsStore(TestCert.LoadSigningCredentials()) }),
-                TestIdentityServerOptions.Create(),
+                options ?? TestIdentityServerOptions.Create(),
                 TestLogger.Create<DefaultTokenCreationService>());
         }
 
@@ -168,7 +187,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
             IRedirectUriValidator uriValidator = null,
             IResourceValidator resourceValidator = null,
             JwtRequestValidator jwtRequestValidator = null,
-            JwtRequestUriHttpClient jwtRequestUriHttpClient = null)
+            IJwtRequestUriHttpClient jwtRequestUriHttpClient = null)
         {
             if (options == null)
             {
@@ -207,7 +226,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
 
             if (jwtRequestUriHttpClient == null)
             {
-                jwtRequestUriHttpClient = new JwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), new LoggerFactory());
+                jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory());
             }
 
 
@@ -268,9 +287,9 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 clock: clock,
                 profile: profile,
                 referenceTokenStore: store,
-                refreshTokenService: refreshTokenStore,
+                refreshTokenStore: refreshTokenStore,
                 customValidator: new DefaultCustomTokenValidator(),
-                keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
+                    keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
                 logger: logger,
                 options: options,
                 context: context);

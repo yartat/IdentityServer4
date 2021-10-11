@@ -9,13 +9,14 @@ IdentityServer Options
 * ``LowerCaseIssuerUri``
     Set to ``false`` to preserve the original casing of the IssuerUri. Defaults to ``true``.
 
-* ``PublicOrigin``
-    The origin of this server instance, e.g. https://myorigin.com. If not set, the origin name is inferred from the request.
-
 * ``AccessTokenJwtType``
     Specifies the value used for the JWT typ header for access tokens (defaults to ``at+jwt``).
-* ``EmitLegacyResourceAudienceClaim``
-    Emits an ``aud`` claim with the format issuer/resources. That's needed for some older access token validation plumbing. Defaults to false.
+
+* ``EmitScopesAsSpaceDelimitedStringInJwt``
+    Specifies whether scopes in JWTs are emitted as array or string
+
+* ``EmitStaticAudienceClaim``
+    Emits an ``aud`` claim with the format issuer/resources. Defaults to false.
 
 Endpoints
 ^^^^^^^^^
@@ -41,13 +42,22 @@ Authentication
     The authentication cookie lifetime (only effective if the IdentityServer-provided cookie handler is used).
 
 * ``CookieSlidingExpiration``
-    Specified if the cookie should be sliding or not (only effective if the IdentityServer-provided cookie handler is used).
+    Specifies if the cookie should be sliding or not (only effective if the IdentityServer-provided cookie handler is used).
+
+* ``CookieSameSiteMode``
+    Specifies the SameSite mode for the internal cookies.
 
 * ``RequireAuthenticatedUserForSignOutMessage``
     Indicates if user must be authenticated to accept parameters to end session endpoint. Defaults to false.
 
 * ``CheckSessionCookieName``
     The name of the cookie used for the check session endpoint.
+
+* ``CheckSessionCookieDomain``
+    The domain of the cookie used for the check session endpoint.
+
+* ``CheckSessionCookieSameSiteMode``
+    The SameSite mode of the cookie used for the check session endpoint.
 
 * ``RequireCspFrameSrcForSignout``
     If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel signout notification. Defaults to true.
@@ -117,7 +127,7 @@ CSP (Content Security Policy)
 IdentityServer emits CSP headers for some responses, where appropriate.
 
 * ``Level``
-    The level of CSP to use. CSP Level 2 is used by default, but if older browsers must be supported then this be changed to ``CspLevel.One`` to accomodate them.
+    The level of CSP to use. CSP Level 2 is used by default, but if older browsers must be supported then this be changed to ``CspLevel.One`` to accommodate them.
 
 * ``AddDeprecatedHeader``
     Indicates if the older ``X-Content-Security-Policy`` CSP header should also be emitted (in addition to the standards-based header value). Defaults to true.

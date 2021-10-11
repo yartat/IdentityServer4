@@ -5,11 +5,9 @@ using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
-using IdentityServer4.Logging.Models;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,6 +15,8 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityServer4.Logging.Models;
+using Microsoft.AspNetCore.Authentication;
 
 namespace IdentityServer4.Validation
 {
@@ -29,11 +29,12 @@ namespace IdentityServer4.Validation
         private readonly IResourceValidator _resourceValidator;
         private readonly IResourceStore _resourceStore;
         private readonly ITokenValidator _tokenValidator;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEventService _events;
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
+        private readonly IProfileService _profile;
         private readonly IDeviceCodeValidator _deviceCodeValidator;
         private readonly ISystemClock _clock;
-        private readonly IUserValidator _userValidator;
         private readonly ILogger _logger;
 
         private ValidatedTokenRequest _validatedRequest;
@@ -44,28 +45,30 @@ namespace IdentityServer4.Validation
         /// <param name="options">The options.</param>
         /// <param name="authorizationCodeStore">The authorization code store.</param>
         /// <param name="resourceOwnerValidator">The resource owner validator.</param>
+        /// <param name="profile">The profile.</param>
         /// <param name="deviceCodeValidator">The device code validator.</param>
         /// <param name="extensionGrantValidator">The extension grant validator.</param>
         /// <param name="customRequestValidator">The custom request validator.</param>
         /// <param name="resourceValidator">The resource validator.</param>
         /// <param name="resourceStore">The resource store.</param>
         /// <param name="tokenValidator">The token validator.</param>
+        /// <param name="refreshTokenService"></param>
         /// <param name="events">The events.</param>
         /// <param name="clock">The clock.</param>
-        /// <param name="userValidator">The user validator instance.</param>
         /// <param name="logger">The logger.</param>
         public TokenRequestValidator(IdentityServerOptions options,
             IAuthorizationCodeStore authorizationCodeStore,
             IResourceOwnerPasswordValidator resourceOwnerValidator,
+            IProfileService profile,
             IDeviceCodeValidator deviceCodeValidator,
             ExtensionGrantValidator extensionGrantValidator,
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
             IResourceStore resourceStore,
             ITokenValidator tokenValidator,
+            IRefreshTokenService refreshTokenService,
             IEventService events,
             ISystemClock clock,
-            IUserValidator userValidator,
             ILogger<TokenRequestValidator> logger)
         {
             _logger = logger;
@@ -73,6 +76,7 @@ namespace IdentityServer4.Validation
             _clock = clock;
             _authorizationCodeStore = authorizationCodeStore;
             _resourceOwnerValidator = resourceOwnerValidator;
+            _profile = profile ?? throw new ArgumentNullException(nameof(profile));
             _deviceCodeValidator = deviceCodeValidator;
             _extensionGrantValidator = extensionGrantValidator;
             _customRequestValidator = customRequestValidator;
@@ -80,7 +84,7 @@ namespace IdentityServer4.Validation
             _resourceStore = resourceStore;
             _tokenValidator = tokenValidator;
             _events = events ?? throw new ArgumentNullException(nameof(events));
-            _userValidator = userValidator ?? throw new ArgumentNullException(nameof(userValidator));
+            _refreshTokenService = refreshTokenService ?? throw new ArgumentNullException(nameof(refreshTokenService));
         }
 
         /// <summary>
@@ -142,21 +146,15 @@ namespace IdentityServer4.Validation
 
             _validatedRequest.GrantType = grantType;
 
-            switch (grantType)
+            return grantType switch
             {
-                case OidcConstants.GrantTypes.AuthorizationCode:
-                    return await RunValidationAsync(ValidateAuthorizationCodeRequestAsync, parameters);
-                case OidcConstants.GrantTypes.ClientCredentials:
-                    return await RunValidationAsync(ValidateClientCredentialsRequestAsync, parameters);
-                case OidcConstants.GrantTypes.Password:
-                    return await RunValidationAsync(ValidateResourceOwnerCredentialRequestAsync, parameters);
-                case OidcConstants.GrantTypes.RefreshToken:
-                    return await RunValidationAsync(ValidateRefreshTokenRequestAsync, parameters);
-                case OidcConstants.GrantTypes.DeviceCode:
-                    return await RunValidationAsync(ValidateDeviceCodeRequestAsync, parameters);
-                default:
-                    return await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters);
-            }
+                OidcConstants.GrantTypes.AuthorizationCode => await RunValidationAsync(ValidateAuthorizationCodeRequestAsync, parameters),
+                OidcConstants.GrantTypes.ClientCredentials => await RunValidationAsync(ValidateClientCredentialsRequestAsync, parameters),
+                OidcConstants.GrantTypes.Password => await RunValidationAsync(ValidateResourceOwnerCredentialRequestAsync, parameters),
+                OidcConstants.GrantTypes.RefreshToken => await RunValidationAsync(ValidateRefreshTokenRequestAsync, parameters),
+                OidcConstants.GrantTypes.DeviceCode => await RunValidationAsync(ValidateDeviceCodeRequestAsync, parameters),
+                _ => await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters),
+            };
         }
 
         private async Task<TokenRequestValidationResult> RunValidationAsync(Func<NameValueCollection, Task<TokenRequestValidationResult>> validationFunc, NameValueCollection parameters)
@@ -230,7 +228,18 @@ namespace IdentityServer4.Validation
                 LogError("Invalid authorization code", new { code });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
+            
+            /////////////////////////////////////////////
+            // validate client binding
+            /////////////////////////////////////////////
+            if (authZcode.ClientId != _validatedRequest.Client.ClientId)
+            {
+                LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
+                return Invalid(OidcConstants.TokenErrors.InvalidGrant);
+            }
 
+            // remove code from store
+            // todo: set to consumed in the future?
             await _authorizationCodeStore.RemoveAuthorizationCodeAsync(code);
 
             if (authZcode.CreationTime.HasExceeded(authZcode.Lifetime, _clock.UtcNow.UtcDateTime))
@@ -245,15 +254,6 @@ namespace IdentityServer4.Validation
             if (authZcode.SessionId.IsPresent())
             {
                 _validatedRequest.SessionId = authZcode.SessionId;
-            }
-
-            /////////////////////////////////////////////
-            // validate client binding
-            /////////////////////////////////////////////
-            if (authZcode.ClientId != _validatedRequest.Client.ClientId)
-            {
-                LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
-                return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
             /////////////////////////////////////////////
@@ -322,11 +322,10 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
-            var userEnabled = await _userValidator.IsActiveAsync(
-                _validatedRequest.AuthorizationCode.Subject,
-                _validatedRequest.Client,
-                IdentityServerConstants.ProfileIsActiveCallers.AuthorizationCodeValidation);
-            if (!userEnabled)
+            var isActiveCtx = new IsActiveContext(_validatedRequest.AuthorizationCode.Subject, _validatedRequest.Client, IdentityServerConstants.ProfileIsActiveCallers.AuthorizationCodeValidation);
+            await _profile.IsActiveAsync(isActiveCtx);
+
+            if (!isActiveCtx.IsActive)
             {
                 LogError("User has been disabled", new { subjectId = _validatedRequest.AuthorizationCode.Subject.GetSubjectId() });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
@@ -436,7 +435,7 @@ namespace IdentityServer4.Validation
             if (resourceOwnerContext.Result.IsError)
             {
                 // protect against bad validator implementations
-                resourceOwnerContext.Result.Error = resourceOwnerContext.Result.Error ?? OidcConstants.TokenErrors.InvalidGrant;
+                resourceOwnerContext.Result.Error ??= OidcConstants.TokenErrors.InvalidGrant;
 
                 if (resourceOwnerContext.Result.Error == OidcConstants.TokenErrors.UnsupportedGrantType)
                 {
@@ -471,11 +470,10 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
-            var userEnabled = await _userValidator.IsActiveAsync(
-                resourceOwnerContext.Result.Subject,
-                _validatedRequest.Client,
-                IdentityServerConstants.ProfileIsActiveCallers.ResourceOwnerValidation);
-            if (!userEnabled)
+            var isActiveCtx = new IsActiveContext(resourceOwnerContext.Result.Subject, _validatedRequest.Client, IdentityServerConstants.ProfileIsActiveCallers.ResourceOwnerValidation);
+            await _profile.IsActiveAsync(isActiveCtx);
+
+            if (!isActiveCtx.IsActive)
             {
                 LogError("User has been disabled", new { subjectId = resourceOwnerContext.Result.Subject.GetSubjectId() });
                 await RaiseFailedResourceOwnerAuthenticationEventAsync(userName, "user is inactive", resourceOwnerContext.Request.Client.ClientId);
@@ -508,7 +506,7 @@ namespace IdentityServer4.Validation
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
-            var result = await _tokenValidator.ValidateRefreshTokenAsync(refreshTokenHandle, _validatedRequest.Client);
+            var result = await _refreshTokenService.ValidateRefreshTokenAsync(refreshTokenHandle, _validatedRequest.Client);
 
             if (result.IsError)
             {
@@ -521,6 +519,8 @@ namespace IdentityServer4.Validation
             _validatedRequest.Subject = result.RefreshToken.Subject;
 
             _logger.LogDebug("Validation of refresh token request success");
+            // todo: more logging - similar to TokenValidator before
+
             return Valid();
         }
 
@@ -626,11 +626,14 @@ namespace IdentityServer4.Validation
                 /////////////////////////////////////////////
                 // make sure user is enabled
                 /////////////////////////////////////////////
-                var userEnabled = await _userValidator.IsActiveAsync(
+                var isActiveCtx = new IsActiveContext(
                     result.Subject,
                     _validatedRequest.Client,
                     IdentityServerConstants.ProfileIsActiveCallers.ExtensionGrantValidation);
-                if (!userEnabled)
+
+                await _profile.IsActiveAsync(isActiveCtx);
+
+                if (!isActiveCtx.IsActive)
                 {
                     // todo: raise event?
 
@@ -645,7 +648,7 @@ namespace IdentityServer4.Validation
             return Valid(result.CustomResponse);
         }
 
-        // TODO: do we want to rework the semantics of these ignore params?
+        // todo: do we want to rework the semantics of these ignore params?
         // also seems like other workflows other than CC clients can omit scopes?
         private async Task<bool> ValidateRequestedScopesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
         {
@@ -669,12 +672,9 @@ namespace IdentityServer4.Validation
                         clientAllowedScopes.AddRange(apiScopes.Select(x => x.Name));
                     }
 
-                    if (!ignoreImplicitOfflineAccess)
+                    if (!ignoreImplicitOfflineAccess && _validatedRequest.Client.AllowOfflineAccess)
                     {
-                        if (_validatedRequest.Client.AllowOfflineAccess)
-                        {
-                            clientAllowedScopes.Add(IdentityServerConstants.StandardScopes.OfflineAccess);
-                        }
+                        clientAllowedScopes.Add(IdentityServerConstants.StandardScopes.OfflineAccess);
                     }
 
                     scopes = clientAllowedScopes.Distinct().ToSpaceSeparatedString();
@@ -701,11 +701,12 @@ namespace IdentityServer4.Validation
                 return false;
             }
 
-            var parasedScopes = await _resourceValidator.ParseRequestedScopesAsync(requestedScopes);
-            var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
-                Client = _validatedRequest.Client,
-                ParsedScopeValues = parasedScopes
-            });
+            var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(
+                new ResourceValidationRequest
+                {
+                    Client = _validatedRequest.Client,
+                    Scopes = requestedScopes
+                });
 
             if (!resourceValidationResult.Succeeded)
             {
@@ -723,7 +724,7 @@ namespace IdentityServer4.Validation
 
             _validatedRequest.RequestedScopes = requestedScopes;
             _validatedRequest.ValidatedResources = resourceValidationResult;
-            
+
             return true;
         }
 
@@ -748,13 +749,13 @@ namespace IdentityServer4.Validation
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
-            if (Constants.SupportedCodeChallengeMethods.Contains(authZcode.CodeChallengeMethod) == false)
+            if (!Constants.SupportedCodeChallengeMethods.Contains(authZcode.CodeChallengeMethod))
             {
                 LogError("Unsupported code challenge method", new { codeChallengeMethod = authZcode.CodeChallengeMethod });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
-            if (ValidateCodeVerifierAgainstCodeChallenge(codeVerifier, authZcode.CodeChallenge, authZcode.CodeChallengeMethod) == false)
+            if (!ValidateCodeVerifierAgainstCodeChallenge(codeVerifier, authZcode.CodeChallenge, authZcode.CodeChallengeMethod))
             {
                 LogError("Transformed code verifier does not match code challenge");
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
@@ -794,7 +795,7 @@ namespace IdentityServer4.Validation
 
         private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
         {
-            var details = new TokenRequestValidationLog(_validatedRequest);
+            var details = new TokenRequestValidationLog(_validatedRequest, _options.Logging.TokenRequestSensitiveValuesFilter);
 
             if (message.IsPresent())
             {
@@ -825,9 +826,9 @@ namespace IdentityServer4.Validation
             LogWithRequestDetails(LogLevel.Information, "Token request validation success");
 
         private Task RaiseSuccessfulResourceOwnerAuthenticationEventAsync(string userName, string subjectId, string clientId) =>
-            _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, false, clientId));
+            _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, interactive: false, clientId));
 
         private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string error, string clientId) =>
-            _events.RaiseAsync(new UserLoginFailureEvent(userName, error, clientId: clientId));
+            _events.RaiseAsync(new UserLoginFailureEvent(userName, error, interactive: false, clientId: clientId));
     }
 }

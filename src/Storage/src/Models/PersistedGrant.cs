@@ -93,6 +93,16 @@ namespace IdentityServer4.Models
         [DataMember(Name = "expiration")]
         [JsonPropertyName("expiration")]
         public DateTime? Expiration { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the consumed time.
+        /// </summary>
+        /// <value>
+        /// The consumed time.
+        /// </value>
+        [DataMember(Name = "consumed")]
+        [JsonPropertyName("consumed")]
+        public DateTime? ConsumedTime { get; set; }
 
         /// <summary>
         /// Gets or sets the data.

@@ -13,7 +13,7 @@ var config = {
     // these two will be done dynamically from the buttons clicked, but are
     // needed if you want to use the silent_renew
     response_type: "code",
-    scope: "openid profile email scope1 scope2",
+    scope: "openid profile email resource1.scope1 resource2.scope1",
 
     // this will toggle if profile endpoint is used
     loadUserInfo: true,
@@ -132,7 +132,7 @@ function log(data) {
         else if (typeof msg !== 'string') {
             msg = JSON.stringify(msg, null, 2);
         }
-        document.getElementById('response').innerHTML += msg + '\r\n';
+        document.getElementById('response').innerText += msg + '\r\n';
     });
 }
 

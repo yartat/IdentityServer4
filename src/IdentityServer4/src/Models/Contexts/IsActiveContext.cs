@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using System;
 using System.Security.Claims;
@@ -60,5 +59,11 @@ namespace IdentityServer4.Models
         ///   <c>true</c> if the subject is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
+        /// <value>The error code.</value>
+        public string Error { get; set; }
     }
 }

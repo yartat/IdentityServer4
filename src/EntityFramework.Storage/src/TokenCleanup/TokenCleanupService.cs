@@ -1,10 +1,11 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,6 @@ namespace IdentityServer4.EntityFramework
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _operationalStoreNotification = operationalStoreNotification;
-
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace IdentityServer4.EntityFramework
             {
                 var expiredGrants = await _persistedGrantDbContext.PersistedGrants
                     .Where(x => x.Expiration < DateTime.UtcNow)
-                    .OrderBy(x => x.Key)
+                    .OrderBy(x => x.Expiration)
                     .Take(_options.TokenCleanupBatchSize)
                     .ToArrayAsync();
 
@@ -86,24 +86,16 @@ namespace IdentityServer4.EntityFramework
                 if (found > 0)
                 {
                     _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                    try
-                    {
-                        await _persistedGrantDbContext.SaveChangesAsync();
+                    await SaveChangesAsync();
 
-                        if (_operationalStoreNotification != null)
-                        {
-                            await _operationalStoreNotification.PersistedGrantsRemovedAsync(expiredGrants);
-                        }
-                    }
-                    catch (DbUpdateConcurrencyException ex)
+                    if (_operationalStoreNotification != null)
                     {
-                        // we get this if/when someone else already deleted the records
-                        // we want to essentially ignore this, and keep working
-                        _logger.LogDebug("Concurrency exception removing expired grants: {exception}", ex.Message);
+                        await _operationalStoreNotification.PersistedGrantsRemovedAsync(expiredGrants);
                     }
                 }
             }
         }
+
 
         /// <summary>
         /// Removes the stale device codes.
@@ -117,7 +109,7 @@ namespace IdentityServer4.EntityFramework
             {
                 var expiredCodes = await _persistedGrantDbContext.DeviceFlowCodes
                     .Where(x => x.Expiration < DateTime.UtcNow)
-                    .OrderBy(x => x.DeviceCode)
+                    .OrderBy(x => x.Expiration)
                     .Take(_options.TokenCleanupBatchSize)
                     .ToArrayAsync();
 
@@ -127,23 +119,44 @@ namespace IdentityServer4.EntityFramework
                 if (found > 0)
                 {
                     _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                    try
-                    {
-                        await _persistedGrantDbContext.SaveChangesAsync();
+                    await SaveChangesAsync();
 
-                        if (_operationalStoreNotification != null)
-                        {
-                            await _operationalStoreNotification.DeviceCodesRemovedAsync(expiredCodes);
-                        }
-                    }
-                    catch (DbUpdateConcurrencyException ex)
+                    if (_operationalStoreNotification != null)
                     {
-                        // we get this if/when someone else already deleted the records
-                        // we want to essentially ignore this, and keep working
-                        _logger.LogDebug("Concurrency exception removing expired grants: {exception}", ex.Message);
+                        await _operationalStoreNotification.DeviceCodesRemovedAsync(expiredCodes);
                     }
                 }
             }
+        }
+
+        private async Task SaveChangesAsync()
+        {
+            var count = 3;
+
+            while (count > 0)
+            {
+                try
+                {
+                    await _persistedGrantDbContext.SaveChangesAsync();
+                    return;
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    count--;
+
+                    // we get this if/when someone else already deleted the records
+                    // we want to essentially ignore this, and keep working
+                    _logger.LogDebug("Concurrency exception removing expired grants: {exception}", ex.Message);
+
+                    foreach (var entry in ex.Entries)
+                    {
+                        // mark this entry as not attached anymore so we don't try to re-delete
+                        entry.State = EntityState.Detached;
+                    }
+                }
+            }
+
+            _logger.LogDebug("Too many concurrency exceptions. Exiting.");
         }
     }
 }

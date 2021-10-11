@@ -162,7 +162,7 @@ For example::
 
 Sender-constrained access tokens
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Whenever a client authenticates to IdentityServer using a client certificate, the thumbrint of that certificate will be embedded in the access token.
+Whenever a client authenticates to IdentityServer using a client certificate, the thumbprint of that certificate will be embedded in the access token.
 
 Clients can use a X.509 client certificate as a mechanism for sender-constrained access tokens when authenticating to APIs.
 The use of these sender-constrained access tokens requires the client to use the same X.509 client certificate to authenticate to the API as the one used for IdentityServer.
@@ -182,7 +182,7 @@ Validating and accepting a client certificate in APIs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 As mentioned above for client authentication in IdentityServer, in the API the web server is expected to perform the client certificate validation at the TLS layer.
 
-Aditionally, the API hosting application will need a mechanism to accept the client certificate in order to obtain the thumbprint to perform the confirmation claim validation.
+Additionally, the API hosting application will need a mechanism to accept the client certificate in order to obtain the thumbprint to perform the confirmation claim validation.
 Below is an example how an API in ASP.NET Core might be configured for both access tokens and client certificates::
 
     services.AddAuthentication("token")
@@ -233,13 +233,14 @@ Below is a simple middleware that checks the claims::
                         return;
                     }
 
-                    var thumbprint = certResult.Principal.FindFirst(ClaimTypes.Thumbprint).Value;
+                    var certificate = await ctx.Connection.GetClientCertificateAsync();
+                    var thumbprint = Base64UrlTextEncoder.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
 
                     var cnf = JObject.Parse(cnfJson);
                     var sha256 = cnf.Value<string>("x5t#S256");
 
                     if (String.IsNullOrWhiteSpace(sha256) ||
-                        !thumbprint.Equals(sha256, StringComparison.OrdinalIgnoreCase))
+                        !thumbprint.Equals(sha256, StringComparison.Ordinal))
                     {
                         await ctx.ChallengeAsync(_options.JwtBearerSchemeName);
                         return;
@@ -249,7 +250,6 @@ Below is a simple middleware that checks the claims::
 
             await _next(ctx);
         }
-    }
 
 Below is an example pipeline for an API::
 
@@ -275,7 +275,7 @@ Below is an example pipeline for an API::
         endpoints.MapControllers();
     });
 
-Once the above middlware succeeds, then the caller has been authenticated with a sender-constrained access token.
+Once the above middleware succeeds, then the caller has been authenticated with a sender-constrained access token.
 
 Introspection and the confirmation claim
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,7 +288,7 @@ Ephemeral client certificates
 You can use the IdentityServer MTLS support also to create sender-constrained access tokens without using the client certificate for client authentication.
 This is useful for situations where you already have client secrets in place that you don't want to change, e.g. shared secrets, or better private key JWTs. 
 
-Still, if a client certificate is present, the confirmation claim can be embedded in outgoing access tokens. And as long as the client is using the same client certitificate to 
+Still, if a client certificate is present, the confirmation claim can be embedded in outgoing access tokens. And as long as the client is using the same client certificate to 
 request the token and calling the API, this will give you the desired proof-of-possession properties.
 
 For this enable the following setting in the options::

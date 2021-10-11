@@ -27,6 +27,7 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
         private Client client;
 
         private const string client_id = "code_client";
+        private const string client_id_optional = "code_client_optional";
         private const string client_id_plain = "code_plain_client";
         private const string client_id_pkce = "codewithproofkey_client";
         private const string client_id_pkce_plain = "codewithproofkey_plain_client";
@@ -258,6 +259,37 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
                 nonce: nonce);
 
             authorizeResponse.Should().BeNull();
+        }
+        
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Code_verifier_should_not_be_accepted_if_no_code_challenge_was_used()
+        {
+            await _pipeline.LoginAsync("bob");
+
+            var nonce = Guid.NewGuid().ToString();
+            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(client_id_optional,
+                response_type,
+                IdentityServerConstants.StandardScopes.OpenId,
+                redirect_uri,
+                nonce: nonce);
+
+            authorizeResponse.IsError.Should().BeFalse();
+
+            var code = authorizeResponse.Code;
+
+            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = client_id_optional,
+                ClientSecret = client_secret,
+
+                Code = code,
+                RedirectUri = redirect_uri,
+                CodeVerifier = code_verifier
+            });
+
+            tokenResponse.IsError.Should().BeTrue();
         }
 
         [Theory]

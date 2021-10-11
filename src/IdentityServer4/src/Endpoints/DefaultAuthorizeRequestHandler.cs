@@ -1,4 +1,5 @@
-﻿using IdentityModel;
+using IdentityModel;
+using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -10,6 +11,7 @@ using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Specialized;
 using System.Security.Claims;
@@ -31,6 +33,7 @@ namespace IdentityServer4.Endpoints
         private readonly ILoginUrlProcessor _loginUrlProcessor;
         private readonly IUserSession _userSession;
         private readonly ILogger _logger;
+        private readonly IdentityServerOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultAuthorizeRequestHandler"/> class.
@@ -41,6 +44,7 @@ namespace IdentityServer4.Endpoints
         /// <param name="interactionGenerator">The interaction generator instance.</param>
         /// <param name="authorizeResponseGenerator">The authorize response generator instance.</param>
         /// <param name="userSession">The user session instance.</param>
+        /// <param name="options">IdentityServer options.</param>
         /// <param name="loginUrlProcessor">The login URL processor instance.</param>
         /// <exception cref="ArgumentNullException">events</exception>
         /// <exception cref="ArgumentNullException">logger</exception>
@@ -55,6 +59,7 @@ namespace IdentityServer4.Endpoints
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
+            IOptions<IdentityServerOptions> options,
             ILoginUrlProcessor loginUrlProcessor = null)
         {
             _events = events ?? throw new ArgumentNullException(nameof(events));
@@ -63,6 +68,7 @@ namespace IdentityServer4.Endpoints
             _interactionGenerator = interactionGenerator ?? throw new ArgumentNullException(nameof(interactionGenerator));
             _authorizeResponseGenerator = authorizeResponseGenerator ?? throw new ArgumentNullException(nameof(authorizeResponseGenerator));
             _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _loginUrlProcessor = loginUrlProcessor;
         }
 
@@ -147,7 +153,7 @@ namespace IdentityServer4.Endpoints
 
             if (request != null)
             {
-                var details = new AuthorizeRequestValidationLog(request);
+                var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
                 _logger.LogInformation("{@validationDetails}", details);
             }
 
@@ -167,7 +173,7 @@ namespace IdentityServer4.Endpoints
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                var details = new AuthorizeRequestValidationLog(request);
+                var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
                 _logger.LogTrace(nameof(ValidatedAuthorizeRequest) + Environment.NewLine + "{@validationDetails}", details);
             }
         }
