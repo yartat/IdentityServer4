@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using System;
 using System.Collections.Generic;
@@ -12,7 +11,7 @@ using System.Security.Principal;
 namespace IdentityServer4.Extensions
 {
     /// <summary>
-    /// Extension methods for <see cref="System.Security.Principal.IPrincipal"/> and <see cref="System.Security.Principal.IIdentity"/> .
+    /// Extension methods for <see cref="IPrincipal"/> and <see cref="IIdentity"/> .
     /// </summary>
     public static class PrincipalExtensions
     {
@@ -22,10 +21,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static DateTime GetAuthenticationTime(this IPrincipal principal)
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(principal.GetAuthenticationTimeEpoch()).UtcDateTime;
-        }
+        public static DateTime GetAuthenticationTime(this IPrincipal principal) =>
+            DateTimeOffset.FromUnixTimeSeconds(principal.GetAuthenticationTimeEpoch()).UtcDateTime;
 
         /// <summary>
         /// Gets the authentication epoch time.
@@ -33,10 +30,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static long GetAuthenticationTimeEpoch(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetAuthenticationTimeEpoch() ?? 0;
-        }
+        public static long GetAuthenticationTimeEpoch(this IPrincipal principal) =>
+            principal?.Identity?.GetAuthenticationTimeEpoch() ?? 0;
 
         /// <summary>
         /// Gets the authentication epoch time.
@@ -60,10 +55,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetSubjectId(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetSubjectId();
-        }
+        public static string GetSubjectId(this IPrincipal principal) =>
+            principal?.Identity?.GetSubjectId();
 
         /// <summary>
         /// Gets the subject identifier.
@@ -88,10 +81,8 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         [DebuggerStepThrough]
         [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-        public static string GetName(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetName();
-        }
+        public static string GetName(this IPrincipal principal) =>
+            principal?.Identity?.GetName();
 
         /// <summary>
         /// Gets the name.
@@ -133,10 +124,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetAuthenticationMethod(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetAuthenticationMethod();
-        }
+        public static string GetAuthenticationMethod(this IPrincipal principal) =>
+            principal?.Identity?.GetAuthenticationMethod();
 
         /// <summary>
         /// Gets the authentication method claims.
@@ -144,10 +133,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static IEnumerable<Claim> GetAuthenticationMethods(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetAuthenticationMethods();
-        }
+        public static IEnumerable<Claim> GetAuthenticationMethods(this IPrincipal principal) =>
+            principal?.Identity?.GetAuthenticationMethods();
 
         /// <summary>
         /// Gets the authentication method.
@@ -183,10 +170,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetIdentityProvider(this IPrincipal principal)
-        {
-            return principal?.Identity?.GetIdentityProvider();
-        }
+        public static string GetIdentityProvider(this IPrincipal principal) =>
+            principal?.Identity?.GetIdentityProvider();
 
         /// <summary>
         /// Gets the identity provider.
@@ -213,11 +198,17 @@ namespace IdentityServer4.Extensions
         public static string GetSessionId(this IIdentity identity)
         {
             var id = identity as ClaimsIdentity;
-            var claim = id?.FindFirst(JwtClaimTypes.SessionId);
-            return claim != null ?
-                claim.Value :
-                null;
+            return id?.FindFirst(JwtClaimTypes.SessionId)?.Value;
         }
+
+        /// <summary>
+        /// Gets the session id.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <returns>Returns session id</returns>
+        [DebuggerStepThrough]
+        public static string GetSessionId(this IPrincipal principal) =>
+            principal?.Identity?.GetSessionId();
 
         /// <summary>
         /// Determines whether this instance is authenticated.
@@ -227,9 +218,7 @@ namespace IdentityServer4.Extensions
         ///   <c>true</c> if the specified principal is authenticated; otherwise, <c>false</c>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool IsAuthenticated(this IPrincipal principal)
-        {
-            return principal?.Identity?.IsAuthenticated == true;
-        }
+        public static bool IsAuthenticated(this IPrincipal principal) =>
+            principal?.Identity?.IsAuthenticated == true;
     }
 }

@@ -7,7 +7,7 @@
     <DotNetLibrary5xx>5.0.10</DotNetLibrary5xx>
     <OpenIdConnect>6.12.2</OpenIdConnect>
     <JsonLib>5.0.2</JsonLib>
-    <IdentityServer4>4.0.18-ideals</IdentityServer4>
+    <IdentityServer4>4.2.0-ideals</IdentityServer4>
     <IdentityModel>5.1.0</IdentityModel>
     <DeviceDetector>4.3.0</DeviceDetector>
     <NewtonJson>13.0.1</NewtonJson>
