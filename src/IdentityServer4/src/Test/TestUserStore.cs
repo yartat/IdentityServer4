@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -36,18 +36,7 @@ namespace IdentityServer4.Test
         public bool ValidateCredentials(string username, string password)
         {
             var user = FindByUsername(username);
-            
-            if (user != null)
-            {
-                if (string.IsNullOrWhiteSpace(user.Password) && string.IsNullOrWhiteSpace(password))
-                {
-                    return true;
-                }
-                
-                return user.Password.Equals(password);
-            }
-            
-            return false;
+            return string.Equals(user?.Password, password);
         }
 
         /// <summary>
@@ -57,7 +46,7 @@ namespace IdentityServer4.Test
         /// <returns></returns>
         public TestUser FindBySubjectId(string subjectId)
         {
-            return _users.FirstOrDefault(x => x.SubjectId == subjectId);
+            return _users.Find(x => x.SubjectId == subjectId);
         }
 
         /// <summary>
@@ -67,7 +56,7 @@ namespace IdentityServer4.Test
         /// <returns></returns>
         public TestUser FindByUsername(string username)
         {
-            return _users.FirstOrDefault(x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            return _users.Find(x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

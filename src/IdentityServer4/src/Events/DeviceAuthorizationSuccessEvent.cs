@@ -3,7 +3,6 @@
 
 
 using IdentityServer4.Extensions;
-using IdentityServer4.ResponseHandling;
 using IdentityServer4.Validation;
 
 namespace IdentityServer4.Events
@@ -17,9 +16,8 @@ namespace IdentityServer4.Events
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthorizationSuccessEvent"/> class.
         /// </summary>
-        /// <param name="response">The response.</param>
         /// <param name="request">The request.</param>
-        public DeviceAuthorizationSuccessEvent(DeviceAuthorizationResponse response, DeviceAuthorizationRequestValidationResult request)
+        public DeviceAuthorizationSuccessEvent(DeviceAuthorizationRequestValidationResult request)
             : this()
         {
             ClientId = request.ValidatedRequest.Client?.ClientId;

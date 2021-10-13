@@ -87,7 +87,7 @@ namespace IdentityServer4.Endpoints
             _logger.LogTrace("Calling into device authorize response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.ProcessAsync(requestResult, baseUrl);
 
-            await _events.RaiseAsync(new DeviceAuthorizationSuccessEvent(response, requestResult));
+            await _events.RaiseAsync(new DeviceAuthorizationSuccessEvent(requestResult));
 
             // return result
             _logger.LogDebug("Device authorize request success.");
@@ -106,28 +106,6 @@ namespace IdentityServer4.Endpoints
             _logger.LogError("Device authorization error: {error}:{errorDescriptions}", error, error ?? "-no message-");
 
             return new TokenErrorResult(response);
-        }
-
-        private void LogResponse(DeviceAuthorizationResponse response, DeviceAuthorizationRequestValidationResult requestResult)
-        {
-            var clientId = $"{requestResult.ValidatedRequest.Client.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
-
-            if (response.DeviceCode != null)
-            {
-                _logger.LogTrace("Device code issued for {clientId}: {deviceCode}", clientId, response.DeviceCode);
-            }
-            if (response.UserCode != null)
-            {
-                _logger.LogTrace("User code issued for {clientId}: {userCode}", clientId, response.UserCode);
-            }
-            if (response.VerificationUri != null)
-            {
-                _logger.LogTrace("Verification URI issued for {clientId}: {verificationUri}", clientId, response.VerificationUri);
-            }
-            if (response.VerificationUriComplete != null)
-            {
-                _logger.LogTrace("Verification URI (Complete) issued for {clientId}: {verificationUriComplete}", clientId, response.VerificationUriComplete);
-            }
         }
     }
 }

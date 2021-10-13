@@ -136,7 +136,7 @@ namespace IdentityServer4.Validation
                     else
                     {
                         var apiResources = resourcesFromStore.FindApiResourcesByScope(requestedScope.ParsedName);
-                        if (apiResources?.Any() == true)
+                        if (apiResources.Any())
                         {
                             foreach (var api in apiResources)
                             {

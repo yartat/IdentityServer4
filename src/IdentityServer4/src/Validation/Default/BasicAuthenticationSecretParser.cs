@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace IdentityServer4.Validation
 {
@@ -53,7 +54,7 @@ namespace IdentityServer4.Validation
             _logger.LogDebug("Start parsing Basic Authentication secret");
 
             var notfound = Task.FromResult<ParsedSecret>(null);
-            var authorizationHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+            var authorizationHeader = context.Request.Headers[HeaderNames.Authorization].FirstOrDefault();
 
             if (authorizationHeader.IsMissing())
             {
@@ -65,7 +66,7 @@ namespace IdentityServer4.Validation
                 return notfound;
             }
 
-            var parameter = authorizationHeader.Substring("Basic ".Length);
+            var parameter = authorizationHeader["Basic ".Length..];
 
             string pair;
             try
