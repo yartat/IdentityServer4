@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,6 +12,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Logging;
 using IdentityServer4.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer4.Validation
 {
@@ -21,7 +21,7 @@ namespace IdentityServer4.Validation
         private readonly IdentityServerOptions _options;
         private readonly IResourceValidator _resourceValidator;
         private readonly ILogger<DeviceAuthorizationRequestValidator> _logger;
-        
+
         public DeviceAuthorizationRequestValidator(
             IdentityServerOptions options,
             IResourceValidator resourceValidator,
@@ -58,15 +58,14 @@ namespace IdentityServer4.Validation
             return Valid(request);
         }
 
-        private DeviceAuthorizationRequestValidationResult Valid(ValidatedDeviceAuthorizationRequest request)
-        {
-            return new DeviceAuthorizationRequestValidationResult(request);
-        }
+        private static DeviceAuthorizationRequestValidationResult Valid(ValidatedDeviceAuthorizationRequest request) =>
+            new(request);
 
-        private DeviceAuthorizationRequestValidationResult Invalid(ValidatedDeviceAuthorizationRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string description = null)
-        {
-            return new DeviceAuthorizationRequestValidationResult(request, error, description);
-        }
+        private static DeviceAuthorizationRequestValidationResult Invalid(
+            ValidatedDeviceAuthorizationRequest request,
+            string error = OidcConstants.AuthorizeErrors.InvalidRequest,
+            string description = null) =>
+            new(request, error, description);
 
         private void LogError(string message, ValidatedDeviceAuthorizationRequest request)
         {
@@ -153,7 +152,7 @@ namespace IdentityServer4.Validation
             // check if scopes are valid/supported
             //////////////////////////////////////////////////////////
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest{
-                Client = request.Client, 
+                Client = request.Client,
                 Scopes = request.RequestedScopes
             });
 
@@ -163,7 +162,7 @@ namespace IdentityServer4.Validation
                 {
                     return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope);
                 }
-                
+
                 return Invalid(request, OidcConstants.AuthorizeErrors.UnauthorizedClient, "Invalid scope");
             }
 
@@ -174,7 +173,7 @@ namespace IdentityServer4.Validation
             }
 
             request.ValidatedResources = validatedResources;
-            
+
             return Valid(request);
         }
     }

@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -13,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using IdentityServer4.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer4.Extensions
 {
@@ -48,7 +48,7 @@ namespace IdentityServer4.Extensions
             var amrClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.AuthenticationMethod).ToArray();
             var scopeClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.Scope).ToArray();
             var jsonClaims = token.Claims.Where(x => x.ValueType == IdentityServerConstants.ClaimValueTypes.Json).ToList();
-            
+
             // add confirmation claim if present (it's JSON valued)
             if (token.Confirmation.IsPresent())
             {
@@ -83,7 +83,7 @@ namespace IdentityServer4.Extensions
                 var amrValues = amrClaims.Select(x => x.Value).Distinct().ToArray();
                 payload.Add(JwtClaimTypes.AuthenticationMethod, amrValues);
             }
-            
+
             // deal with json types
             // calling ToArray() to trigger JSON parsing once and so later 
             // collection identity comparisons work for the anonymous type

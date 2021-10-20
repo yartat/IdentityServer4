@@ -1,9 +1,9 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using IdentityServer4.Validation;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,7 +32,7 @@ namespace IdentityServer4.Events
             {
                 Token = Obfuscate(result.Token);
             }
-            
+
             if (!result.Claims.IsNullOrEmpty())
             {
                 ClaimTypes = result.Claims.Select(c => c.Type).Distinct();

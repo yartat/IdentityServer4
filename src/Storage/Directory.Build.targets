@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <NoWarn>1701;1702;RCS1090</NoWarn>
+    <LangVersion>preview</LangVersion>    
   </PropertyGroup>
 
 </Project>

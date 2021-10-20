@@ -1,14 +1,14 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
 
 using IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System;
 
 namespace IdentityServer4.Validation
 {
@@ -76,7 +76,7 @@ namespace IdentityServer4.Validation
         /// </summary>
         /// <param name="subject">The subject claim used to uniquely identifier the user.</param>
         /// <param name="authenticationMethod">The authentication method which describes the custom grant type.</param>
-        /// <param name="claims">Additional claims that will be maintained in the principal. 
+        /// <param name="claims">Additional claims that will be maintained in the principal.
         /// If you want these claims to appear in token, you need to add them explicitly in your custom implementation of <see cref="Services.IProfileService"/> service.</param>
         /// <param name="identityProvider">The identity provider.</param>
         /// <param name="customResponse">The custom response.</param>
@@ -112,10 +112,10 @@ namespace IdentityServer4.Validation
 
             var resultClaims = new List<Claim>
             {
-                new Claim(JwtClaimTypes.Subject, subject),
-                new Claim(JwtClaimTypes.AuthenticationMethod, authenticationMethod),
-                new Claim(JwtClaimTypes.IdentityProvider, identityProvider),
-                new Claim(JwtClaimTypes.AuthenticationTime, new DateTimeOffset(authTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                new(JwtClaimTypes.Subject, subject),
+                new(JwtClaimTypes.AuthenticationMethod, authenticationMethod),
+                new(JwtClaimTypes.IdentityProvider, identityProvider),
+                new(JwtClaimTypes.AuthenticationTime, new DateTimeOffset(authTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 
             if (!claims.IsNullOrEmpty())
@@ -126,13 +126,12 @@ namespace IdentityServer4.Validation
             var id = new ClaimsIdentity(authenticationMethod);
             id.AddClaims(resultClaims.Distinct(new ClaimComparer()));
 
-            Subject = new ClaimsPrincipal(id);
+            Subject = new(id);
             CustomResponse = customResponse;
         }
 
-        private string ConvertTokenErrorEnumToString(TokenRequestErrors error)
-        {
-            return error switch
+        private static string ConvertTokenErrorEnumToString(TokenRequestErrors error) =>
+            error switch
             {
                 TokenRequestErrors.InvalidClient => OidcConstants.TokenErrors.InvalidClient,
                 TokenRequestErrors.InvalidGrant => OidcConstants.TokenErrors.InvalidGrant,
@@ -143,6 +142,5 @@ namespace IdentityServer4.Validation
                 TokenRequestErrors.InvalidTarget => OidcConstants.TokenErrors.InvalidTarget,
                 _ => throw new InvalidOperationException("invalid token error")
             };
-        }
     }
 }

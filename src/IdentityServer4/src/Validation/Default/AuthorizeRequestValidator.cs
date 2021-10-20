@@ -1,10 +1,10 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
+using IdentityServer4.Logging.Models;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
@@ -14,7 +14,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Logging.Models;
 
 namespace IdentityServer4.Validation
 {
@@ -30,8 +29,7 @@ namespace IdentityServer4.Validation
         private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
         private readonly ILogger _logger;
 
-        private readonly ResponseTypeEqualityComparer
-            _responseTypeEqualityComparer = new ResponseTypeEqualityComparer();
+        private readonly ResponseTypeEqualityComparer _responseTypeEqualityComparer = new();
 
         public AuthorizeRequestValidator(
             IdentityServerOptions options,
@@ -271,9 +269,9 @@ namespace IdentityServer4.Validation
                 foreach (var key in jwtRequestValidationResult.Payload.Keys)
                 {
                     if (ignoreKeys.Contains(key)) continue;
-                    
+
                     var value = jwtRequestValidationResult.Payload[key];
-                    
+
                     var qsValue = request.Raw.Get(key);
                     if (qsValue != null)
                     {
@@ -450,7 +448,6 @@ namespace IdentityServer4.Validation
                 }
             }
 
-
             //////////////////////////////////////////////////////////
             // check if grant type is allowed for client
             //////////////////////////////////////////////////////////
@@ -623,7 +620,9 @@ namespace IdentityServer4.Validation
                     }
                     break;
                 case Constants.ScopeRequirement.ResourceOnly:
-                    if (validatedResources.Resources.IdentityResources.Any() || !validatedResources.Resources.ApiScopes.Any())
+                    if (validatedResources.Resources.IdentityResources.Any() ||
+                        !(validatedResources.Resources.ApiScopes.Any() ||
+                        validatedResources.Resources.ApiResources.Any()))
                     {
                         _logger.LogWarning("Requests for token response type only must include resource scopes, but no identity scopes.");
                         responseTypeValidationCheck = false;
@@ -670,7 +669,6 @@ namespace IdentityServer4.Validation
                     }
                 }
             }
-
 
             //////////////////////////////////////////////////////////
             // check prompt
@@ -823,10 +821,10 @@ namespace IdentityServer4.Validation
         }
 
         private static AuthorizeRequestValidationResult Invalid(ValidatedAuthorizeRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string description = null) =>
-            new AuthorizeRequestValidationResult(request, error, description);
+            new(request, error, description);
 
         private static AuthorizeRequestValidationResult Valid(ValidatedAuthorizeRequest request) =>
-            new AuthorizeRequestValidationResult(request);
+            new(request);
 
         private void LogError(string message, ValidatedAuthorizeRequest request)
         {

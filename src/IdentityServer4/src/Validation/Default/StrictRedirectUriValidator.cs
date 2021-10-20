@@ -1,9 +1,9 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -18,7 +18,7 @@ namespace IdentityServer4.Validation
     /// </summary>
     public class StrictRedirectUriValidator : IRedirectUriValidator
     {
-        private static readonly UriComparer Comparer = new UriComparer();
+        private static readonly UriComparer Comparer = new();
 
         /// <summary>
         /// Checks if a given URI string is in a collection of strings (using ordinal ignore case comparison)
@@ -26,12 +26,8 @@ namespace IdentityServer4.Validation
         /// <param name="uris">The uris.</param>
         /// <param name="requestedUri">The requested URI.</param>
         /// <returns></returns>
-        protected bool StringCollectionContainsString(IEnumerable<Uri> uris, string requestedUri)
-        {
-            if (uris.IsNullOrEmpty()) return false;
-
-            return uris.Contains(new Uri(requestedUri), Comparer);
-        }
+        protected static bool StringCollectionContainsString(IEnumerable<Uri> uris, string requestedUri) =>
+            !uris.IsNullOrEmpty() && uris.Contains(new Uri(requestedUri), Comparer);
 
         /// <summary>
         /// Determines whether a redirect URI is valid for a client.
@@ -41,10 +37,8 @@ namespace IdentityServer4.Validation
         /// <returns>
         ///   <c>true</c> is the URI is valid; <c>false</c> otherwise.
         /// </returns>
-        public virtual Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
-        {
-            return Task.FromResult(StringCollectionContainsString(client.RedirectUris, requestedUri));
-        }
+        public virtual Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client) =>
+            Task.FromResult(StringCollectionContainsString(client.RedirectUris, requestedUri));
 
         /// <summary>
         /// Determines whether a post logout URI is valid for a client.
@@ -54,10 +48,8 @@ namespace IdentityServer4.Validation
         /// <returns>
         ///   <c>true</c> is the URI is valid; <c>false</c> otherwise.
         /// </returns>
-        public virtual Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
-        {
-            return Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
-        }
+        public virtual Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client) =>
+            Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
 
         private sealed class UriComparer : IEqualityComparer<Uri>
         {
@@ -83,10 +75,8 @@ namespace IdentityServer4.Validation
                 return x.Equals(y);
             }
 
-            public int GetHashCode([DisallowNull] Uri obj)
-            {
-                return obj.GetHashCode();
-            }
+            public int GetHashCode([DisallowNull] Uri obj) =>
+                obj.GetHashCode();
         }
     }
 }

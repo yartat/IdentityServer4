@@ -1,12 +1,12 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using IdentityServer4.Extensions;
+using IdentityServer4.Validation;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using IdentityServer4.Extensions;
-using IdentityServer4.Validation;
 
 namespace IdentityServer4.Models
 {
@@ -42,7 +42,7 @@ namespace IdentityServer4.Models
             {
                 names.Add(IdentityServerConstants.StandardScopes.OfflineAccess);
             }
-            
+
             return names;
         }
 
@@ -69,7 +69,7 @@ namespace IdentityServer4.Models
         public static IEnumerable<ApiResource> FindApiResourcesByScope(this Resources resources, string name)
         {
             var q = from api in resources.ApiResources
-                    where api.Scopes != null && api.Scopes.Contains(name)
+                    where api.Scopes?.Contains(name) == true
                     select api;
             return q.ToArray();
         }
@@ -115,7 +115,7 @@ namespace IdentityServer4.Models
             {
                 return apis.First().AllowedAccessTokenSigningAlgorithms;
             }
-            
+
             var allAlgorithms = apis.Where(r => r.AllowedAccessTokenSigningAlgorithms.Any()).Select(r => r.AllowedAccessTokenSigningAlgorithms).ToList();
 
             // resources need to agree on allowed signing algorithms
@@ -134,9 +134,7 @@ namespace IdentityServer4.Models
             return new List<string>();
         }
 
-        private static IEnumerable<T> IntersectLists<T>(IEnumerable<IEnumerable<T>> lists)
-        {
-            return lists.Aggregate((l1, l2) => l1.Intersect(l2));
-        }
+        private static IEnumerable<T> IntersectLists<T>(IEnumerable<IEnumerable<T>> lists) =>
+            lists.Aggregate((l1, l2) => l1.Intersect(l2));
     }
 }
