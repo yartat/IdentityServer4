@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.Storage", "src\Storage\src\IdentityServer4.Storage.csproj", "{A5E2B0DD-9C88-42B5-BCEC-7ED701504FF7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4", "src\IdentityServer4\src\IdentityServer4.csproj", "{69A3D2B8-42E1-46BC-9151-A466CC04A312}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.Debug", "src\IdentityServer4\src\IdentityServer4.Debug.csproj", "{69A3D2B8-42E1-46BC-9151-A466CC04A312}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.Storage", "src\EntityFramework.Storage\src\IdentityServer4.EntityFramework.Storage.csproj", "{E3163631-3751-40A4-BE60-61BD5A3FABB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.Storage.Debug", "src\EntityFramework.Storage\src\IdentityServer4.EntityFramework.Storage.Debug.csproj", "{E3163631-3751-40A4-BE60-61BD5A3FABB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework", "src\EntityFramework\src\IdentityServer4.EntityFramework.csproj", "{382DABEF-8723-4A5C-8E12-86561E7A34D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.Debug", "src\EntityFramework\src\IdentityServer4.EntityFramework.Debug.csproj", "{382DABEF-8723-4A5C-8E12-86561E7A34D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

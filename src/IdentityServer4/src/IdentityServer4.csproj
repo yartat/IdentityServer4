@@ -39,7 +39,6 @@
 
   <ItemGroup>
     <PackageReference Include="DeviceDetector.NET" Version="$(DeviceDetector)" />
-    <PackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4)" />
 
     <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(OpenIdConnect)" />
@@ -51,6 +50,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(DotNetLibrary3xx)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Storage\src\IdentityServer4.Storage.csproj" />
   </ItemGroup>
 
 </Project>

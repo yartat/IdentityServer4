@@ -73,7 +73,7 @@ namespace IdentityServer4.Extensions
             context.Items[Constants.EnvironmentKeys.SignOutCalled] = "true";
         }
 
-        internal static bool GetSignOutCalled(this HttpContext context) =>
+        public static bool GetSignOutCalled(this HttpContext context) =>
             context.Items.ContainsKey(Constants.EnvironmentKeys.SignOutCalled);
 
         /// <summary>
