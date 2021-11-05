@@ -13,6 +13,7 @@ using System.Linq;
 using System.Security.Claims;
 using IdentityServer4.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Globalization;
 
 namespace IdentityServer4.Extensions
 {
@@ -21,6 +22,21 @@ namespace IdentityServer4.Extensions
     /// </summary>
     public static class TokenExtensions
     {
+        /// <summary>
+        /// Gets the date time value from claim.
+        /// </summary>
+        /// <param name="claim">The claim value.</param>
+        /// <returns>Returns <see cref="DateTime"/> value or <c>null</c>.</returns>
+        public static DateTime? GetDateTime(this Claim claim)
+        {
+            if (claim == null)
+            {
+                return null;
+            }
+
+            return EpochTime.DateTime(Convert.ToInt64(Math.Truncate(Convert.ToDouble(claim.Value, CultureInfo.InvariantCulture))));
+        }
+
         /// <summary>
         /// Creates the default JWT payload.
         /// </summary>
@@ -33,12 +49,14 @@ namespace IdentityServer4.Extensions
         /// </exception>
         public static JwtPayload CreateJwtPayload(this Token token, ISystemClock clock, IdentityServerOptions options, ILogger logger)
         {
+            var issuedAtClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.IssuedAt).ToArray();
             var payload = new JwtPayload(
                 token.Issuer,
                 null,
                 null,
                 clock.UtcNow.UtcDateTime,
-                clock.UtcNow.UtcDateTime.AddSeconds(token.Lifetime));
+                clock.UtcNow.UtcDateTime.AddSeconds(token.Lifetime),
+                issuedAtClaims.FirstOrDefault().GetDateTime());
 
             foreach (var aud in token.Audiences)
             {
@@ -58,7 +76,8 @@ namespace IdentityServer4.Extensions
             var normalClaims = token.Claims
                 .Except(amrClaims)
                 .Except(jsonClaims)
-                .Except(scopeClaims);
+                .Except(scopeClaims)
+                .Except(issuedAtClaims);
 
             payload.AddClaims(normalClaims);
 

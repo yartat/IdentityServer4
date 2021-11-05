@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
@@ -71,9 +70,9 @@ namespace IdentityServer4.Services
         public virtual async Task<string> CreateTokenAsync(Token token)
         {
             var header = await CreateHeaderAsync(token);
-            var payload = await CreatePayloadAsync(token);
+            var payload = CreatePayload(token);
 
-            return await CreateJwtAsync(new JwtSecurityToken(header, payload));
+            return CreateJwtToken(new JwtSecurityToken(header, payload));
         }
 
         /// <summary>
@@ -104,12 +103,9 @@ namespace IdentityServer4.Services
                 header["x5t"] = Base64Url.Encode(cert.GetCertHash());
             }
 
-            if (token.Type == TokenTypes.AccessToken)
+            if (token.Type == TokenTypes.AccessToken && Options.AccessTokenJwtType.IsPresent())
             {
-                if (Options.AccessTokenJwtType.IsPresent())
-                {
-                    header["typ"] = Options.AccessTokenJwtType;
-                }
+                header["typ"] = Options.AccessTokenJwtType;
             }
 
             return header;
@@ -120,21 +116,15 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="token">The token.</param>
         /// <returns>The JWT payload</returns>
-        protected virtual Task<JwtPayload> CreatePayloadAsync(Token token)
-        {
-            var payload = token.CreateJwtPayload(Clock, Options, Logger);
-            return Task.FromResult(payload);
-        }
+        protected virtual JwtPayload CreatePayload(Token token) =>
+            token.CreateJwtPayload(Clock, Options, Logger);
 
         /// <summary>
         /// Applies the signature to the JWT
         /// </summary>
         /// <param name="jwt">The JWT object.</param>
         /// <returns>The signed JWT</returns>
-        protected virtual Task<string> CreateJwtAsync(JwtSecurityToken jwt)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            return Task.FromResult(handler.WriteToken(jwt));
-        }
+        protected virtual string CreateJwtToken(JwtSecurityToken jwt) =>
+            new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 }

@@ -285,16 +285,12 @@ namespace IdentityServer4.Services
                 else
                 {
                     Logger.LogTrace("Creating reference access token");
-
-                    var handle = await ReferenceTokenStore.StoreReferenceTokenAsync(token);
-
-                    tokenResult = handle;
+                    tokenResult = await ReferenceTokenStore.StoreReferenceTokenAsync(token);
                 }
             }
             else if (token.Type == OidcConstants.TokenTypes.IdentityToken)
             {
                 Logger.LogTrace("Creating JWT identity token");
-
                 tokenResult = await CreationService.CreateTokenAsync(token);
             }
             else
