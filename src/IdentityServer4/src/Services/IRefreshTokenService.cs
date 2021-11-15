@@ -1,11 +1,10 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Models;
+using IdentityServer4.Validation;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Validation;
 
 namespace IdentityServer4.Services
 {
@@ -21,7 +20,7 @@ namespace IdentityServer4.Services
         /// <param name="client">The client.</param>
         /// <returns></returns>
         Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client client);
-        
+
         /// <summary>
         /// Creates the refresh token.
         /// </summary>
@@ -38,9 +37,9 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Updates the refresh token.
         /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <param name="client">The client.</param>
+        /// <param name="handle">The refresh token identifier.</param>
+        /// <param name="refreshToken">The refresh token parameters.</param>
+        /// <param name="client">The OpenId client.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>
@@ -49,9 +48,9 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Refreshes the refresh token.
         /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <param name="client">The client.</param>
+        /// <param name="handle">The refresh token identifier.</param>
+        /// <param name="refreshToken">The refresh token parameters.</param>
+        /// <param name="client">The OpenId client.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>

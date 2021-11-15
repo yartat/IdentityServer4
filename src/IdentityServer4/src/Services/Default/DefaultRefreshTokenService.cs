@@ -1,17 +1,15 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
+using IdentityServer4.Validation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityModel;
-using IdentityServer4.Logging.Models;
-using IdentityServer4.Validation;
-using Microsoft.AspNetCore.Authentication;
 
 namespace IdentityServer4.Services
 {
@@ -91,7 +89,7 @@ namespace IdentityServer4.Services
                 Logger.LogWarning("Refresh token has expired.");
                 return invalidGrant;
             }
-            
+
             /////////////////////////////////////////////
             // check if client belongs to requested refresh token
             /////////////////////////////////////////////
@@ -109,19 +107,16 @@ namespace IdentityServer4.Services
                 Logger.LogError("{clientId} does not have access to offline_access scope anymore", client.ClientId);
                 return invalidGrant;
             }
-            
+
             /////////////////////////////////////////////
             // check if refresh token has been consumed
             /////////////////////////////////////////////
-            if (refreshToken.ConsumedTime.HasValue)
+            if (refreshToken.ConsumedTime.HasValue && !await AcceptConsumedTokenAsync(refreshToken))
             {
-                if ((await AcceptConsumedTokenAsync(refreshToken)) == false)
-                {
-                    Logger.LogWarning("Rejecting refresh token because it has been consumed already.");
-                    return invalidGrant;
-                }
+                Logger.LogWarning("Rejecting refresh token because it has been consumed already.");
+                return invalidGrant;
             }
-            
+
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
@@ -132,16 +127,16 @@ namespace IdentityServer4.Services
 
             await Profile.IsActiveAsync(isActiveCtx);
 
-            if (isActiveCtx.IsActive == false)
+            if (!isActiveCtx.IsActive)
             {
                 Logger.LogError("{subjectId} has been disabled", refreshToken.Subject.GetSubjectId());
                 return invalidGrant;
             }
-            
+
             return new TokenValidationResult
             {
-                IsError = false, 
-                RefreshToken = refreshToken, 
+                IsError = false,
+                RefreshToken = refreshToken,
                 Client = client
             };
         }
@@ -219,8 +214,8 @@ namespace IdentityServer4.Services
         {
             Logger.LogDebug("Updating refresh token");
 
-            bool needsCreate = false;
-            bool needsUpdate = false;
+            var needsCreate = false;
+            var needsUpdate = false;
 
             if (client.RefreshTokenUsage == TokenUsage.OneTimeOnly)
             {
@@ -254,8 +249,7 @@ namespace IdentityServer4.Services
                 if (client.AbsoluteRefreshTokenLifetime > 0 && newLifetime > client.AbsoluteRefreshTokenLifetime)
                 {
                     newLifetime = client.AbsoluteRefreshTokenLifetime;
-                    Logger.LogDebug("New lifetime exceeds absolute lifetime, capping it to {newLifetime}",
-                        newLifetime.ToString());
+                    Logger.LogDebug("New lifetime exceeds absolute lifetime, capping it to {newLifetime}", newLifetime.ToString());
                 }
 
                 refreshToken.Lifetime = newLifetime;

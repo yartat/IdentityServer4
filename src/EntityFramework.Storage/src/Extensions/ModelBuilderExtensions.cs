@@ -1,6 +1,5 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
 
 using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Options;
@@ -210,8 +209,6 @@ namespace IdentityServer4.EntityFramework.Extensions
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
             });
 
-
-
             modelBuilder.Entity<ApiResource>(apiResource =>
             {
                 apiResource.ToTable(storeOptions.ApiResource).HasKey(x => x.Id);
@@ -259,7 +256,6 @@ namespace IdentityServer4.EntityFramework.Extensions
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
             });
 
-
             modelBuilder.Entity<ApiScope>(scope =>
             {
                 scope.ToTable(storeOptions.ApiScope).HasKey(x => x.Id);
@@ -284,8 +280,6 @@ namespace IdentityServer4.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
             });
-
-
         }
     }
 }

@@ -1,43 +1,42 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System.Collections.Generic;
-
-#pragma warning disable 1591
 
 namespace IdentityServer4.Models
 {
-    public class GrantTypes
+#pragma warning disable 1591
+    public static class GrantTypes
     {
-        public static ICollection<string> Implicit =>
-            new[] { GrantType.Implicit };
+        public static ISet<string> Implicit =>
+            new HashSet<string> { GrantType.Implicit };
 
-        public static ICollection<string> ImplicitAndClientCredentials =>
-            new[]  { GrantType.Implicit, GrantType.ClientCredentials };
+        public static ISet<string> ImplicitAndClientCredentials =>
+            new HashSet<string> { GrantType.Implicit, GrantType.ClientCredentials };
 
-        public static ICollection<string> Code =>
-            new[] { GrantType.AuthorizationCode };
+        public static ISet<string> Code =>
+            new HashSet<string> { GrantType.AuthorizationCode };
 
-        public static ICollection<string> CodeAndClientCredentials =>
-            new[] { GrantType.AuthorizationCode, GrantType.ClientCredentials };
+        public static ISet<string> CodeAndClientCredentials =>
+            new HashSet<string> { GrantType.AuthorizationCode, GrantType.ClientCredentials };
 
-        public static ICollection<string> Hybrid =>
-            new[] { GrantType.Hybrid };
+        public static ISet<string> Hybrid =>
+            new HashSet<string> { GrantType.Hybrid };
 
-        public static ICollection<string> HybridAndClientCredentials =>
-            new[] { GrantType.Hybrid, GrantType.ClientCredentials };
+        public static ISet<string> HybridAndClientCredentials =>
+            new HashSet<string> { GrantType.Hybrid, GrantType.ClientCredentials };
 
-        public static ICollection<string> ClientCredentials =>
-            new[] { GrantType.ClientCredentials };
+        public static ISet<string> ClientCredentials =>
+            new HashSet<string> { GrantType.ClientCredentials };
 
-        public static ICollection<string> ResourceOwnerPassword =>
-            new[] { GrantType.ResourceOwnerPassword };
+        public static ISet<string> ResourceOwnerPassword =>
+            new HashSet<string> { GrantType.ResourceOwnerPassword };
 
-        public static ICollection<string> ResourceOwnerPasswordAndClientCredentials =>
-            new[] { GrantType.ResourceOwnerPassword, GrantType.ClientCredentials };
+        public static ISet<string> ResourceOwnerPasswordAndClientCredentials =>
+            new HashSet<string> { GrantType.ResourceOwnerPassword, GrantType.ClientCredentials };
 
-        public static ICollection<string> DeviceFlow =>
-            new[] { GrantType.DeviceFlow };
+        public static ISet<string> DeviceFlow =>
+            new HashSet<string> { GrantType.DeviceFlow };
     }
+#pragma warning restore 1591
 }

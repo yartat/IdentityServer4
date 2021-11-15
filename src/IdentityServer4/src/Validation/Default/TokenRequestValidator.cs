@@ -29,7 +29,6 @@ namespace IdentityServer4.Validation
         private readonly ICustomTokenRequestValidator _customRequestValidator;
         private readonly IResourceValidator _resourceValidator;
         private readonly IResourceStore _resourceStore;
-        private readonly ITokenValidator _tokenValidator;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEventService _events;
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
@@ -52,7 +51,6 @@ namespace IdentityServer4.Validation
         /// <param name="customRequestValidator">The custom request validator.</param>
         /// <param name="resourceValidator">The resource validator.</param>
         /// <param name="resourceStore">The resource store.</param>
-        /// <param name="tokenValidator">The token validator.</param>
         /// <param name="refreshTokenService"></param>
         /// <param name="events">The events.</param>
         /// <param name="clock">The clock.</param>
@@ -66,7 +64,6 @@ namespace IdentityServer4.Validation
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
             IResourceStore resourceStore,
-            ITokenValidator tokenValidator,
             IRefreshTokenService refreshTokenService,
             IEventService events,
             ISystemClock clock,
@@ -83,7 +80,6 @@ namespace IdentityServer4.Validation
             _customRequestValidator = customRequestValidator;
             _resourceValidator = resourceValidator;
             _resourceStore = resourceStore;
-            _tokenValidator = tokenValidator;
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _refreshTokenService = refreshTokenService ?? throw new ArgumentNullException(nameof(refreshTokenService));
         }
@@ -198,8 +194,8 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
-            if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains(GrantType.AuthorizationCode) &&
-                !_validatedRequest.Client.AllowedGrantTypes.ToList().Contains(GrantType.Hybrid))
+            if (!_validatedRequest.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode) &&
+                !_validatedRequest.Client.AllowedGrantTypes.Contains(GrantType.Hybrid))
             {
                 LogError("Client not authorized for code flow");
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
@@ -223,25 +219,23 @@ namespace IdentityServer4.Validation
 
             _validatedRequest.AuthorizationCodeHandle = code;
 
-            var authZcode = await _authorizationCodeStore.GetAuthorizationCodeAsync(code);
+            var authZcode = await _authorizationCodeStore.GetAndRemoveAuthorizationCodeAsync(code);
             if (authZcode == null)
             {
                 LogError("Invalid authorization code", new { code });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
-            
+
             /////////////////////////////////////////////
             // validate client binding
             /////////////////////////////////////////////
             if (authZcode.ClientId != _validatedRequest.Client.ClientId)
             {
                 LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
+                // restore code if client is incorrect
+                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
-
-            // remove code from store
-            // todo: set to consumed in the future?
-            await _authorizationCodeStore.RemoveAuthorizationCodeAsync(code);
 
             if (authZcode.CreationTime.HasExceeded(authZcode.Lifetime, _clock.UtcNow.UtcDateTime))
             {
@@ -276,20 +270,23 @@ namespace IdentityServer4.Validation
             if (redirectUri.IsMissing())
             {
                 LogError("Redirect URI is missing");
+                // restore code if redirect URI is missing
+                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
             }
 
-            if (redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal) == false)
+            if (!redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal))
             {
                 LogError("Invalid redirect_uri", new { redirectUri, expectedRedirectUri = _validatedRequest.AuthorizationCode.RedirectUri });
+                // restore code if redirect URI is invalid
+                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
             /////////////////////////////////////////////
             // validate scopes are present
             /////////////////////////////////////////////
-            if (_validatedRequest.AuthorizationCode.RequestedScopes == null ||
-                !_validatedRequest.AuthorizationCode.RequestedScopes.Any())
+            if (_validatedRequest.AuthorizationCode.RequestedScopes?.Any() != true)
             {
                 LogError("Authorization code has no associated scopes");
                 return Invalid(OidcConstants.TokenErrors.InvalidRequest);
@@ -306,6 +303,8 @@ namespace IdentityServer4.Validation
                 var proofKeyResult = ValidateAuthorizationCodeWithProofKeyParameters(codeVerifier, _validatedRequest.AuthorizationCode);
                 if (proofKeyResult.IsError)
                 {
+                    // restore code if proof key is invalid
+                    await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                     return proofKeyResult;
                 }
 
@@ -316,6 +315,8 @@ namespace IdentityServer4.Validation
                 if (codeVerifier.IsPresent())
                 {
                     LogError("Unexpected code_verifier: {codeVerifier}. This happens when the client is trying to use PKCE, but it is not enabled. Set RequirePkce to true.", codeVerifier);
+                    // restore code if code verifier is present
+                    await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                     return Invalid(OidcConstants.TokenErrors.InvalidGrant);
                 }
             }
@@ -358,7 +359,7 @@ namespace IdentityServer4.Validation
                 return Invalid(OidcConstants.TokenErrors.InvalidScope);
             }
 
-            if (_validatedRequest.ValidatedResources.Resources.IdentityResources.Any())
+            if (_validatedRequest.ValidatedResources.Resources.IdentityResources.Count > 0)
             {
                 LogError("Client cannot request OpenID scopes in client credentials flow", new { clientId = _validatedRequest.Client.ClientId });
                 return Invalid(OidcConstants.TokenErrors.InvalidScope);
@@ -421,7 +422,6 @@ namespace IdentityServer4.Validation
 
             _validatedRequest.UserName = userName;
 
-
             /////////////////////////////////////////////
             // authenticate user
             /////////////////////////////////////////////
@@ -461,7 +461,7 @@ namespace IdentityServer4.Validation
 
             if (resourceOwnerContext.Result.Subject == null)
             {
-                var error = "User authentication failed: no principal returned";
+                const string error = "User authentication failed: no principal returned";
                 LogError(error);
                 await RaiseFailedResourceOwnerAuthenticationEventAsync(userName, error, resourceOwnerContext.Request.Client.ClientId);
 
@@ -711,7 +711,7 @@ namespace IdentityServer4.Validation
 
             if (!resourceValidationResult.Succeeded)
             {
-                if (resourceValidationResult.InvalidScopes.Any())
+                if (resourceValidationResult.InvalidScopes.Count > 0)
                 {
                     LogError("Invalid scopes requested");
                 }
@@ -765,7 +765,7 @@ namespace IdentityServer4.Validation
             return Valid();
         }
 
-        private bool ValidateCodeVerifierAgainstCodeChallenge(string codeVerifier, string codeChallenge, string codeChallengeMethod)
+        private static bool ValidateCodeVerifierAgainstCodeChallenge(string codeVerifier, string codeChallenge, string codeChallengeMethod)
         {
             if (codeChallengeMethod == OidcConstants.CodeChallengeMethods.Plain)
             {
@@ -780,10 +780,10 @@ namespace IdentityServer4.Validation
         }
 
         private TokenRequestValidationResult Valid(Dictionary<string, object> customResponse = null) =>
-            new TokenRequestValidationResult(_validatedRequest, customResponse);
+            new(_validatedRequest, customResponse);
 
         private TokenRequestValidationResult Invalid(string error, string errorDescription = null, Dictionary<string, object> customResponse = null) =>
-            new TokenRequestValidationResult(_validatedRequest, error, errorDescription, customResponse);
+            new(_validatedRequest, error, errorDescription, customResponse);
 
         private void LogError(string message = null, object values = null) =>
             LogWithRequestDetails(LogLevel.Error, message, values);
@@ -810,7 +810,6 @@ namespace IdentityServer4.Validation
                     {
                         _logger.Log(logLevel, message + "{@values}, details: {@details}", values, details);
                     }
-
                 }
                 catch (Exception ex)
                 {

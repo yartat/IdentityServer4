@@ -1,14 +1,10 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Linq;
 using System;
-using IdentityModel;
-using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace IdentityServer4.Models
 {
@@ -82,7 +78,7 @@ namespace IdentityServer4.Models
         }
 
         // setting grant types should be atomic
-        private ICollection<string> _allowedGrantTypes = new GrantTypeValidatingHashSet();
+        private ISet<string> _allowedGrantTypes = new HashSet<string>();
 
         private string DebuggerDisplay => ClientId ?? $"{{{typeof(Client)}}}";
 
@@ -147,13 +143,13 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Specifies the allowed grant types (legal combinations of AuthorizationCode, Implicit, Hybrid, ResourceOwner, ClientCredentials).
         /// </summary>
-        public ICollection<string> AllowedGrantTypes
+        public ISet<string> AllowedGrantTypes
         {
             get { return _allowedGrantTypes; }
             set
             {
                 ValidateGrantTypes(value);
-                _allowedGrantTypes = new GrantTypeValidatingHashSet(value);
+                _allowedGrantTypes = new HashSet<string>(value);
             }
         }
 
@@ -171,7 +167,7 @@ namespace IdentityServer4.Models
         /// Specifies whether the client must use a request object on authorize requests (defaults to <c>false</c>.)
         /// </summary>
         public bool RequireRequestObject { get; set; } = false;
-        
+
         /// <summary>
         /// Controls whether access tokens are transmitted via the browser for this client (defaults to <c>false</c>).
         /// This can prevent accidental leakage of access tokens when multiple response types are allowed.
@@ -280,7 +276,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Absolute: the refresh token will expire on a fixed point in time (specified by the AbsoluteRefreshTokenLifetime)
         /// Sliding: when refreshing the token, the lifetime of the refresh token will be renewed (by the amount specified in SlidingRefreshTokenLifetime). The lifetime will not exceed AbsoluteRefreshTokenLifetime.
-        /// </summary>        
+        /// </summary>
         public TokenExpiration RefreshTokenExpiration { get; set; } = TokenExpiration.Absolute;
 
         /// <summary>
@@ -425,73 +421,6 @@ namespace IdentityServer4.Models
                 grantTypes.Contains(value2, StringComparer.Ordinal))
             {
                 throw new InvalidOperationException($"Grant types list cannot contain both {value1} and {value2}");
-            }
-        }
-
-        internal class GrantTypeValidatingHashSet : ICollection<string>
-        {
-            private readonly ICollection<string> _inner;
-
-            public GrantTypeValidatingHashSet()
-            {
-                _inner = new HashSet<string>();
-            }
-
-            public GrantTypeValidatingHashSet(IEnumerable<string> values)
-            {
-                _inner = new HashSet<string>(values);
-            }
-
-            private ICollection<string> Clone()
-            {
-                return new HashSet<string>(this);
-            }
-
-            private ICollection<string> CloneWith(params string[] values)
-            {
-                var clone = Clone();
-                foreach (var item in values) clone.Add(item);
-                return clone;
-            }
-
-            public int Count => _inner.Count;
-
-            public bool IsReadOnly => _inner.IsReadOnly;
-
-            public void Add(string item)
-            {
-                ValidateGrantTypes(CloneWith(item));
-                _inner.Add(item);
-            }
-
-            public void Clear()
-            {
-                _inner.Clear();
-            }
-
-            public bool Contains(string item)
-            {
-                return _inner.Contains(item);
-            }
-
-            public void CopyTo(string[] array, int arrayIndex)
-            {
-                _inner.CopyTo(array, arrayIndex);
-            }
-
-            public IEnumerator<string> GetEnumerator()
-            {
-                return _inner.GetEnumerator();
-            }
-
-            public bool Remove(string item)
-            {
-                return _inner.Remove(item);
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _inner.GetEnumerator();
             }
         }
     }

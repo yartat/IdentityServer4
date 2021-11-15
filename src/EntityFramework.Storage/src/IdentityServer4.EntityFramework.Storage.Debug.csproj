@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>IdentityServer4.EntityFramework.Storage</PackageId>
     <AssemblyName>IdentityServer4.EntityFramework.Storage</AssemblyName>
-    <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
     
     <Description>EntityFramework persistence layer for IdentityServer4</Description>
     <Authors>Brock Allen;Dominick Baier;Scott Brady</Authors>
@@ -29,9 +29,14 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="AutoMapper" Version="$(AutoMapper)" />
   </ItemGroup>
   
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary6xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary6xx)" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary5xx)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary5xx)" />

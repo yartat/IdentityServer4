@@ -1,18 +1,17 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
+using IdentityServer4.EntityFramework.Interfaces;
+using IdentityServer4.EntityFramework.Mappers;
+using IdentityServer4.Extensions;
+using IdentityServer4.Models;
+using IdentityServer4.Stores;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using System;
-using IdentityServer4.Extensions;
 
 namespace IdentityServer4.EntityFramework.Stores
 {
@@ -83,13 +82,31 @@ namespace IdentityServer4.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
+        public virtual async Task<PersistedGrant> GetAndRemoveAsync(string key)
+        {
+            var persistedGrant = await Context.PersistedGrants.FirstOrDefaultAsync(x => x.Key == key);
+            if (persistedGrant == null)
+            {
+                Logger.LogDebug("{persistedGrantKey} not found in database", key);
+                return null;
+            }
+
+            var model = persistedGrant.ToModel();
+            Context.PersistedGrants.Remove(persistedGrant);
+            await Context.SaveChangesAsync();
+
+            Logger.LogDebug("{persistedGrantKey} found in database", key);
+
+            return model;
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
         {
             filter.Validate();
 
             var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync();
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
-            
             var model = persistedGrants.Select(x => x.ToModel());
 
             Logger.LogDebug("{persistedGrantCount} persisted grants found for {@filter}", persistedGrants.Length, filter);
@@ -144,22 +161,21 @@ namespace IdentityServer4.EntityFramework.Stores
             }
         }
 
-
-        private IQueryable<Entities.PersistedGrant> Filter(IQueryable<Entities.PersistedGrant> query, PersistedGrantFilter filter)
+        private static IQueryable<Entities.PersistedGrant> Filter(IQueryable<Entities.PersistedGrant> query, PersistedGrantFilter filter)
         {
-            if (!String.IsNullOrWhiteSpace(filter.ClientId))
+            if (!string.IsNullOrWhiteSpace(filter.ClientId))
             {
                 query = query.Where(x => x.ClientId == filter.ClientId);
             }
-            if (!String.IsNullOrWhiteSpace(filter.SessionId))
-        {
+            if (!string.IsNullOrWhiteSpace(filter.SessionId))
+            {
                 query = query.Where(x => x.SessionId == filter.SessionId);
             }
-            if (!String.IsNullOrWhiteSpace(filter.SubjectId))
+            if (!string.IsNullOrWhiteSpace(filter.SubjectId))
             {
                 query = query.Where(x => x.SubjectId == filter.SubjectId);
             }
-            if (!String.IsNullOrWhiteSpace(filter.Type))
+            if (!string.IsNullOrWhiteSpace(filter.Type))
             {
                 query = query.Where(x => x.Type == filter.Type);
             }

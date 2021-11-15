@@ -237,7 +237,6 @@ namespace IdentityServer4.ResponseHandling
             }
 
             var handle = await RefreshTokenService.UpdateRefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
-
             return new TokenResponse
             {
                 IdentityToken = await CreateIdTokenFromRefreshTokenRequestAsync(request.ValidatedRequest, accessTokenString),
@@ -469,7 +468,7 @@ namespace IdentityServer4.ResponseHandling
         protected virtual async Task<string> CreateIdTokenFromRefreshTokenRequestAsync(ValidatedTokenRequest request, string newAccessToken)
         {
             var resources = await Resources.FindEnabledResourcesByScopeAsync(request.RefreshToken.Scopes);
-            if (resources.IdentityResources.Any())
+            if (resources.IdentityResources.Count > 0)
             {
                 var oldAccessToken = request.RefreshToken.AccessToken;
 

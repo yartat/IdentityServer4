@@ -63,7 +63,7 @@ namespace IdentityServer4.Endpoints
             // validate HTTP
             if (!HttpMethods.IsPost(context.Request.Method) || !context.Request.HasApplicationFormContentType())
             {
-                _logger.LogWarning("Invalid HTTP request for token endpoint");
+                _logger.LogDebug("Invalid HTTP request for token endpoint");
                 return Error(OidcConstants.TokenErrors.InvalidRequest);
             }
 
@@ -80,29 +80,37 @@ namespace IdentityServer4.Endpoints
             var clientResult = await _clientValidator.ValidateAsync(context);
             if (clientResult.Client == null)
             {
-                _logger.LogWarning("Invalid client");
+                _logger.LogDebug("Invalid client");
                 return Error(OidcConstants.TokenErrors.InvalidClient);
             }
 
             // validate request
             var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
-            _logger.LogTrace("Calling into token request validator: {type}", _requestValidator.GetType().FullName);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _logger.LogTrace("Calling into token request validator: {type}", _requestValidator.GetType().FullName);
+            }
+
             var requestResult = await _requestValidator.ValidateRequestAsync(form, clientResult);
             if (requestResult.IsError)
             {
-                _logger.LogWarning("Token issued failure");
+                _logger.LogDebug("Token issued failure");
                 await _events.RaiseAsync(new TokenIssuedFailureEvent(requestResult));
                 return Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
             }
 
-            _logger.LogTrace("Get IP address and device type");
+            _logger.LogDebug("Get IP address and device type");
             requestResult.ValidatedRequest.ClientIp = context.GetRequestIp();
             requestResult.ValidatedRequest.Device = context
                 .GetHeaderValueAs<string>("User-Agent")
                 .GetDevice();
 
             // create response
-            _logger.LogTrace("Calling into token request response generator: {type}", _responseGenerator.GetType().FullName);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _logger.LogTrace("Calling into token request response generator: {type}", _responseGenerator.GetType().FullName);
+            }
+
             var response = await _responseGenerator.ProcessAsync(requestResult);
 
             _logger.LogTrace("Raise token issued successfully event");
@@ -110,11 +118,11 @@ namespace IdentityServer4.Endpoints
             LogTokens(response, requestResult);
 
             // return result
-            _logger.LogTrace("Token request success.");
+            _logger.LogDebug("Token request success.");
             return new TokenResult(response);
         }
 
-        private TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)
+        private static TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)
         {
             var response = new TokenErrorResponse
             {

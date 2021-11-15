@@ -1,13 +1,11 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-
-#pragma warning disable 1591
 
 using System;
 
 namespace IdentityServer4.EntityFramework.Entities
 {
+#pragma warning disable 1591
     public class PersistedGrant
     {
         public string Key { get; set; }
@@ -21,4 +19,5 @@ namespace IdentityServer4.EntityFramework.Entities
         public DateTime? ConsumedTime { get; set; }
         public string Data { get; set; }
     }
+#pragma warning restore 1591
 }

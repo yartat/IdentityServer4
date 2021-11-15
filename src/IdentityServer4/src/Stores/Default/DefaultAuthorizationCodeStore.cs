@@ -6,6 +6,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores.Serialization;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.Stores
@@ -31,27 +32,42 @@ namespace IdentityServer4.Stores
         {
         }
 
-        /// <summary>
-        /// Stores the authorization code asynchronous.
-        /// </summary>
-        /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public Task<string> StoreAuthorizationCodeAsync(AuthorizationCode code) =>
             CreateItemAsync(code, code.ClientId, code.Subject.GetSubjectId(), code.SessionId, code.Description, code.CreationTime, code.Lifetime);
 
-        /// <summary>
-        /// Gets the authorization code asynchronous.
-        /// </summary>
-        /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
+        public Task StoreAuthorizationCodeAsync(string handle, AuthorizationCode code) =>
+            StoreItemAsync(handle, code, code.ClientId, code.Subject.GetSubjectId(), code.SessionId, code.Description, code.CreationTime, code.CreationTime.AddSeconds(code.Lifetime));
+
+        /// <inheritdoc/>
         public Task<AuthorizationCode> GetAuthorizationCodeAsync(string code) =>
             GetItemAsync(code);
 
-        /// <summary>
-        /// Removes the authorization code asynchronous.
-        /// </summary>
-        /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
+        public async Task<AuthorizationCode> GetAndRemoveAuthorizationCodeAsync(string code)
+        {
+            var grant = await Store.GetAndRemoveAsync(GetHashedKey(code));
+            if (grant != null && grant.Type == GrantType)
+            {
+                try
+                {
+                    return Serializer.Deserialize<AuthorizationCode>(grant.Data);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Failed to deserialize JSON from grant store.");
+                }
+            }
+            else
+            {
+                Logger.LogDebug("{grantType} grant with value: {key} not found in store.", GrantType, code);
+            }
+
+            return default;
+        }
+
+        /// <inheritdoc/>
         public Task RemoveAuthorizationCodeAsync(string code) =>
             RemoveItemAsync(code);
     }

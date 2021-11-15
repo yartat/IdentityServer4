@@ -1,24 +1,23 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
+using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
+using IdentityServer4.Logging.Models;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
+using IdentityServer4.Stores;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using IdentityServer4.Stores;
-using IdentityServer4.Configuration;
-using IdentityServer4.Logging.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
 
 namespace IdentityServer4.Validation
 {
@@ -97,7 +96,7 @@ namespace IdentityServer4.Validation
             _logger.LogDebug("Client found: {clientId} / {clientName}", client.ClientId, client.ClientName);
 
             var keys = await _keys.GetValidationKeysAsync();
-            var result = await ValidateJwtAsync(token, keys, audience: clientId, validateLifetime: validateLifetime);
+            var result = await ValidateJwtAsync(token, keys, validateLifetime: validateLifetime, audience: clientId);
 
             result.Client = client;
 
@@ -145,7 +144,7 @@ namespace IdentityServer4.Validation
                     };
                 }
 
-                _log.AccessTokenType = AccessTokenType.Jwt.ToString();
+                _log.AccessTokenType = nameof(AccessTokenType.Jwt);
                 result = await ValidateJwtAsync(
                     token,
                     await _keys.GetValidationKeysAsync());
@@ -164,7 +163,7 @@ namespace IdentityServer4.Validation
                     };
                 }
 
-                _log.AccessTokenType = AccessTokenType.Reference.ToString();
+                _log.AccessTokenType = nameof(AccessTokenType.Reference);
                 result = await ValidateReferenceAccessTokenAsync(token);
             }
 
@@ -285,10 +284,9 @@ namespace IdentityServer4.Validation
                                 Error = "invalid JWT token type"
                             };
                         }
-
                     }
                 }
-                
+
                 // if access token contains an ID, log it
                 var jwtId = id.FindFirst(JwtClaimTypes.JwtId);
                 if (jwtId != null)
@@ -309,19 +307,17 @@ namespace IdentityServer4.Validation
                 }
 
                 var claims = id.Claims.ToList();
-                
+
                 // check the scope format (array vs space delimited string)
                 var scopes = claims.Where(c => c.Type == JwtClaimTypes.Scope).ToArray();
-                if (scopes.Any())
+                if (scopes.Length > 0)
                 {
                     foreach (var scope in scopes)
                     {
                         if (scope.Value.Contains(" "))
                         {
                             claims.Remove(scope);
-                            
-                            var values = scope.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var value in values)
+                            foreach (var value in scope.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                             {
                                 claims.Add(new Claim(JwtClaimTypes.Scope, value));
                             }
@@ -332,7 +328,6 @@ namespace IdentityServer4.Validation
                 return new TokenValidationResult
                 {
                     IsError = false,
-
                     Claims = claims,
                     Client = client,
                     Jwt = jwt
@@ -468,7 +463,7 @@ namespace IdentityServer4.Validation
             };
         }
 
-        private IEnumerable<Claim> ReferenceTokenToClaims(Token token)
+        private static IEnumerable<Claim> ReferenceTokenToClaims(Token token)
         {
             var claims = new List<Claim>
             {
@@ -500,8 +495,8 @@ namespace IdentityServer4.Validation
             }
         }
 
-        private TokenValidationResult Invalid(string error) =>
-            new TokenValidationResult
+        private static TokenValidationResult Invalid(string error) =>
+            new()
             {
                 IsError = true,
                 Error = error

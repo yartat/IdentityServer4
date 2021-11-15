@@ -1,16 +1,13 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using DeviceDetectorNET;
-using DeviceDetectorNET.Cache;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 
 namespace IdentityServer4.Extensions
@@ -20,12 +17,6 @@ namespace IdentityServer4.Extensions
     /// </summary>
     public static class StringExtensions
     {
-        private static readonly MemoryCache Cache = new MemoryCache(new MemoryCacheOptions
-        {
-            SizeLimit = 10 * 1024 * 1024 // 10 MB
-        });
-        private static readonly TimeSpan EntryTtl = TimeSpan.FromHours(1);
-
         /// <summary>
         /// Gets the device by user agent string.
         /// </summary>
@@ -38,15 +29,7 @@ namespace IdentityServer4.Extensions
                 return null;
             }
 
-            return Cache.GetOrCreate(userAgent, entry =>
-            {
-                entry.SlidingExpiration = EntryTtl;
-                entry.Size = userAgent.Length + 200;
-                var result = new DeviceDetector(userAgent);
-                result.SetCache(new DictionaryCache());
-                result.Parse();
-                return result.GetDeviceName();
-            });
+            return userAgent;
         }
 
         /// <summary>
@@ -55,22 +38,11 @@ namespace IdentityServer4.Extensions
         /// <param name="list">The list of strings.</param>
         /// <returns>Returns the space separated string.</returns>
         [DebuggerStepThrough]
-        public static string ToSpaceSeparatedString(this IEnumerable<string> list)
-        {
-            if (list == null)
-            {
-                return string.Empty;
-            }
-
-            var sb = new StringBuilder(100);
-
-            foreach (var element in list)
-            {
-                sb.Append(element + " ");
-            }
-
-            return sb.ToString().Trim();
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ToSpaceSeparatedString(this IEnumerable<string> list) =>
+            list == null ?
+                string.Empty :
+                string.Join(' ', list).Trim();
 
         /// <summary>
         /// Converts from the space separated string.
@@ -78,11 +50,9 @@ namespace IdentityServer4.Extensions
         /// <param name="input">The space separated string.</param>
         /// <returns>Returns the list of strings.</returns>
         [DebuggerStepThrough]
-        public static IEnumerable<string> FromSpaceSeparatedString(this string input)
-        {
-            input = input.Trim();
-            return input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<string> FromSpaceSeparatedString(this string input) =>
+            input.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         /// <summary>
         /// Parses the scopes string.
@@ -97,9 +67,9 @@ namespace IdentityServer4.Extensions
             }
 
             scopes = scopes.Trim();
-            var parsedScopes = scopes.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
+            var parsedScopes = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
 
-            if (parsedScopes.Any())
+            if (parsedScopes.Count > 0)
             {
                 parsedScopes.Sort();
                 return parsedScopes;
@@ -114,10 +84,9 @@ namespace IdentityServer4.Extensions
         /// <param name="value">The value.</param>
         /// <returns><c>true</c> if the specified value is missing; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool IsMissing(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMissing(this string value) =>
+            string.IsNullOrWhiteSpace(value);
 
         /// <summary>
         /// Determines whether is missing or too long the specified value.
@@ -126,6 +95,7 @@ namespace IdentityServer4.Extensions
         /// <param name="maxLength">The maximum length.</param>
         /// <returns><c>true</c> if is missing or too long the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsMissingOrTooLong(this string value, int maxLength)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -146,10 +116,9 @@ namespace IdentityServer4.Extensions
         /// <param name="value">The value.</param>
         /// <returns><c>true</c> if the specified value is present; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool IsPresent(this string value)
-        {
-            return !string.IsNullOrWhiteSpace(value);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPresent(this string value) =>
+            !string.IsNullOrWhiteSpace(value);
 
         /// <summary>
         /// Ensures the leading slash in path.
@@ -157,15 +126,11 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns the URL with leading slash in path.</returns>
         [DebuggerStepThrough]
-        public static string EnsureLeadingSlash(this string url)
-        {
-            if (url != null && !url.StartsWith("/"))
-            {
-                return "/" + url;
-            }
-
-            return url;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string EnsureLeadingSlash(this string url) =>
+            url?.StartsWith("/") == false ?
+                "/" + url :
+                url;
 
         /// <summary>
         /// Ensures the trailing slash.
@@ -173,15 +138,11 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns the URL with trailing slash in path.</returns>
         [DebuggerStepThrough]
-        public static string EnsureTrailingSlash(this string url)
-        {
-            if (url != null && !url.EndsWith("/"))
-            {
-                return url + "/";
-            }
-
-            return url;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string EnsureTrailingSlash(this string url) =>
+            url?.EndsWith("/") == false ?
+                url + "/" :
+                url;
 
         /// <summary>
         /// Removes the leading slash.
@@ -191,7 +152,7 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static string RemoveLeadingSlash(this string url)
         {
-            if (url != null && url.StartsWith("/"))
+            if (url?.StartsWith("/") == true)
             {
                 url = url.Substring(1);
             }
@@ -207,7 +168,7 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static string RemoveTrailingSlash(this string url)
         {
-            if (url != null && url.EndsWith("/"))
+            if (url?.EndsWith("/") == true)
             {
                 url = url.Substring(0, url.Length - 1);
             }
@@ -314,10 +275,9 @@ namespace IdentityServer4.Extensions
         /// <param name="value">The query parameter value.</param>
         /// <returns>Returns URL with query.</returns>
         [DebuggerStepThrough]
-        public static string AddQueryString(this string url, string name, string value)
-        {
-            return url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value));
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string AddQueryString(this string url, string name, string value) =>
+            url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value));
 
         /// <summary>
         /// Adds the hash fragment.
@@ -326,6 +286,7 @@ namespace IdentityServer4.Extensions
         /// <param name="query">The query to add with hash.</param>
         /// <returns>Returns URL with hash fragment.</returns>
         [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AddHashFragment(this string url, string query)
         {
             if (!url.Contains("#"))
@@ -358,7 +319,7 @@ namespace IdentityServer4.Extensions
                 }
             }
 
-            return new NameValueCollection();           
+            return new NameValueCollection();
         }
 
         /// <summary>

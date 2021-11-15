@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ namespace IdentityServer4.Services
     /// <summary>
     /// User code generator using 9 digit number
     /// </summary>
-    /// <seealso cref="IdentityServer4.Services.IUserCodeGenerator" />
+    /// <seealso cref="IUserCodeGenerator" />
     public class NumericUserCodeGenerator : IUserCodeGenerator
     {
         /// <summary>
@@ -36,11 +35,11 @@ namespace IdentityServer4.Services
         /// <returns></returns>
         public Task<string> GenerateAsync()
         {
-            var next = Next(100000000, 999999999);
+            var next = NumericUserCodeGenerator.Next(100000000, 999999999);
             return Task.FromResult(next.ToString());
         }
 
-        private int Next(int minValue, int maxValue)
+        private static int Next(int minValue, int maxValue)
         {
             if (minValue > maxValue) throw new ArgumentOutOfRangeException(nameof(minValue));
             if (minValue == maxValue) return minValue;
@@ -48,19 +47,17 @@ namespace IdentityServer4.Services
 
             var uint32Buffer = new byte[8];
 
-            using (var rng = new RNGCryptoServiceProvider())
+            using var rng = RandomNumberGenerator.Create();
+            while (true)
             {
-                while (true)
-                {
-                    rng.GetBytes(uint32Buffer);
-                    var rand = BitConverter.ToUInt32(uint32Buffer, 0);
+                rng.GetBytes(uint32Buffer);
+                var rand = BitConverter.ToUInt32(uint32Buffer, 0);
 
-                    const long max = 1 + (long)uint.MaxValue;
-                    var remainder = max % diff;
-                    if (rand < max - remainder)
-                    {
-                        return (int)(minValue + rand % diff);
-                    }
+                const long max = 1 + (long)uint.MaxValue;
+                var remainder = max % diff;
+                if (rand < max - remainder)
+                {
+                    return (int)(minValue + rand % diff);
                 }
             }
         }
