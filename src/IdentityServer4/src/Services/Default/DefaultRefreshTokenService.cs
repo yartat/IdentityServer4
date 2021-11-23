@@ -137,6 +137,7 @@ namespace IdentityServer4.Services
             {
                 IsError = false,
                 RefreshToken = refreshToken,
+                RefreshTokenHandle = tokenHandle,
                 Client = client
             };
         }

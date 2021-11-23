@@ -516,7 +516,7 @@ namespace IdentityServer4.Validation
             }
 
             _validatedRequest.RefreshToken = result.RefreshToken;
-            _validatedRequest.RefreshTokenHandle = refreshTokenHandle;
+            _validatedRequest.RefreshTokenHandle = result.RefreshTokenHandle;
             _validatedRequest.Subject = result.RefreshToken.Subject;
 
             _logger.LogDebug("Validation of refresh token request success");

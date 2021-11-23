@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -52,6 +52,11 @@ namespace IdentityServer4.Validation
         /// The reference token identifier.
         /// </value>
         public RefreshToken RefreshToken { get; set; }
+
+        /// <summary>
+        /// The handle of the refresh token.
+        /// </summary>
+        public string RefreshTokenHandle { get; set; }
 
         /// <summary>
         /// Gets or sets the client.
