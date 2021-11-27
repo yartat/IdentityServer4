@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -23,17 +22,17 @@ namespace IdentityServer4.Models
         /// <summary>
         /// The unique name of the resource.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Display name of the resource.
         /// </summary>
-        public string DisplayName { get; set; }
-        
+        public string? DisplayName { get; set; }
+
         /// <summary>
         /// Description of the resource.
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Specifies whether this scope is shown in the discovery document. Defaults to true.

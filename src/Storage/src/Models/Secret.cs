@@ -1,6 +1,5 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
 
 using System;
 
@@ -17,7 +16,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The description.
         /// </value>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the value.
@@ -25,7 +24,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The value.
         /// </value>
-        public string Value { get; set; }
+        public string Value { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the expiration.
@@ -77,40 +76,37 @@ namespace IdentityServer4.Models
             Expiration = expiration;
         }
 
-        /// <summary>
-        /// Returns a hash code for this instance.
-        /// </summary>
-        /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
-        /// </returns>
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
             {
                 var hash = 17;
-                hash = hash * 23 + (Value?.GetHashCode() ?? 0);
-                hash = hash * 23 + (Type?.GetHashCode() ?? 0);
+                hash = (hash * 23) + (Value?.GetHashCode() ?? 0);
+                hash = (hash * 23) + (Type?.GetHashCode() ?? 0);
 
                 return hash;
             }
         }
 
-        /// <summary>
-        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
-        /// </summary>
-        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj == null) return false;
-            var other = obj as Secret;
-            if (other == null) return false;
-            if (ReferenceEquals(other, this)) return true;
+        /// <inheritdoc/>
+        public override bool Equals(object? obj) => Equals(obj as Secret);
 
-            return String.Equals(other.Type, Type, StringComparison.Ordinal) && 
-                String.Equals(other.Value, Value, StringComparison.Ordinal);
+        /// <inheritdoc/>
+        public bool Equals(Secret? obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
+
+            return string.Equals(obj.Type, Type, StringComparison.Ordinal) &&
+                string.Equals(obj.Value, Value, StringComparison.Ordinal);
         }
     }
 }

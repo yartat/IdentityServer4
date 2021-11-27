@@ -3,21 +3,21 @@
 
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace IdentityServer4.Extensions
 {
     internal static class StringExtensions
     {
         [DebuggerStepThrough]
-        public static bool IsMissing(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
+        [ExcludeFromCodeCoverage]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMissing(this string value) => string.IsNullOrWhiteSpace(value);
 
         [DebuggerStepThrough]
-        public static bool IsPresent(this string value)
-        {
-            return !string.IsNullOrWhiteSpace(value);
-        }
+        [ExcludeFromCodeCoverage]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPresent(this string value) => !string.IsNullOrWhiteSpace(value);
     }
 }

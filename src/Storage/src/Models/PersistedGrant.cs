@@ -1,6 +1,5 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
 
 using System;
 using System.Runtime.Serialization;
@@ -32,7 +31,7 @@ namespace IdentityServer4.Models
         /// </value>
         [DataMember(Name = "type")]
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
 
         /// <summary>
         /// Gets the subject identifier.
@@ -72,7 +71,7 @@ namespace IdentityServer4.Models
         /// </value>
         [DataMember(Name = "description")]
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the creation time.
@@ -93,7 +92,7 @@ namespace IdentityServer4.Models
         [DataMember(Name = "expiration")]
         [JsonPropertyName("expiration")]
         public DateTime? Expiration { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the consumed time.
         /// </summary>
@@ -112,6 +111,6 @@ namespace IdentityServer4.Models
         /// </value>
         [DataMember(Name = "data")]
         [JsonPropertyName("data")]
-        public string Data { get; set; }
+        public string? Data { get; set; }
     }
 }

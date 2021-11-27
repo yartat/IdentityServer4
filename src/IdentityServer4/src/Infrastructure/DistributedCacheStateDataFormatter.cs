@@ -1,14 +1,13 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 
 namespace IdentityServer4.Infrastructure
 {
@@ -27,24 +26,22 @@ namespace IdentityServer4.Infrastructure
         /// <param name="name">The scheme name.</param>
         public DistributedCacheStateDataFormatter(IHttpContextAccessor httpContext, string name)
         {
-            _httpContext = httpContext;
+            _httpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             _name = name;
         }
 
         private string CacheKeyPrefix => "DistributedCacheStateDataFormatter";
 
-        private IDistributedCache Cache => _httpContext.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
-        private IDataProtector Protector => _httpContext.HttpContext.RequestServices.GetRequiredService<IDataProtectionProvider>().CreateProtector(CacheKeyPrefix, _name);
+        private IDistributedCache Cache => _httpContext.HttpContext!.RequestServices.GetRequiredService<IDistributedCache>();
+        private IDataProtector Protector => _httpContext.HttpContext!.RequestServices.GetRequiredService<IDataProtectionProvider>().CreateProtector(CacheKeyPrefix, _name);
 
         /// <summary>
         /// Protects the specified data.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public string Protect(AuthenticationProperties data)
-        {
-            return Protect(data, null);
-        }
+        public string Protect(AuthenticationProperties data) =>
+            Protect(data, null);
 
         /// <summary>
         /// Protects the specified data.
@@ -52,7 +49,7 @@ namespace IdentityServer4.Infrastructure
         /// <param name="data">The data.</param>
         /// <param name="purpose">The purpose.</param>
         /// <returns></returns>
-        public string Protect(AuthenticationProperties data, string purpose)
+        public string Protect(AuthenticationProperties data, string? purpose)
         {
             var key = Guid.NewGuid().ToString();
             var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
@@ -67,7 +64,7 @@ namespace IdentityServer4.Infrastructure
             {
                 options.SetSlidingExpiration(Constants.DefaultCacheDuration);
             }
-            
+
             // Rather than encrypt the full AuthenticationProperties
             // cache the data and encrypt the key that points to the data
             Cache.SetString(cacheKey, json, options);
@@ -80,10 +77,8 @@ namespace IdentityServer4.Infrastructure
         /// </summary>
         /// <param name="protectedText">The protected text.</param>
         /// <returns></returns>
-        public AuthenticationProperties Unprotect(string protectedText)
-        {
-            return Unprotect(protectedText, null);
-        }
+        public AuthenticationProperties? Unprotect(string? protectedText) =>
+            Unprotect(protectedText, null);
 
         /// <summary>
         /// Unprotects the specified protected text.
@@ -91,9 +86,9 @@ namespace IdentityServer4.Infrastructure
         /// <param name="protectedText">The protected text.</param>
         /// <param name="purpose">The purpose.</param>
         /// <returns></returns>
-        public AuthenticationProperties Unprotect(string protectedText, string purpose)
+        public AuthenticationProperties? Unprotect(string? protectedText, string? purpose)
         {
-            if (String.IsNullOrWhiteSpace(protectedText))
+            if (string.IsNullOrWhiteSpace(protectedText))
             {
                 return null;
             }
@@ -103,14 +98,15 @@ namespace IdentityServer4.Infrastructure
             var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
             var json = Cache.GetString(cacheKey);
 
-            if (json == null)
+            if (json is null)
             {
                 return null;
             }
 
-            var items = ObjectSerializer.FromString<Dictionary<string, string>>(json);
-            var props = new AuthenticationProperties(items);
-            return props;
+            var items = ObjectSerializer.FromString<Dictionary<string, string?>>(json);
+            return items != null ?
+                new AuthenticationProperties(items) :
+                null;
         }
     }
 }

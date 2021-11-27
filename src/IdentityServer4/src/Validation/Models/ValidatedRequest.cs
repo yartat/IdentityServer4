@@ -75,7 +75,7 @@ namespace IdentityServer4.Validation
         /// The session identifier.
         /// </value>
         public string SessionId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the identity server options.
         /// </summary>
@@ -106,19 +106,19 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The client ID
         /// </value>
-        public string ClientId { get; set; }
+        public string ClientId { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the client IP address.
         /// </summary>
         /// <value>The client IP address.</value>
-        public string ClientIp { get; set; }
+        public string? ClientIp { get; set; }
 
         /// <summary>
         /// Gets or sets the client device.
         /// </summary>
         /// <value>The client device.</value>
-        public string Device { get; set; }
+        public string? Device { get; set; }
 
         /// <summary>
         /// Sets the client and the appropriate request specific settings.

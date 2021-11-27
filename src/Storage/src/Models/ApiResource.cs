@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ namespace IdentityServer4.Models
     public class ApiResource : Resource
     {
         private string DebuggerDisplay => Name ?? $"{{{typeof(ApiResource)}}}";
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiResource"/> class.
         /// </summary>
@@ -38,7 +37,7 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="displayName">The display name.</param>
-        public ApiResource(string name, string displayName)
+        public ApiResource(string name, string? displayName)
             : this(name, displayName, null)
         {
         }
@@ -48,7 +47,7 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="userClaims">List of associated user claims that should be included when this resource is requested.</param>
-        public ApiResource(string name, IEnumerable<string> userClaims)
+        public ApiResource(string name, IEnumerable<string>? userClaims)
             : this(name, name, userClaims)
         {
         }
@@ -60,16 +59,19 @@ namespace IdentityServer4.Models
         /// <param name="displayName">The display name.</param>
         /// <param name="userClaims">List of associated user claims that should be included when this resource is requested.</param>
         /// <exception cref="System.ArgumentNullException">name</exception>
-        public ApiResource(string name, string displayName, IEnumerable<string> userClaims)
+        public ApiResource(string name, string? displayName, IEnumerable<string>? userClaims)
         {
-            if (name.IsMissing()) throw new ArgumentNullException(nameof(name));
+            if (name.IsMissing())
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
 
             Name = name;
             DisplayName = displayName;
 
             if (!userClaims.IsNullOrEmpty())
             {
-                foreach (var type in userClaims)
+                foreach (var type in userClaims!)
                 {
                     UserClaims.Add(type);
                 }

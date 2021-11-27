@@ -1,41 +1,44 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using Newtonsoft.Json;
 using System;
 using System.Security.Claims;
-
-#pragma warning disable 1591
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace IdentityServer4.Stores.Serialization
 {
-    public class ClaimConverter : JsonConverter
+    /// <summary>
+    /// A claim converter.
+    /// </summary>
+    /// <seealso cref="JsonConverter{Claim}"/>
+    public class ClaimConverter : JsonConverter<Claim?>
     {
-        public override bool CanConvert(Type objectType)
+        /// <inheritdoc/>
+        public override Claim? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return typeof(Claim) == objectType;
+            var source = JsonSerializer.Deserialize<ClaimLite>(ref reader, options);
+            return source is null ?
+                null :
+                new Claim(source.Type, source.Value ?? string.Empty, source.ValueType);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        /// <inheritdoc/>
+        public override void Write(Utf8JsonWriter writer, Claim? value, JsonSerializerOptions options)
         {
-            var source = serializer.Deserialize<ClaimLite>(reader);
-            var target = new Claim(source.Type, source.Value, source.ValueType);
-            return target;
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            var source = (Claim)value;
+            if (value is null)
+            {
+                return;
+            }
 
             var target = new ClaimLite
             {
-                Type = source.Type,
-                Value = source.Value,
-                ValueType = source.ValueType
+                Type = value.Type,
+                Value = value.Value,
+                ValueType = value.ValueType != ClaimValueTypes.String ? value.Value : null
             };
 
-            serializer.Serialize(writer, target);
+            JsonSerializer.Serialize(writer, target, options);
         }
     }
 }

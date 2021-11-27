@@ -1,8 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace IdentityServer4.Validation
 {
@@ -12,8 +12,8 @@ namespace IdentityServer4.Validation
     public class JwtRequestValidationResult : ValidationResult
     {
         /// <summary>
-        /// The key/value pairs from the JWT payload of a successfuly validated request.
+        /// The list of the claims from the JWT payload of a successfully validated request.
         /// </summary>
-        public Dictionary<string, string> Payload { get; set; }
+        public IEnumerable<Claim> Payload { get; set; } = default!;
     }
 }

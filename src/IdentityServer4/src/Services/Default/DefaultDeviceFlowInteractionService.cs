@@ -1,13 +1,12 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System;
-using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using IdentityServer4.Validation;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Services
 {
@@ -36,7 +35,7 @@ namespace IdentityServer4.Services
             _logger = logger;
         }
 
-        public async Task<DeviceFlowAuthorizationRequest> GetAuthorizationContextAsync(string userCode)
+        public async Task<DeviceFlowAuthorizationRequest?> GetAuthorizationContextAsync(string userCode)
         {
             var deviceAuth = await _devices.FindByUserCodeAsync(userCode);
             if (deviceAuth == null) return null;
@@ -58,7 +57,7 @@ namespace IdentityServer4.Services
         {
             if (userCode == null) throw new ArgumentNullException(nameof(userCode));
             if (consent == null) throw new ArgumentNullException(nameof(consent));
-            
+
             var deviceAuth = await _devices.FindByUserCodeAsync(userCode);
             if (deviceAuth == null) return LogAndReturnError("Invalid user code", "Device authorization failure - user code is invalid");
 
@@ -67,7 +66,7 @@ namespace IdentityServer4.Services
 
             var subject = await _session.GetUserAsync();
             if (subject == null) return LogAndReturnError("No user present in device flow request", "Device authorization failure - no user found");
-            
+
             var sid = await _session.GetSessionIdAsync();
 
             deviceAuth.IsAuthorized = true;
@@ -88,9 +87,9 @@ namespace IdentityServer4.Services
             return new DeviceFlowInteractionResult();
         }
 
-        private DeviceFlowInteractionResult LogAndReturnError(string error, string errorDescription = null)
+        private DeviceFlowInteractionResult LogAndReturnError(string error, string? errorDescription = null)
         {
-            _logger.LogError(errorDescription);
+            _logger.LogError(errorDescription ?? error);
             return DeviceFlowInteractionResult.Failure(error);
         }
     }

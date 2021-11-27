@@ -31,9 +31,30 @@
     <None Include="../../.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonJson)" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DotNetLibrary50)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(DotNetLibrary50)" />
+  </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DotNetLibrary50)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(DotNetLibrary50)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DotNetLibrary50)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(DotNetLibrary50)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(DotNetLibrary50)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(DotNetLibrary60)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />
     <PackageReference Include="System.Text.Json" Version="$(JsonLib)" />
   </ItemGroup>

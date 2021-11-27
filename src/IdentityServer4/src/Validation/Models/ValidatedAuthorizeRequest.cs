@@ -1,10 +1,12 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using IdentityModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 
 namespace IdentityServer4.Validation
 {
@@ -76,7 +78,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The state.
         /// </value>
-        public string State { get; set; }
+        public string State { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the UI locales.
@@ -124,7 +126,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The display mode.
         /// </value>
-        public string DisplayMode { get; set; }
+        public string? DisplayMode { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of prompt modes.
@@ -156,7 +158,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The code challenge
         /// </value>
-        public string CodeChallenge { get; set; }
+        public string? CodeChallenge { get; set; }
 
         /// <summary>
         /// Gets or sets the code challenge method
@@ -164,7 +166,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The code challenge method
         /// </value>
-        public string CodeChallengeMethod { get; set; }
+        public string? CodeChallengeMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the validated contents of the request object (if present)
@@ -172,7 +174,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The request object values
         /// </value>
-        public Dictionary<string, string> RequestObjectValues { get; set; } = new Dictionary<string, string>();
+        public IEnumerable<Claim> RequestObjectValues { get; set; } = Array.Empty<Claim>();
 
         /// <summary>
         /// Gets or sets the request object (either passed by value or retrieved by reference)
@@ -180,8 +182,8 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The request object
         /// </value>
-        public string RequestObject { get; set; }
-        
+        public string? RequestObject { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether an access token was requested.
         /// </summary>

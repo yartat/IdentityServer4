@@ -1,12 +1,12 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using IdentityServer4.Extensions;
 using IdentityServer4.Validation;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Claims;
 
 namespace IdentityServer4.Models
 {
@@ -26,7 +26,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The display mode.
         /// </value>
-        public string DisplayMode { get; internal set; }
+        public string? DisplayMode { get; internal set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
@@ -42,35 +42,35 @@ namespace IdentityServer4.Models
         /// <value>
         /// The UI locales.
         /// </value>
-        public string UiLocales { get; internal set; }
+        public string? UiLocales { get; internal set; }
 
         /// <summary>
-        /// The external identity provider requested. This is used to bypass home realm 
-        /// discovery (HRD). This is provided via the <c>"idp:"</c> prefix to the <c>acr</c> 
+        /// The external identity provider requested. This is used to bypass home realm
+        /// discovery (HRD). This is provided via the <c>"idp:"</c> prefix to the <c>acr</c>
         /// parameter on the authorize request.
         /// </summary>
         /// <value>
         /// The external identity provider identifier.
         /// </value>
-        public string IdP { get; internal set; }
+        public string? IdP { get; internal set; }
 
         /// <summary>
-        /// The tenant requested. This is provided via the <c>"tenant:"</c> prefix to 
+        /// The tenant requested. This is provided via the <c>"tenant:"</c> prefix to
         /// the <c>acr</c> parameter on the authorize request.
         /// </summary>
         /// <value>
         /// The tenant.
         /// </value>
-        public string Tenant { get; internal set; }
+        public string? Tenant { get; internal set; }
 
         /// <summary>
-        /// The expected username the user will use to login. This is requested from the client 
+        /// The expected username the user will use to login. This is requested from the client
         /// via the <c>login_hint</c> parameter on the authorize request.
         /// </summary>
         /// <value>
         /// The LoginHint.
         /// </value>
-        public string LoginHint { get; internal set; }
+        public string? LoginHint { get; internal set; }
 
         /// <summary>
         /// Gets or sets the collection of prompt modes.
@@ -86,12 +86,12 @@ namespace IdentityServer4.Models
         /// <value>
         /// The acr values.
         /// </value>
-        public IEnumerable<string> AcrValues { get; internal set; }
+        public IEnumerable<string>? AcrValues { get; internal set; }
 
         /// <summary>
         /// The validated resources.
         /// </summary>
-        public ResourceValidationResult ValidatedResources { get; internal set; }
+        public ResourceValidationResult? ValidatedResources { get; internal set; }
 
         /// <summary>
         /// Gets the entire parameter collection.
@@ -99,7 +99,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The parameters.
         /// </value>
-        public NameValueCollection Parameters { get; }
+        public NameValueCollection? Parameters { get; }
 
         /// <summary>
         /// Gets the validated contents of the request object (if present)
@@ -107,8 +107,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The request object values
         /// </value>
-        public Dictionary<string, string> RequestObjectValues { get; } = new Dictionary<string, string>();
-
+        public IEnumerable<Claim> RequestObjectValues { get; } = Array.Empty<Claim>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationRequest"/> class.

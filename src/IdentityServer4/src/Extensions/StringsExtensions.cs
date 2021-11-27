@@ -22,7 +22,7 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="userAgent">The user agent string.</param>
         /// <returns>Returns device name.</returns>
-        public static string GetDevice(this string userAgent)
+        public static string? GetDevice(this string? userAgent)
         {
             if (string.IsNullOrEmpty(userAgent))
             {
@@ -39,8 +39,8 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the space separated string.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ToSpaceSeparatedString(this IEnumerable<string> list) =>
-            list == null ?
+        public static string ToSpaceSeparatedString(this IEnumerable<string>? list) =>
+            list is null ?
                 string.Empty :
                 string.Join(' ', list).Trim();
 
@@ -59,14 +59,14 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="scopes">The scopes.</param>
         /// <returns>Returns the list of scopes.</returns>
-        public static List<string> ParseScopesString(this string scopes)
+        public static List<string>? ParseScopesString(this string? scopes)
         {
             if (scopes.IsMissing())
             {
                 return null;
             }
 
-            scopes = scopes.Trim();
+            scopes = scopes!.Trim();
             var parsedScopes = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
 
             if (parsedScopes.Count > 0)
@@ -85,7 +85,7 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if the specified value is missing; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMissing(this string value) =>
+        public static bool IsMissing(this string? value) =>
             string.IsNullOrWhiteSpace(value);
 
         /// <summary>
@@ -96,12 +96,13 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if is missing or too long the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMissingOrTooLong(this string value, int maxLength)
+        public static bool IsMissingOrTooLong(this string? value, int maxLength)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return true;
             }
+
             if (value.Length > maxLength)
             {
                 return true;
@@ -117,7 +118,7 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if the specified value is present; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPresent(this string value) =>
+        public static bool IsPresent(this string? value) =>
             !string.IsNullOrWhiteSpace(value);
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the URL with leading slash in path.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string EnsureLeadingSlash(this string url) =>
+        public static string? EnsureLeadingSlash(this string? url) =>
             url?.StartsWith("/") == false ?
                 "/" + url :
                 url;
@@ -139,7 +140,7 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the URL with trailing slash in path.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string EnsureTrailingSlash(this string url) =>
+        public static string? EnsureTrailingSlash(this string? url) =>
             url?.EndsWith("/") == false ?
                 url + "/" :
                 url;
@@ -150,7 +151,8 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns the URL without leading slash in path.</returns>
         [DebuggerStepThrough]
-        public static string RemoveLeadingSlash(this string url)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string? RemoveLeadingSlash(this string? url)
         {
             if (url?.StartsWith("/") == true)
             {
@@ -166,7 +168,7 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns the URL without trailing slash in path.</returns>
         [DebuggerStepThrough]
-        public static string RemoveTrailingSlash(this string url)
+        public static string? RemoveTrailingSlash(this string? url)
         {
             if (url?.EndsWith("/") == true)
             {
@@ -182,9 +184,12 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>System.String.</returns>
         [DebuggerStepThrough]
-        public static string CleanUrlPath(this string url)
+        public static string CleanUrlPath(this string? url)
         {
-            if (string.IsNullOrWhiteSpace(url)) url = "/";
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = "/";
+            }
 
             if (url != "/" && url.EndsWith("/"))
             {
@@ -200,7 +205,7 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns><c>true</c> if is local URL the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
-        public static bool IsLocalUrl(this string url)
+        public static bool IsLocalUrl(this string? url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -255,7 +260,7 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static string AddQueryString(this string url, string query)
         {
-            if (!url.Contains("?"))
+            if (!url.Contains('?'))
             {
                 url += "?";
             }
@@ -289,7 +294,7 @@ namespace IdentityServer4.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AddHashFragment(this string url, string query)
         {
-            if (!url.Contains("#"))
+            if (!url.Contains('#'))
             {
                 url += "#";
             }
@@ -303,17 +308,18 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns name value collection from query.</returns>
         [DebuggerStepThrough]
-        public static NameValueCollection ReadQueryStringAsNameValueCollection(this string url)
+        public static NameValueCollection ReadQueryStringAsNameValueCollection(this string? url)
         {
-            if (url != null)
+            if (url is not null)
             {
                 var idx = url.IndexOf('?');
                 if (idx >= 0)
                 {
                     url = url.Substring(idx + 1);
                 }
+
                 var query = QueryHelpers.ParseNullableQuery(url);
-                if (query != null)
+                if (query is not null)
                 {
                     return query.AsNameValueCollection();
                 }
@@ -327,9 +333,9 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="url">The source URL.</param>
         /// <returns>Returns origin.</returns>
-        public static string GetOrigin(this string url)
+        public static string? GetOrigin(this string? url)
         {
-            if (url != null)
+            if (url is not null)
             {
                 Uri uri;
                 try
@@ -355,10 +361,10 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>System.String.</returns>
-        public static string Obfuscate(this string value)
+        public static string Obfuscate(this string? value)
         {
             var last4Chars = "****";
-            if (value.IsPresent() && value.Length > 4)
+            if (value.IsPresent() && value!.Length > 4)
             {
                 last4Chars = value.Substring(value.Length - 4);
             }

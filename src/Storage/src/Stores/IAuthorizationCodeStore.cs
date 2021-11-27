@@ -30,14 +30,14 @@ namespace IdentityServer4.Stores
         /// </summary>
         /// <param name="handle">The authorization code identifier.</param>
         /// <returns>Returns the authorization code parameters.</returns>
-        Task<AuthorizationCode> GetAuthorizationCodeAsync(string handle);
+        Task<AuthorizationCode?> GetAuthorizationCodeAsync(string handle);
 
         /// <summary>
         /// Gets and removes the authorization code as atomic operation.
         /// </summary>
         /// <param name="handle">The authorization code identifier.</param>
         /// <returns>Returns the authorization code parameters.</returns>
-        Task<AuthorizationCode> GetAndRemoveAuthorizationCodeAsync(string handle);
+        Task<AuthorizationCode?> GetAndRemoveAuthorizationCodeAsync(string handle);
 
         /// <summary>
         /// Removes the authorization code.

@@ -39,10 +39,8 @@ namespace IdentityServer4
         /// <typeparam name="T">The type to deserialize</typeparam>
         /// <param name="value">The source string value.</param>
         /// <returns>Returns new instance of deserialized object.</returns>
-        public static T FromString<T>(string value)
-        {
-            return JsonSerializer.Deserialize<T>(value, Options);
-        }
+        public static T? FromString<T>(string value) =>
+            JsonSerializer.Deserialize<T>(value, Options);
 
         /// <summary>
         /// Deserialize from the buffer.
@@ -50,9 +48,7 @@ namespace IdentityServer4
         /// <typeparam name="T">The type to deserialize</typeparam>
         /// <param name="value">The source buffer.</param>
         /// <returns>Returns new instance of deserialized object.</returns>
-        public static T FromBuffer<T>(byte[] value)
-        {
-            return JsonSerializer.Deserialize<T>(value, Options);
-        }
+        public static T? FromBuffer<T>(byte[] value) =>
+            JsonSerializer.Deserialize<T>(value, Options);
     }
 }

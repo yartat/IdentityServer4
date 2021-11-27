@@ -1,21 +1,20 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Threading.Tasks;
 using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.Validation
 {
@@ -24,9 +23,9 @@ namespace IdentityServer4.Validation
     /// </summary>
     public class JwtRequestValidator
     {
-        private readonly string _audienceUri;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        
+        private readonly string? _audienceUri;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
+
         /// <summary>
         /// JWT handler
         /// </summary>
@@ -38,7 +37,7 @@ namespace IdentityServer4.Validation
         /// <summary>
         /// The audience URI to use
         /// </summary>
-        protected string AudienceUri
+        protected string? AudienceUri
         {
             get
             {
@@ -47,7 +46,7 @@ namespace IdentityServer4.Validation
                     return _audienceUri;
                 }
 
-                return _httpContextAccessor.HttpContext.GetIdentityServerIssuerUri();
+                return _httpContextAccessor?.HttpContext?.GetIdentityServerIssuerUri();
             }
         }
 
@@ -55,11 +54,11 @@ namespace IdentityServer4.Validation
         /// The logger
         /// </summary>
         protected readonly ILogger Logger;
-        
+
         /// <summary>
         /// The optione
         /// </summary>
-        protected readonly IdentityServerOptions Options;
+        protected readonly IdentityServerOptions? Options;
 
         /// <summary>
         /// Instantiates an instance of private_key_jwt secret validator
@@ -67,7 +66,7 @@ namespace IdentityServer4.Validation
         public JwtRequestValidator(IHttpContextAccessor contextAccessor, IdentityServerOptions options, ILogger<JwtRequestValidator> logger)
         {
             _httpContextAccessor = contextAccessor;
-            
+
             Options = options;
             Logger = logger;
         }
@@ -89,8 +88,15 @@ namespace IdentityServer4.Validation
         /// <returns></returns>
         public virtual async Task<JwtRequestValidationResult> ValidateAsync(Client client, string jwtTokenString)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (String.IsNullOrWhiteSpace(jwtTokenString)) throw new ArgumentNullException(nameof(jwtTokenString));
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
+            if (string.IsNullOrWhiteSpace(jwtTokenString))
+            {
+                throw new ArgumentNullException(nameof(jwtTokenString));
+            }
 
             var fail = new JwtRequestValidationResult { IsError = true };
 
@@ -111,7 +117,7 @@ namespace IdentityServer4.Validation
                 return fail;
             }
 
-            JwtSecurityToken jwtSecurityToken;
+            JsonWebToken jwtSecurityToken;
             try
             {
                 jwtSecurityToken = await ValidateJwtAsync(jwtTokenString, trustedKeys, client);
@@ -122,8 +128,8 @@ namespace IdentityServer4.Validation
                 return fail;
             }
 
-            if (jwtSecurityToken.Payload.ContainsKey(OidcConstants.AuthorizeRequest.Request) ||
-                jwtSecurityToken.Payload.ContainsKey(OidcConstants.AuthorizeRequest.RequestUri))
+            if (jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.Request, out _) ||
+                jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.RequestUri, out _))
             {
                 Logger.LogError("JWT payload must not contain request or request_uri");
                 return fail;
@@ -158,7 +164,10 @@ namespace IdentityServer4.Validation
         /// <param name="keys">The keys</param>
         /// <param name="client">The client</param>
         /// <returns></returns>
-        protected virtual Task<JwtSecurityToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys, Client client)
+        protected virtual Task<JsonWebToken> ValidateJwtAsync(
+            string jwtTokenString,
+            IEnumerable<SecurityKey> keys,
+            Client client)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -175,14 +184,14 @@ namespace IdentityServer4.Validation
                 RequireExpirationTime = true
             };
 
-            if (Options.StrictJarValidation)
+            if (Options?.StrictJarValidation ?? false)
             {
                 tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
             }
 
             Handler.ValidateToken(jwtTokenString, tokenValidationParameters, out var token);
-            
-            return Task.FromResult((JwtSecurityToken)token);
+
+            return Task.FromResult((JsonWebToken) token);
         }
 
         /// <summary>
@@ -190,32 +199,11 @@ namespace IdentityServer4.Validation
         /// </summary>
         /// <param name="token">The JWT token</param>
         /// <returns></returns>
-        protected virtual Task<Dictionary<string, string>> ProcessPayloadAsync(JwtSecurityToken token)
+        protected virtual Task<List<Claim>> ProcessPayloadAsync(JsonWebToken token)
         {
             // filter JWT validation values
-            var payload = new Dictionary<string, string>();
-            foreach (var key in token.Payload.Keys)
-            {
-                if (!Constants.Filters.JwtRequestClaimTypesFilter.Contains(key))
-                {
-                    var value = token.Payload[key];
-
-                    switch (value)
-                    {
-                        case string s:
-                            payload.Add(key, s);
-                            break;
-                        case JObject jobj:
-                            payload.Add(key, jobj.ToString(Formatting.None));
-                            break;
-                        case JArray jarr:
-                            payload.Add(key, jarr.ToString(Formatting.None));
-                            break;
-                    }
-                }
-            }
-
-            return Task.FromResult(payload);
+            var filtered = token.Claims.Where(claim => !Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type));
+            return Task.FromResult(filtered.ToList());
         }
     }
 }

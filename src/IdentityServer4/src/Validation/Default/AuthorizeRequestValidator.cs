@@ -53,7 +53,9 @@ namespace IdentityServer4.Validation
             _logger = logger;
         }
 
-        public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
+        public async Task<AuthorizeRequestValidationResult> ValidateAsync(
+            NameValueCollection parameters,
+            ClaimsPrincipal? subject = null)
         {
             _logger.LogDebug("Start authorize request protocol validation");
 
@@ -124,8 +126,8 @@ namespace IdentityServer4.Validation
             var customResult = context.Result;
             if (customResult.IsError)
             {
-                LogWarning("Error in custom validation", customResult.Error, request);
-                return Invalid(request, customResult.Error, customResult.ErrorDescription);
+                LogWarning("Error in custom validation", customResult.Error!, request);
+                return Invalid(request, customResult.Error!, customResult.ErrorDescription);
             }
 
             _logger.LogTrace("Authorize request protocol validation successful");
@@ -149,7 +151,7 @@ namespace IdentityServer4.Validation
                 if (jwtRequestUri.IsPresent())
                 {
                     // 512 is from the spec
-                    if (jwtRequestUri.Length > 512)
+                    if (jwtRequestUri!.Length > 512)
                     {
                         LogWarning("request_uri is too long", request);
                         return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri, description: "request_uri is too long");
@@ -172,13 +174,10 @@ namespace IdentityServer4.Validation
             }
 
             // check length restrictions
-            if (jwtRequest.IsPresent())
+            if (jwtRequest.IsPresent() && jwtRequest!.Length >= _options.InputLengthRestrictions.Jwt)
             {
-                if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
-                {
-                    LogWarning("request value is too long", request);
-                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid request value");
-                }
+                LogWarning("request value is too long", request);
+                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid request value");
             }
 
             request.RequestObject = jwtRequest;
@@ -198,7 +197,7 @@ namespace IdentityServer4.Validation
                 return Invalid(request, description: "Invalid client_id");
             }
 
-            request.ClientId = clientId;
+            request.ClientId = clientId!;
 
             //////////////////////////////////////////////////////////
             // check for valid client
@@ -223,7 +222,7 @@ namespace IdentityServer4.Validation
             if (request.RequestObject.IsPresent())
             {
                 // validate the request JWT for this client
-                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(request.Client, request.RequestObject);
+                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(request.Client, request.RequestObject!);
                 if (jwtRequestValidationResult.IsError)
                 {
                     LogError("request JWT validation failure", request);
@@ -234,18 +233,21 @@ namespace IdentityServer4.Validation
                 var responseType = request.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
                 if (responseType != null)
                 {
-                    if (jwtRequestValidationResult.Payload.TryGetValue(OidcConstants.AuthorizeRequest.ResponseType, out var payloadResponseType))
+                    var payloadResponseType =
+                        jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                            c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
+                    if (!string.IsNullOrEmpty(payloadResponseType) && payloadResponseType != responseType)
                     {
-                        if (payloadResponseType != responseType)
-                        {
-                            LogWarning("response_type in JWT payload does not match response_type in request", request);
-                            return Invalid(request, description: "Invalid JWT request");
-                        }
+                        LogWarning("response_type in JWT payload does not match response_type in request", request);
+                        return Invalid(request, description: "Invalid JWT request");
                     }
                 }
 
                 // validate client_id mismatch
-                if (jwtRequestValidationResult.Payload.TryGetValue(OidcConstants.AuthorizeRequest.ClientId, out var payloadClientId))
+                var payloadClientId =
+                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                        c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
+                if (!string.IsNullOrEmpty(payloadClientId))
                 {
                     if (!string.Equals(request.Client.ClientId, payloadClientId, StringComparison.Ordinal))
                     {
@@ -265,24 +267,26 @@ namespace IdentityServer4.Validation
                     JwtClaimTypes.Audience
                 };
 
-                // merge jwt payload values into original request parameters
-                foreach (var key in jwtRequestValidationResult.Payload.Keys)
+                // merge JWT payload values into original request parameters
+                foreach (var claimType in jwtRequestValidationResult.Payload.Select(c => c.Type).Distinct())
                 {
-                    if (ignoreKeys.Contains(key)) continue;
-
-                    var value = jwtRequestValidationResult.Payload[key];
-
-                    var qsValue = request.Raw.Get(key);
+                    var qsValue = request.Raw.Get(claimType);
                     if (qsValue != null)
                     {
-                        if (!string.Equals(value, qsValue, StringComparison.Ordinal))
-                        {
-                            LogWarning("parameter mismatch between request object and query string parameter.", request);
-                            return Invalid(request, description: "Parameter mismatch in JWT request");
-                        }
+                        request.Raw.Remove(claimType);
                     }
+                }
 
-                    request.Raw.Set(key, value);
+                foreach (var claim in jwtRequestValidationResult.Payload)
+                {
+                    request.Raw.Add(claim.Type, claim.Value);
+                }
+
+                var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+                if (ruri != null)
+                {
+                    request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+                    request.Raw.Add(OidcConstants.AuthorizeRequest.Request, request.RequestObject);
                 }
 
                 request.RequestObjectValues = jwtRequestValidationResult.Payload;
@@ -296,12 +300,9 @@ namespace IdentityServer4.Validation
             //////////////////////////////////////////////////////////
             // check request object requirement
             //////////////////////////////////////////////////////////
-            if (request.Client.RequireRequestObject)
+            if (request.Client.RequireRequestObject && !request.RequestObjectValues.Any())
             {
-                if (!request.RequestObjectValues.Any())
-                {
-                    return Invalid(request, description: "Client must use request object, but no request or request_uri parameter present");
-                }
+                return Invalid(request, description: "Client must use request object, but no request or request_uri parameter present");
             }
 
             //////////////////////////////////////////////////////////
@@ -317,7 +318,7 @@ namespace IdentityServer4.Validation
 
             if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var _))
             {
-                LogWarning("malformed redirect_uri", redirectUri, request);
+                LogWarning("malformed redirect_uri", redirectUri!, request);
                 return Invalid(request, description: "Invalid redirect_uri");
             }
 
@@ -352,7 +353,7 @@ namespace IdentityServer4.Validation
             var state = request.Raw.Get(OidcConstants.AuthorizeRequest.State);
             if (state.IsPresent())
             {
-                request.State = state;
+                request.State = state!;
             }
 
             //////////////////////////////////////////////////////////
@@ -376,7 +377,7 @@ namespace IdentityServer4.Validation
             // as a space-delimited list of values in which the order of values does not matter.'
             if (!Constants.SupportedResponseTypes.Contains(responseType, _responseTypeEqualityComparer))
             {
-                LogWarning("Response type not supported", responseType, request);
+                LogWarning("Response type not supported", responseType!, request);
                 return Invalid(request, OidcConstants.AuthorizeErrors.UnsupportedResponseType, "Response type not supported");
             }
 
@@ -429,21 +430,21 @@ namespace IdentityServer4.Validation
             var responseMode = request.Raw.Get(OidcConstants.AuthorizeRequest.ResponseMode);
             if (responseMode.IsPresent())
             {
-                if (Constants.SupportedResponseModes.Contains(responseMode))
+                if (Constants.SupportedResponseModes.Contains(responseMode!))
                 {
                     if (Constants.AllowedResponseModesForGrantType[request.GrantType].Contains(responseMode))
                     {
-                        request.ResponseMode = responseMode;
+                        request.ResponseMode = responseMode!;
                     }
                     else
                     {
-                        LogWarning("Invalid response_mode for response_type", responseMode, request);
+                        LogWarning("Invalid response_mode for response_type", responseMode!, request);
                         return Invalid(request, OidcConstants.AuthorizeErrors.InvalidRequest, description: "Invalid response_mode");
                     }
                 }
                 else
                 {
-                    LogWarning("Unsupported response_mode", responseMode, request);
+                    LogWarning("Unsupported response_mode", responseMode!, request);
                     return Invalid(request, OidcConstants.AuthorizeErrors.UnsupportedResponseType, description: "Invalid response_mode");
                 }
             }
@@ -461,7 +462,7 @@ namespace IdentityServer4.Validation
             // check if response type contains an access token,
             // and if client is allowed to request access token via browser
             //////////////////////////////////////////////////////////
-            var responseTypes = responseType.FromSpaceSeparatedString();
+            var responseTypes = responseType!.FromSpaceSeparatedString();
             if (responseTypes.Contains(OidcConstants.ResponseTypes.Token))
             {
                 if (!request.Client.AllowAccessTokensViaBrowser)
@@ -495,7 +496,7 @@ namespace IdentityServer4.Validation
                 return fail;
             }
 
-            if (codeChallenge.Length < _options.InputLengthRestrictions.CodeChallengeMinLength ||
+            if (codeChallenge!.Length < _options.InputLengthRestrictions.CodeChallengeMinLength ||
                 codeChallenge.Length > _options.InputLengthRestrictions.CodeChallengeMaxLength)
             {
                 LogWarning("code_challenge is either too short or too long", request);
@@ -512,9 +513,9 @@ namespace IdentityServer4.Validation
                 codeChallengeMethod = OidcConstants.CodeChallengeMethods.Plain;
             }
 
-            if (!Constants.SupportedCodeChallengeMethods.Contains(codeChallengeMethod))
+            if (!Constants.SupportedCodeChallengeMethods.Contains(codeChallengeMethod!))
             {
-                LogWarning("Unsupported code_challenge_method", codeChallengeMethod, request);
+                LogWarning("Unsupported code_challenge_method", codeChallengeMethod!, request);
                 fail.ErrorDescription = "Transform algorithm not supported";
                 return fail;
             }
@@ -547,7 +548,7 @@ namespace IdentityServer4.Validation
                 return Invalid(request, description: "Invalid scope");
             }
 
-            if (scope.Length > _options.InputLengthRestrictions.Scope)
+            if (scope!.Length > _options.InputLengthRestrictions.Scope)
             {
                 LogWarning("scopes too long.", request);
                 return Invalid(request, description: "Invalid scope");
@@ -648,7 +649,7 @@ namespace IdentityServer4.Validation
             var nonce = request.Raw.Get(OidcConstants.AuthorizeRequest.Nonce);
             if (nonce.IsPresent())
             {
-                if (nonce.Length > _options.InputLengthRestrictions.Nonce)
+                if (nonce!.Length > _options.InputLengthRestrictions.Nonce)
                 {
                     LogWarning("Nonce too long", request);
                     return Invalid(request, description: "Invalid nonce");
@@ -676,7 +677,7 @@ namespace IdentityServer4.Validation
             var prompt = request.Raw.Get(OidcConstants.AuthorizeRequest.Prompt);
             if (prompt.IsPresent())
             {
-                var prompts = prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var prompts = prompt!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (prompts.All(p => Constants.SupportedPromptModes.Contains(p)))
                 {
                     if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
@@ -694,12 +695,12 @@ namespace IdentityServer4.Validation
             }
 
             //////////////////////////////////////////////////////////
-            // check ui locales
+            // check UI locales
             //////////////////////////////////////////////////////////
             var uilocales = request.Raw.Get(OidcConstants.AuthorizeRequest.UiLocales);
             if (uilocales.IsPresent())
             {
-                if (uilocales.Length > _options.InputLengthRestrictions.UiLocale)
+                if (uilocales!.Length > _options.InputLengthRestrictions.UiLocale)
                 {
                     LogWarning("UI locale too long", request);
                     return Invalid(request, description: "Invalid ui_locales");
@@ -714,9 +715,9 @@ namespace IdentityServer4.Validation
             var display = request.Raw.Get(OidcConstants.AuthorizeRequest.Display);
             if (display.IsPresent())
             {
-                if (Constants.SupportedDisplayModes.Contains(display))
+                if (Constants.SupportedDisplayModes.Contains(display!))
                 {
-                    request.DisplayMode = display;
+                    request.DisplayMode = display!;
                 }
 
                 _logger.LogDebug("Unsupported display mode - ignored: " + display);
@@ -753,7 +754,7 @@ namespace IdentityServer4.Validation
             var loginHint = request.Raw.Get(OidcConstants.AuthorizeRequest.LoginHint);
             if (loginHint.IsPresent())
             {
-                if (loginHint.Length > _options.InputLengthRestrictions.LoginHint)
+                if (loginHint!.Length > _options.InputLengthRestrictions.LoginHint)
                 {
                     LogWarning("Login hint too long", request);
                     return Invalid(request, description: "Invalid login_hint");
@@ -768,7 +769,7 @@ namespace IdentityServer4.Validation
             var acrValues = request.Raw.Get(OidcConstants.AuthorizeRequest.AcrValues);
             if (acrValues.IsPresent())
             {
-                if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
+                if (acrValues!.Length > _options.InputLengthRestrictions.AcrValues)
                 {
                     LogWarning("Acr values too long", request);
                     return Invalid(request, description: "Invalid acr_values");
@@ -820,7 +821,7 @@ namespace IdentityServer4.Validation
             return Valid(request);
         }
 
-        private static AuthorizeRequestValidationResult Invalid(ValidatedAuthorizeRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string description = null) =>
+        private static AuthorizeRequestValidationResult Invalid(ValidatedAuthorizeRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string? description = null) =>
             new(request, error, description);
 
         private static AuthorizeRequestValidationResult Valid(ValidatedAuthorizeRequest request) =>
