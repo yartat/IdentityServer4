@@ -27,9 +27,9 @@ namespace IdentityServer4.Logging.Models
 
         public Dictionary<string, string> Raw { get; set; }
 
-        public TokenRequestValidationLog(ValidatedTokenRequest request, IEnumerable<string> sensitiveValuesFilter)
+        public TokenRequestValidationLog(ValidatedTokenRequest request, HashSet<string> sensitiveValuesFilter)
         {
-            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter.ToArray());
+            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter);
 
             if (request.Client != null)
             {

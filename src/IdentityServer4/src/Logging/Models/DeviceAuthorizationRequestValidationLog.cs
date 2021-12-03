@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using IdentityModel;
 using IdentityServer4.Extensions;
@@ -17,7 +18,8 @@ namespace IdentityServer4.Logging
 
         public Dictionary<string, string> Raw { get; set; }
 
-        private static readonly string[] SensitiveValuesFilter = {
+        private static readonly HashSet<string> SensitiveValuesFilter = new(StringComparer.OrdinalIgnoreCase)
+        {
             OidcConstants.TokenRequest.ClientSecret,
             OidcConstants.TokenRequest.ClientAssertion
         };
