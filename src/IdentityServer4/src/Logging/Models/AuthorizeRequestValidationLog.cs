@@ -135,9 +135,9 @@ namespace IdentityServer4.Logging.Models
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="sensitiveValuesFilter"></param>
-        public AuthorizeRequestValidationLog(ValidatedAuthorizeRequest request, IEnumerable<string> sensitiveValuesFilter)
+        public AuthorizeRequestValidationLog(ValidatedAuthorizeRequest request, HashSet<string> sensitiveValuesFilter)
         {
-            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter.ToArray());
+            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter);
 
             if (request.Client != null)
             {

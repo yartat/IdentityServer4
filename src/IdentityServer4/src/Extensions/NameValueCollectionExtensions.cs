@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -98,29 +98,32 @@ namespace IdentityServer4.Extensions
             return result;
         }
 
-        public static Dictionary<string, string> ToDictionary(this NameValueCollection collection)
-        {
-            return collection.ToScrubbedDictionary();
-        }
+        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection collection, params string[] nameFilter) =>
+            collection.ToScrubbedDictionary(nameFilter.ToHashSet(StringComparer.OrdinalIgnoreCase));
 
-        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection collection, params string[] nameFilter)
+        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection collection, HashSet<string> nameFilter)
         {
             var dict = new Dictionary<string, string>();
-
-            if (collection == null || collection.Count == 0)
+            if (collection is null || collection.Count == 0)
             {
                 return dict;
             }
 
             foreach (string name in collection)
             {
-                var value = collection.Get(name);
-                if (value != null)
+                if (name is null)
                 {
-                    if (nameFilter.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    continue;
+                }
+
+                var value = collection.Get(name);
+                if (value is not null)
+                {
+                    if (nameFilter.Contains(name))
                     {
                         value = "***REDACTED***";
                     }
+
                     dict.Add(name, value);
                 }
             }
