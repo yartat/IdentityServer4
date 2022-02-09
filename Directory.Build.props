@@ -2,14 +2,14 @@
 <Project>
 
   <PropertyGroup>
-    <DotNetLibrary3xx>3.1.21</DotNetLibrary3xx>
+    <DotNetLibrary3xx>3.1.22</DotNetLibrary3xx>
     <DotNetLibrary50>5.0.0</DotNetLibrary50>
     <DotNetLibrary60>6.0.0</DotNetLibrary60>
-    <DotNetLibrary5xx>5.0.12</DotNetLibrary5xx>
-    <DotNetLibrary6xx>6.0.0</DotNetLibrary6xx>
-    <OpenIdConnect>6.14.1</OpenIdConnect>
-    <JsonLib>6.0.0</JsonLib>
-    <IdentityModel>5.2.0</IdentityModel>
+    <DotNetLibrary5xx>5.0.13</DotNetLibrary5xx>
+    <DotNetLibrary6xx>6.0.1</DotNetLibrary6xx>
+    <OpenIdConnect>6.15.1</OpenIdConnect>
+    <JsonLib>6.0.1</JsonLib>
+    <IdentityModel>6.0.0</IdentityModel>
     <NewtonJson>13.0.1</NewtonJson>
     <AutoMapper>10.1.1</AutoMapper>
     <TestSdk>16.11.0</TestSdk>

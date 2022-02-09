@@ -82,8 +82,6 @@ namespace IdentityServer4.Extensions
                     .Except(scopeClaims)
                     .Except(issuedAtClaims);
 
-                payload.AddClaims(normalClaims);
-
                 // scope claims
                 if (!scopeClaims.IsNullOrEmpty())
                 {
@@ -107,8 +105,7 @@ namespace IdentityServer4.Extensions
                 }
 
                 // other claims
-                var otherClaimTypes = token.Claims
-                    .Where(c => c.Type != JwtClaimTypes.AuthenticationMethod && c.Type != JwtClaimTypes.Scope)
+                var otherClaimTypes = normalClaims
                     .Select(c => c.Type)
                     .Distinct();
 
