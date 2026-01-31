@@ -24,9 +24,9 @@ namespace IdentityServer4.Models
         {
             var names = resourceValidationResult.Resources.IdentityResources.Where(x => x.Required).Select(x => x.Name).ToList();
             names.AddRange(resourceValidationResult.Resources.ApiScopes.Where(x => x.Required).Select(x => x.Name));
+            var namesSet = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            var values = resourceValidationResult.ParsedScopes.Where(x => names.Contains(x.ParsedName)).Select(x => x.RawValue);
-            return values;
+            return resourceValidationResult.ParsedScopes.Where(x => namesSet.Contains(x.ParsedName)).Select(x => x.RawValue);
         }
 
         /// <summary>
@@ -90,7 +90,10 @@ namespace IdentityServer4.Models
 
         internal static Resources FilterEnabled(this Resources resources)
         {
-            if (resources == null) return new Resources();
+            if (resources is null)
+            {
+                return new Resources();
+            }
 
             return new Resources(
                 resources.IdentityResources.Where(x => x.Enabled),
@@ -107,7 +110,7 @@ namespace IdentityServer4.Models
 
             if (apis.IsNullOrEmpty())
             {
-                return new List<string>();
+                return [];
             }
 
             // only one API resource request, forward the allowed signing algorithms (if any)
@@ -116,7 +119,7 @@ namespace IdentityServer4.Models
                 return apis.First().AllowedAccessTokenSigningAlgorithms;
             }
 
-            var allAlgorithms = apis.Where(r => r.AllowedAccessTokenSigningAlgorithms.Any()).Select(r => r.AllowedAccessTokenSigningAlgorithms).ToList();
+            var allAlgorithms = apis.Where(r => r.AllowedAccessTokenSigningAlgorithms.Any()).Select(r => r.AllowedAccessTokenSigningAlgorithms).ToArray();
 
             // resources need to agree on allowed signing algorithms
             if (allAlgorithms.Any())
@@ -131,7 +134,7 @@ namespace IdentityServer4.Models
                 throw new InvalidOperationException("Signing algorithms requirements for requested resources are not compatible.");
             }
 
-            return new List<string>();
+            return [];
         }
 
         private static IEnumerable<T> IntersectLists<T>(IEnumerable<IEnumerable<T>> lists) =>

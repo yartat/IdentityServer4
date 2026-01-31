@@ -7,9 +7,9 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
 using IdentityServer4.ResponseHandling;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -17,23 +17,30 @@ namespace IdentityServer4.Endpoints
 {
     internal class DiscoveryEndpoint : IEndpointHandler
     {
-        private static readonly ConcurrentDictionary<int, Dictionary<string, object>> _responseCache = new ConcurrentDictionary<int, Dictionary<string, object>>();
+        private static readonly MemoryCacheEntryOptions CacheOptions = new()
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+        };
+        
+        private readonly IMemoryCache _responseCache;
 
         private readonly ILogger _logger;
         private readonly IdentityServerOptions _options;
         private readonly IDiscoveryResponseGenerator _responseGenerator;
 
         public DiscoveryEndpoint(
+            IMemoryCache memoryCache,
             IdentityServerOptions options,
             IDiscoveryResponseGenerator responseGenerator,
             ILogger<DiscoveryEndpoint> logger)
         {
+            _responseCache = memoryCache;
             _logger = logger;
             _options = options;
             _responseGenerator = responseGenerator;
         }
 
-        public Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing discovery request.");
 
@@ -41,13 +48,13 @@ namespace IdentityServer4.Endpoints
             if (!HttpMethods.IsGet(context.Request.Method))
             {
                 _logger.LogWarning("Discovery endpoint only supports GET requests");
-                return Task.FromResult((IEndpointResult) new StatusCodeResult(HttpStatusCode.MethodNotAllowed));
+                return (IEndpointResult) new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
             if (!_options.Endpoints.EnableDiscoveryEndpoint)
             {
                 _logger.LogInformation("Discovery endpoint disabled. 404.");
-                return Task.FromResult((IEndpointResult) new StatusCodeResult(HttpStatusCode.NotFound));
+                return (IEndpointResult) new StatusCodeResult(HttpStatusCode.NotFound);
             }
 
             var baseUrl = context.GetIdentityServerBaseUri();
@@ -55,10 +62,15 @@ namespace IdentityServer4.Endpoints
 
             // generate response
             _logger.LogTrace("Calling into discovery response generator: {type}", _responseGenerator.GetType().FullName);
-            var response = _responseCache.GetOrAdd(1, _ => _responseGenerator.CreateDiscoveryDocumentAsync(baseUrl, issuerUri).GetAwaiter().GetResult());
+            var response = await _responseCache.GetOrCreateAsync(
+                "discovery_" + baseUrl, 
+                entry => {
+                    entry.SetOptions(CacheOptions);
+                    return _responseGenerator.CreateDiscoveryDocumentAsync(baseUrl, issuerUri);
+                });
 
             _logger.LogTrace("Discovery request completed. Return DiscoveryDocumentResult");
-            return Task.FromResult((IEndpointResult) new DiscoveryDocumentResult(response, _options.Discovery.ResponseCacheInterval));
+            return (IEndpointResult) new DiscoveryDocumentResult(response, _options.Discovery.ResponseCacheInterval);
         }
     }
 }

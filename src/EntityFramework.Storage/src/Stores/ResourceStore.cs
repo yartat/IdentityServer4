@@ -12,6 +12,9 @@ using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+#if NET7_0_OR_GREATER
+using Microsoft.Extensions.Logging.Abstractions;
+#endif
 
 namespace IdentityServer4.EntityFramework.Stores
 {

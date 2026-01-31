@@ -13,6 +13,9 @@ namespace IdentityServer4.Extensions
 {
     internal static class NameValueCollectionExtensions
     {
+        private static readonly Dictionary<string, string> EmptyStringDictionary = new();
+        private static readonly NameValueCollection EmptyNameValueCollection = new();
+
         public static IDictionary<string, string[]> ToFullDictionary(this NameValueCollection source)
         {
             return source.AllKeys.ToDictionary(k => k, k => source.GetValues(k));
@@ -21,7 +24,6 @@ namespace IdentityServer4.Extensions
         public static NameValueCollection FromFullDictionary(this IDictionary<string, string[]> source)
         {
             var nvc = new NameValueCollection();
-
             foreach (var item in source)
             {
                 foreach (var value in item.Value)
@@ -37,7 +39,7 @@ namespace IdentityServer4.Extensions
         {
             if (collection.Count == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             var builder = new StringBuilder(128);
@@ -77,66 +79,47 @@ namespace IdentityServer4.Extensions
             return builder.ToString();
         }
 
-        public static NameValueCollection ToNameValueCollection(this Dictionary<string, string> data)
+        public static NameValueCollection ToNameValueCollection(this Dictionary<string, string>? data)
         {
-            var result = new NameValueCollection();
-
-            if (data == null || data.Count == 0)
+            if (data is null || data.Count == 0)
             {
-                return result;
+                return EmptyNameValueCollection;
             }
 
-            foreach (var name in data.Keys)
+            var result = new NameValueCollection();
+            foreach (var (key, value) in data)
             {
-                var value = data[name];
-                if (value != null)
+                if (value is not null)
                 {
-                    result.Add(name, value);
+                    result.Add(key, value);
                 }
             }
 
             return result;
         }
 
-        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection collection, params string[] nameFilter) =>
+        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection? collection, params string[] nameFilter) =>
             collection.ToScrubbedDictionary(nameFilter.ToHashSet(StringComparer.OrdinalIgnoreCase));
 
-        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection collection, HashSet<string> nameFilter)
+        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection? collection, HashSet<string> nameFilter)
         {
-            var dict = new Dictionary<string, string>();
-            if (collection is null || collection.Count == 0)
-            {
-                return dict;
-            }
-
-            foreach (string name in collection)
-            {
-                if (name is null)
-                {
-                    continue;
-                }
-
-                var value = collection.Get(name);
-                if (value is not null)
-                {
-                    if (nameFilter.Contains(name))
-                    {
-                        value = "***REDACTED***";
-                    }
-
-                    dict.Add(name, value);
-                }
-            }
-
-            return dict;
+            return collection?.AllKeys
+                .Where(x => x is not null)
+                .ToDictionary(
+                    x => x, 
+                    x => nameFilter.Contains(x) ? 
+                            "***REDACTED***" :
+                            collection.Get(x)) ??
+                EmptyStringDictionary;
         }
 
         internal static string ConvertFormUrlEncodedSpacesToUrlEncodedSpaces(string str)
         {
-            if ((str != null) && (str.IndexOf('+') >= 0))
+            if (!string.IsNullOrEmpty(str) && str.Contains('+'))
             {
                 str = str.Replace("+", "%20");
             }
+
             return str;
         }
 
@@ -164,6 +147,7 @@ namespace IdentityServer4.Extensions
                 builder.Append("=");
                 builder.Append(encodedValue);
             }
+            
             return first;
         }
     }

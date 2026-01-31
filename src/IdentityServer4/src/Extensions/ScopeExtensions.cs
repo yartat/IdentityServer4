@@ -16,16 +16,12 @@ namespace IdentityServer4.Models
             var scopeNames = from s in apiScopes
                              select s.Name;
 
-            return string.Join(" ", scopeNames.ToArray());
+            return string.Join(" ", scopeNames);
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<string> ToStringList(this IEnumerable<ApiScope> apiScopes)
-        {
-            var scopeNames = from s in apiScopes
-                             select s.Name;
-
-            return scopeNames;
-        }
+        public static IEnumerable<string> ToStringList(this IEnumerable<ApiScope> apiScopes) => 
+            from s in apiScopes
+            select s.Name;
     }
 }

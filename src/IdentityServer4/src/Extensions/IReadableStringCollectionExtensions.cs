@@ -17,27 +17,25 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static NameValueCollection AsNameValueCollection(this IEnumerable<KeyValuePair<string, StringValues>> collection)
         {
-            var nv = new NameValueCollection();
-
+            var result = new NameValueCollection();
             foreach (var field in collection)
             {
-                nv.Add(field.Key, field.Value.First());
+                result.Add(field.Key, field.Value.FirstOrDefault());
             }
 
-            return nv;
+            return result;
         }
 
         [DebuggerStepThrough]
         public static NameValueCollection AsNameValueCollection(this IDictionary<string, StringValues> collection)
         {
-            var nv = new NameValueCollection();
-
+            var result = new NameValueCollection(collection.Count);
             foreach (var field in collection)
             {
-                nv.Add(field.Key, field.Value.First());
+                result.Add(field.Key, field.Value.FirstOrDefault());
             }
 
-            return nv;
+            return result;
         }
     }
 }

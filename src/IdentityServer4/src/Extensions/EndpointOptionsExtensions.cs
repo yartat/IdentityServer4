@@ -10,9 +10,8 @@ namespace IdentityServer4.Extensions
 {
     internal static class EndpointOptionsExtensions
     {
-        public static bool IsEndpointEnabled(this EndpointsOptions options, Endpoint endpoint)
-        {
-            return endpoint?.Name switch
+        public static bool IsEndpointEnabled(this EndpointsOptions options, Endpoint endpoint) => 
+            endpoint?.Name switch
             {
                 EndpointNames.Authorize => options.EnableAuthorizeEndpoint,
                 EndpointNames.CheckSession => options.EnableCheckSessionEndpoint,
@@ -25,6 +24,5 @@ namespace IdentityServer4.Extensions
                 EndpointNames.UserInfo => options.EnableUserInfoEndpoint,
                 _ => true
             };
-        }
     }
 }

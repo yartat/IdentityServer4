@@ -10,38 +10,43 @@ using System.Threading.Tasks;
 
 #pragma warning disable 1591
 
-namespace IdentityServer4.Hosting
+namespace IdentityServer4.Hosting;
+
+/// <summary>
+/// Middleware for configuring the base URL and public origin of IdentityServer.
+/// </summary>
+/// <remarks>
+/// This middleware is responsible for setting up the IdentityServer's base URL configuration
+/// for each request. It applies the configured public origin and base path to the HTTP context,
+/// which are used throughout the request pipeline for generating URLs and determining the 
+/// IdentityServer's authority URI.
+/// </remarks>
+/// <seealso cref="IMiddleware" />
+public class BaseUrlMiddleware(
+    RequestDelegate next,
+    IdentityServerOptions options,
+    ILogger<BaseUrlMiddleware> logger)
 {
-    public class BaseUrlMiddleware
+    private readonly RequestDelegate _next = next;
+    private readonly IdentityServerOptions _options = options ?? throw new ArgumentNullException(nameof(options));
+    private readonly ILogger<BaseUrlMiddleware> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    public async Task Invoke(HttpContext context)
     {
-        private readonly RequestDelegate _next;
-        private readonly IdentityServerOptions _options;
-        private readonly ILogger<BaseUrlMiddleware> _logger;
-
-        public BaseUrlMiddleware(RequestDelegate next, IdentityServerOptions options, ILogger<BaseUrlMiddleware> logger)
+        _logger.LogTrace("BaseUrlMiddleware processing");
+        if (context is not null)
         {
-            _next = next;
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+            var request = context.Request;
 
-        public async Task Invoke(HttpContext context)
-        {
-            _logger.LogTrace("BaseUrlMiddleware processing");
-            if (context != null)
+            if (_options.PublicOrigin.IsPresent())
             {
-                var request = context.Request;
-
-                if (_options.PublicOrigin.IsPresent())
-                {
-                    context.SetIdentityServerOrigin(_options.PublicOrigin);
-                }
-
-                context.SetIdentityServerBasePath(request.PathBase.Value.RemoveTrailingSlash());
+                context.SetIdentityServerOrigin(_options.PublicOrigin);
             }
 
-            _logger.LogTrace("BaseUrlMiddleware completed");
-            await _next(context);
+            context.SetIdentityServerBasePath(request.PathBase.Value.RemoveTrailingSlash());
         }
+
+        _logger.LogTrace("BaseUrlMiddleware completed");
+        await _next(context);
     }
 }

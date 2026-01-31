@@ -28,21 +28,18 @@ namespace IdentityServer4.Logging
         {
             Raw = request.Raw.ToScrubbedDictionary(SensitiveValuesFilter);
 
-            if (request.Client != null)
+            if (request.Client is not null)
             {
                 ClientId = request.Client.ClientId;
                 ClientName = request.Client.ClientName;
             }
 
-            if (request.RequestedScopes != null)
+            if (request.RequestedScopes is not null)
             {
                 Scopes = request.RequestedScopes.ToSpaceSeparatedString();
             }
         }
 
-        public override string ToString()
-        {
-            return LogSerializer.Serialize(this);
-        }
+        public override string ToString() => LogSerializer.Serialize(this);
     }
 }

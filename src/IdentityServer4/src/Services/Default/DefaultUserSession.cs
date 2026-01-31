@@ -240,7 +240,7 @@ namespace IdentityServer4.Services
         /// Creates the options for the session cookie.
         /// </summary>
         public virtual CookieOptions CreateSessionIdCookieOptions() =>
-            new CookieOptions
+            new()
             {
                 HttpOnly = false,
                 Secure = true,
@@ -256,15 +256,13 @@ namespace IdentityServer4.Services
         /// <param name="sid"></param>
         public virtual void IssueSessionIdCookie(string sid)
         {
-            if (Options.Endpoints.EnableCheckSessionEndpoint)
+            if (Options.Endpoints.EnableCheckSessionEndpoint &&
+               HttpContext.Request.Cookies[CheckSessionCookieName] != sid)
             {
-                if (HttpContext.Request.Cookies[CheckSessionCookieName] != sid)
-                {
-                    HttpContext.Response.Cookies.Append(
-                        Options.Authentication.CheckSessionCookieName,
-                        sid,
-                        CreateSessionIdCookieOptions());
-                }
+                HttpContext.Response.Cookies.Append(
+                    Options.Authentication.CheckSessionCookieName,
+                    sid,
+                    CreateSessionIdCookieOptions());
             }
         }
 
@@ -276,10 +274,13 @@ namespace IdentityServer4.Services
         /// <exception cref="ArgumentNullException">clientId</exception>
         public virtual async Task AddClientIdAsync(string clientId)
         {
-            if (clientId == null) throw new ArgumentNullException(nameof(clientId));
+            if (clientId == null)
+            {
+                throw new ArgumentNullException(nameof(clientId));
+            }
 
             await AuthenticateAsync();
-            if (Properties != null)
+            if (Properties is not null)
             {
                 var clientIds = Properties.GetClientList();
                 if (!clientIds.Contains(clientId))
@@ -321,7 +322,10 @@ namespace IdentityServer4.Services
         {
             await AuthenticateAsync();
 
-            if (Principal == null || Properties == null) throw new InvalidOperationException("User is not currently authenticated");
+            if (Principal == null || Properties == null)
+            {
+                throw new InvalidOperationException("User is not currently authenticated");
+            }
 
             var scheme = await HttpContext.GetCookieAuthenticationSchemeAsync();
             await HttpContext.SignInAsync(scheme, Principal, Properties);

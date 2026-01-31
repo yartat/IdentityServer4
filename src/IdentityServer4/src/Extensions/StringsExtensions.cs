@@ -1,19 +1,23 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 
 namespace IdentityServer4.Extensions
 {
     /// <summary>
-    /// Defines a string extension methods.
+    /// Determines whether the specified URL is a local URL.
     /// </summary>
     public static class StringExtensions
     {
@@ -22,15 +26,10 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="userAgent">The user agent string.</param>
         /// <returns>Returns device name.</returns>
-        public static string GetDevice(this string userAgent)
-        {
-            if (string.IsNullOrEmpty(userAgent))
-            {
-                return null;
-            }
-
-            return userAgent;
-        }
+        public static string GetDevice(this string? userAgent) =>
+            string.IsNullOrEmpty(userAgent) ?
+                string.Empty :
+                userAgent;
 
         /// <summary>
         /// Converts to space separated string.
@@ -39,8 +38,8 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the space separated string.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ToSpaceSeparatedString(this IEnumerable<string> list) =>
-            list == null ?
+        public static string ToSpaceSeparatedString(this IEnumerable<string>? list) =>
+            list is null ?
                 string.Empty :
                 string.Join(' ', list).Trim();
 
@@ -51,15 +50,16 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the list of strings.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<string> FromSpaceSeparatedString(this string input) =>
-            input.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        public static IEnumerable<string> FromSpaceSeparatedString(this string? input) =>
+            input?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ??
+            Enumerable.Empty<string>();
 
         /// <summary>
         /// Parses the scopes string.
         /// </summary>
         /// <param name="scopes">The scopes.</param>
         /// <returns>Returns the list of scopes.</returns>
-        public static List<string> ParseScopesString(this string scopes)
+        public static List<string>? ParseScopesString(this string? scopes)
         {
             if (scopes.IsMissing())
             {
@@ -85,7 +85,7 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if the specified value is missing; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMissing(this string value) =>
+        public static bool IsMissing([NotNullWhen(false)] this string? value) =>
             string.IsNullOrWhiteSpace(value);
 
         /// <summary>
@@ -96,19 +96,8 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if is missing or too long the specified value; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMissingOrTooLong(this string value, int maxLength)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return true;
-            }
-            if (value.Length > maxLength)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static bool IsMissingOrTooLong(this string? value, int maxLength) =>
+            string.IsNullOrWhiteSpace(value) || value.Length > maxLength;
 
         /// <summary>
         /// Determines whether the specified value is present.
@@ -117,7 +106,7 @@ namespace IdentityServer4.Extensions
         /// <returns><c>true</c> if the specified value is present; otherwise, <c>false</c>.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPresent(this string value) =>
+        public static bool IsPresent([NotNullWhen(true)] this string? value) =>
             !string.IsNullOrWhiteSpace(value);
 
         /// <summary>
@@ -127,34 +116,72 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns the URL with leading slash in path.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string EnsureLeadingSlash(this string url) =>
-            url?.StartsWith("/") == false ?
+        public static string EnsureLeadingSlash(this string? url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return string.Empty;
+            }
+
+            return !url.StartsWith("/") ?
                 "/" + url :
                 url;
+        }
 
         /// <summary>
-        /// Ensures the trailing slash.
+        /// Ensures the trailing slash in the source URL.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns>Returns the URL with trailing slash in path.</returns>
+        /// <param name="url">The source URL.</param>
+        /// <returns>Returns URL with trailing slash in the path.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string EnsureTrailingSlash(this string url) =>
-            url?.EndsWith("/") == false ?
-                url + "/" :
-                url;
+        public static string EnsureTrailingSlash(this string? url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return string.Empty;
+            }
+
+            return url.EndsWith("/") ? url : url + "/";
+        }
 
         /// <summary>
-        /// Removes the leading slash.
+        /// Removes the leading slash in the source URL.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="url">The source URL.</param>
         /// <returns>Returns the URL without leading slash in path.</returns>
         [DebuggerStepThrough]
-        public static string RemoveLeadingSlash(this string url)
+        public static string RemoveLeadingSlash(this string? url)
         {
-            if (url?.StartsWith("/") == true)
+            if (string.IsNullOrEmpty(url))
             {
-                url = url.Substring(1);
+                return string.Empty;
+            }
+
+            if (url.StartsWith("/"))
+            {
+                url = url[1..];
+            }
+
+            return url;
+        }
+
+        /// <summary>
+        /// Removes the leading slash in the source URL.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <returns>Returns the URL without leading slash in path.</returns>
+        [DebuggerStepThrough]
+        public static ReadOnlySpan<char> RemoveLeadingSlash(this ReadOnlySpan<char> url)
+        {
+            if (url.IsEmpty)
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+
+            if (url.StartsWith("/"))
+            {
+                url = url[1..];
             }
 
             return url;
@@ -166,11 +193,16 @@ namespace IdentityServer4.Extensions
         /// <param name="url">The URL.</param>
         /// <returns>Returns the URL without trailing slash in path.</returns>
         [DebuggerStepThrough]
-        public static string RemoveTrailingSlash(this string url)
+        public static string RemoveTrailingSlash(this string? url)
         {
-            if (url?.EndsWith("/") == true)
+            if (string.IsNullOrEmpty(url))
             {
-                url = url.Substring(0, url.Length - 1);
+                return string.Empty;
+            }
+
+            if (url.EndsWith("/"))
+            {
+                url = url[..^1];
             }
 
             return url;
@@ -184,21 +216,30 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static string CleanUrlPath(this string url)
         {
-            if (string.IsNullOrWhiteSpace(url)) url = "/";
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = "/";
+            }
 
             if (url != "/" && url.EndsWith("/"))
             {
-                url = url.Substring(0, url.Length - 1);
+                url = url[..^1];
             }
 
             return url;
         }
 
         /// <summary>
-        /// Determines whether is local URL the specified value.
+        /// Determines whether the specified URL is a local URL.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns><c>true</c> if is local URL the specified value; otherwise, <c>false</c>.</returns>
+        /// <param name="url">The URL as a string.</param>
+        /// <returns><c>true</c> if the URL is a local URL (starts with "/" or "~/"); otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// A local URL is considered valid if it:
+        /// - Starts with "/" followed by a non-slash and non-backslash character (e.g., "/" or "/foo")
+        /// - Starts with "~/" followed by a non-slash and non-backslash character (e.g., "~/" or "~/foo")
+        /// Invalid patterns include URLs starting with "//" or "/\" or "~//" or "~/\".
+        /// </remarks>
         [DebuggerStepThrough]
         public static bool IsLocalUrl(this string url)
         {
@@ -247,24 +288,82 @@ namespace IdentityServer4.Extensions
         }
 
         /// <summary>
+        /// Determines whether the specified URL is a local URL.
+        /// </summary>
+        /// <param name="url">The URL as a read-only character span.</param>
+        /// <returns><c>true</c> if the URL is a local URL (starts with "/" or "~/"); otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// A local URL is considered valid if it:
+        /// - Starts with "/" followed by a non-slash and non-backslash character (e.g., "/" or "/foo")
+        /// - Starts with "~/" followed by a non-slash and non-backslash character (e.g., "~/" or "~/foo")
+        /// Invalid patterns include URLs starting with "//" or "/\" or "~//" or "~/\".
+        /// </remarks>
+        [DebuggerStepThrough]
+        public static bool IsLocalUrl(this ReadOnlySpan<char> url)
+        {
+            if (url.IsEmpty)
+            {
+                return false;
+            }
+
+            // "/" or "/foo" (not "//" or "/\")
+            if (url[0] == '/' && url.Length > 1 && url[1] != '/' && url[1] != '\\')
+            {
+                return true;
+            }
+
+            // "~/" or "~/foo" (not "~//" or "~/\")
+            return url.StartsWith("~/", StringComparison.OrdinalIgnoreCase) &&
+               (url.Length == 2 || url[2] != '/' && url[2] != '\\');
+        }
+
+        /// <summary>
         /// Adds the query string to URL.
         /// </summary>
         /// <param name="url">The source URL.</param>
         /// <param name="query">The query to add.</param>
         /// <returns>Returns URL with query.</returns>
         [DebuggerStepThrough]
-        public static string AddQueryString(this string url, string query)
+        public static string AddQueryString(this string? url, string? query)
         {
-            if (!url.Contains("?"))
+            var urlSpan = url.AsSpan();
+            var querySpan = query.AsSpan();
+            var result = new StringBuilder(urlSpan.Length + 2 + querySpan.Length);
+            result.Append(urlSpan);
+            if (!urlSpan.Contains('?'))
             {
-                url += "?";
+                result.Append('?');
             }
-            else if (!url.EndsWith("&"))
+            else if (!urlSpan.EndsWith('&'))
             {
-                url += "&";
+                result.Append('&');
             }
 
-            return url + query;
+            return result.Append(querySpan).ToString();
+        }
+
+        /// <summary>
+        /// Adds the query string to URL.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <param name="query">The query to add.</param>
+        /// <returns>Returns URL with query.</returns>
+        [DebuggerStepThrough]
+        public static string AddQueryString(this ReadOnlySpan<char> url, string? query)
+        {
+            var querySpan = query.AsSpan();
+            var result = new StringBuilder(url.Length + 2 + querySpan.Length);
+            result.Append(url);
+            if (!url.Contains('?'))
+            {
+                result.Append('?');
+            }
+            else if (!url.EndsWith('&'))
+            {
+                result.Append('&');
+            }
+
+            return result.Append(querySpan).ToString();
         }
 
         /// <summary>
@@ -280,6 +379,18 @@ namespace IdentityServer4.Extensions
             url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value));
 
         /// <summary>
+        /// Adds the query parameters with value to URL.
+        /// </summary>
+        /// <param name="url">The source URL.</param>
+        /// <param name="name">The query parameter name.</param>
+        /// <param name="value">The query parameter value.</param>
+        /// <returns>Returns URL with query.</returns>
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string AddQueryString(this ReadOnlySpan<char> url, string name, string value) =>
+            url.AddQueryString(string.Concat(name, "=", UrlEncoder.Default.Encode(value)));
+
+        /// <summary>
         /// Adds the hash fragment.
         /// </summary>
         /// <param name="url">The source URL.</param>
@@ -289,12 +400,14 @@ namespace IdentityServer4.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AddHashFragment(this string url, string query)
         {
-            if (!url.Contains("#"))
+            var result = new StringBuilder(url.Length + 1 + query.Length);
+            result.Append(url);
+            if (!url.Contains('#'))
             {
-                url += "#";
+                result.Append('#');
             }
 
-            return url + query;
+            return result.Append(query).ToString();
         }
 
         /// <summary>
@@ -310,7 +423,7 @@ namespace IdentityServer4.Extensions
                 var idx = url.IndexOf('?');
                 if (idx >= 0)
                 {
-                    url = url.Substring(idx + 1);
+                    url = url[(idx + 1)..];
                 }
                 var query = QueryHelpers.ParseNullableQuery(url);
                 if (query != null)

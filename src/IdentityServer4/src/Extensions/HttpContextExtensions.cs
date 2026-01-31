@@ -1,6 +1,7 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+#nullable enable
 
 using IdentityServer4.Configuration;
 using IdentityServer4.Services;
@@ -20,34 +21,83 @@ namespace IdentityServer4.Extensions
 {
     public static class HttpContextExtensions
     {
-        public static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
+        /// <summary>
+        /// Determines whether the specified authentication scheme supports sign out.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="scheme">The authentication scheme name.</param>
+        /// <returns>A task that returns true if the scheme's handler implements IAuthenticationSignOutHandler; otherwise false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when context or scheme is null or empty.</exception>
+        public static async ValueTask<bool> GetSchemeSupportsSignOutAsync(
+            this HttpContext? context,
+            string? scheme)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentNullException(nameof(scheme));
+            }
+
             var provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
             var handler = await provider.GetHandlerAsync(context, scheme);
-            return (handler != null && handler is IAuthenticationSignOutHandler);
+            return handler is not null and IAuthenticationSignOutHandler;
         }
 
-        public static void SetIdentityServerOrigin(this HttpContext context, string value)
+        /// <summary>
+        /// Sets the IdentityServer origin by parsing and applying the scheme and host to the HTTP request.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="value">The origin value in the format "scheme://host" (e.g., "https://example.com").</param>
+        /// <remarks>
+        /// This method parses the provided origin value into scheme and host components separated by "://",
+        /// then updates the request's Scheme and Host properties accordingly.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when context or value is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown when value does not contain exactly one "://" separator.</exception>
+        public static void SetIdentityServerOrigin(this HttpContext? context, string? value)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
-            var split = value.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var split = value.Split("://", StringSplitOptions.RemoveEmptyEntries);
+            if (split.Length != 2)
+            {
+                throw new ArgumentException("Invalid origin value", nameof(value));
+            }
 
             var request = context.Request;
-            request.Scheme = split.First();
-            request.Host = new HostString(split.Last());
+            request.Scheme = split[0];
+            request.Host = new HostString(split[1]);
         }
 
-        public static void SetIdentityServerBasePath(this HttpContext context, string value)
+        public static void SetIdentityServerBasePath(this HttpContext? context, string value)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] = value;
         }
 
-        public static string GetIdentityServerOrigin(this HttpContext context)
+        public static string GetIdentityServerOrigin(this HttpContext? context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
             var request = context.Request;
 
@@ -58,7 +108,7 @@ namespace IdentityServer4.Extensions
                     if (request.Host.Value.StartsWith(options.MutualTls.DomainName, StringComparison.OrdinalIgnoreCase))
                     {
                         return request.Scheme + "://" +
-                               request.Host.Value.Substring(options.MutualTls.DomainName.Length + 1);
+                               request.Host.Value[(options.MutualTls.DomainName.Length + 1)..];
                     }
                 }
             }
@@ -67,22 +117,31 @@ namespace IdentityServer4.Extensions
         }
 
 
-        internal static void SetSignOutCalled(this HttpContext context)
+        internal static void SetSignOutCalled(this HttpContext? context)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Items[Constants.EnvironmentKeys.SignOutCalled] = "true";
         }
 
-        public static bool GetSignOutCalled(this HttpContext context) =>
-            context.Items.ContainsKey(Constants.EnvironmentKeys.SignOutCalled);
+        public static bool GetSignOutCalled(this HttpContext? context) =>
+            context?.Items.ContainsKey(Constants.EnvironmentKeys.SignOutCalled) ?? false;
 
         /// <summary>
         /// Gets the host name of IdentityServer.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static string GetIdentityServerHost(this HttpContext context)
+        public static string GetIdentityServerHost(this HttpContext? context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = context.Request;
             return request.Scheme + "://" + request.Host.ToUriComponent();
         }
@@ -92,24 +151,68 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static string GetIdentityServerBasePath(this HttpContext context) =>
-            context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
+        public static string GetIdentityServerBasePath(this HttpContext? context) =>
+            context?.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string ?? string.Empty;
 
         /// <summary>
-        /// Gets the identity server relative URL.
+        /// Gets the identity server relative URL by combining the base URI with the provided path.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="path">The path.</param>
-        /// <returns></returns>
-        public static string GetIdentityServerRelativeUrl(this HttpContext context, string path)
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="path">The relative path (can include "~/" prefix which will be removed).</param>
+        /// <returns>The complete identity server relative URL if the path is a local URL; otherwise an empty string.</returns>
+        /// <remarks>
+        /// This method validates that the provided path is a local URL before constructing the full URL.
+        /// If the path starts with "~/", it will be stripped before appending to the base URI.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
+        public static string GetIdentityServerRelativeUrl(
+            this HttpContext? context,
+            string? path)
         {
-            if (!path.IsLocalUrl())
+            ArgumentNullException.ThrowIfNull(context);
+            if (string.IsNullOrEmpty(path))
             {
-                return null;
+                return string.Empty;
             }
 
-            if (path.StartsWith("~/")) path = path.Substring(1);
-            return context.GetIdentityServerBaseUri() + path.RemoveLeadingSlash();
+            var pathSpan = path.AsSpan();
+            if (!pathSpan.IsLocalUrl())
+            {
+                return string.Empty;
+            }
+
+            if (pathSpan.StartsWith("~/")) pathSpan = pathSpan[1..];
+            return string.Concat(context.GetIdentityServerBaseUri(), pathSpan.RemoveLeadingSlash());
+        }
+
+        /// <summary>
+        /// Gets the identity server relative URL by combining the base URI with the provided path.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="path">The relative path (can include "~/" prefix which will be removed).</param>
+        /// <returns>The complete identity server relative URL if the path is a local URL; otherwise an empty string.</returns>
+        /// <remarks>
+        /// This method validates that the provided path is a local URL before constructing the full URL.
+        /// If the path starts with "~/", it will be stripped before appending to the base URI.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
+        public static string GetIdentityServerRelativeUrl(
+            this HttpContext? context,
+            ReadOnlySpan<char> path)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            if (path.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            if (!path.IsLocalUrl())
+            {
+                return string.Empty;
+            }
+
+            if (path.StartsWith("~/")) path = path[1..];
+            return string.Concat(context.GetIdentityServerBaseUri(), path.RemoveLeadingSlash());
         }
 
         /// <summary>
@@ -118,25 +221,36 @@ namespace IdentityServer4.Extensions
         /// <param name="context">The context.</param>
         /// <returns>Returns issuer URI.</returns>
         /// <exception cref="System.ArgumentNullException">context</exception>
-        public static string GetIdentityServerIssuerUri(this HttpContext context)
+        public static string GetIdentityServerIssuerUri(this HttpContext? context)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             // if they've explicitly configured a URI then use it,
             // otherwise dynamically calculate it
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            var uri = options.IssuerUri;
-            if (uri.IsMissing())
+            var uri = options.IssuerUri.AsSpan();
+            if (uri.IsEmpty)
             {
-                uri = context.GetIdentityServerOrigin() + context.GetIdentityServerBasePath();
-                if (uri.EndsWith("/")) uri = uri.Substring(0, uri.Length - 1);
+                ReadOnlySpan<char> origin = context.GetIdentityServerOrigin();
+                ReadOnlySpan<char> basePath = context.GetIdentityServerBasePath();
+                uri = string.Concat(origin, basePath).AsSpan();
+                if (uri.EndsWith("/"))
+                {
+                    uri = uri[..^1];
+                }
+
                 if (options.LowerCaseIssuerUri)
                 {
-                    uri = uri.ToLowerInvariant();
+                    Span<char> result = stackalloc char[uri.Length];
+                    uri.ToLowerInvariant(result);
+                    return result.ToString();
                 }
-            }
+           }
 
-            return uri;
+            return uri.ToString();
         }
 
         /// <summary>
@@ -147,7 +261,7 @@ namespace IdentityServer4.Extensions
         /// <exception cref="System.ArgumentNullException">context</exception>
         public static string GetIdentityServerBaseUri(this HttpContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -155,27 +269,29 @@ namespace IdentityServer4.Extensions
             // if they've explicitly configured a URI then use it,
             // otherwise dynamically calculate it
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            var uri = options.BaseUri;
-            if (uri.IsMissing())
-            {
-                uri = context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
-            }
+            var uri = options.BaseUri.IsMissing() ?
+                string.Concat(context.GetIdentityServerHost(), context.GetIdentityServerBasePath()) :
+                options.BaseUri;
 
-            if (options.LowerCaseIssuerUri)
-            {
-                uri = uri?.ToLower();
-            }
-
-            return uri?.EnsureTrailingSlash();
+            return options.LowerCaseIssuerUri ?
+                uri.ToLower().EnsureTrailingSlash() :
+                uri.EnsureTrailingSlash();
         }
 
-        internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null)
+        internal static async Task<string?> GetIdentityServerSignoutFrameCallbackUrlAsync(
+            this HttpContext? context,
+            LogoutMessage? logoutMessage = null)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var userSession = context.RequestServices.GetRequiredService<IUserSession>();
             var user = await userSession.GetUserAsync();
             var currentSubId = user?.GetSubjectId();
 
-            LogoutNotificationContext endSessionMsg = null;
+            LogoutNotificationContext? endSessionMsg = null;
 
             // if we have a logout message, then that take precedence over the current user
             if (logoutMessage?.ClientIds?.Any() == true)
@@ -235,10 +351,16 @@ namespace IdentityServer4.Extensions
         /// <param name="context">HTTP context object.</param>
         /// <param name="tryUseXForwardHeader">Use X-Forwarded-For header</param>
         /// <returns>Returns IP address of the specified HTTP context object.</returns>
-        public static string GetRequestIp(this HttpContext context,
+        public static string GetRequestIp(
+            this HttpContext? context,
             bool tryUseXForwardHeader = true)
         {
-            string ip = null;
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+            
+            string? ip = null;
 
             // todo support new "Forwarded" header (2014) https://en.wikipedia.org/wiki/X-Forwarded-For
 
