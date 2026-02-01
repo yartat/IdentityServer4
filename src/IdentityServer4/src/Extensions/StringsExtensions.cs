@@ -334,7 +334,7 @@ namespace IdentityServer4.Extensions
             {
                 result.Append('?');
             }
-            else if (!urlSpan.EndsWith('&'))
+            else if (!urlSpan.EndsWith("&"))
             {
                 result.Append('&');
             }
@@ -358,7 +358,7 @@ namespace IdentityServer4.Extensions
             {
                 result.Append('?');
             }
-            else if (!url.EndsWith('&'))
+            else if (!url.EndsWith("&"))
             {
                 result.Append('&');
             }
@@ -440,7 +440,7 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="url">The source URL.</param>
         /// <returns>Returns origin.</returns>
-        public static string GetOrigin(this string url)
+        public static string? GetOrigin(this string url)
         {
             if (url != null)
             {

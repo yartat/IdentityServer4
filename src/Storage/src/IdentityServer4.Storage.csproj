@@ -35,7 +35,18 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonJson)" />
 
     <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />
-    <PackageReference Include="System.Text.Json" Version="$(JsonLib)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="System.Text.Json" Version="$(DotNetLibrary6xx)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="System.Text.Json" Version="$(DotNetLibrary8xx)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="System.Text.Json" Version="$(DotNetLibrary10xx)" />
   </ItemGroup>
 
 </Project>

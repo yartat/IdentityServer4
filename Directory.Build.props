@@ -5,11 +5,10 @@
     <DotNetLibrary6xx>6.0.*</DotNetLibrary6xx>
     <DotNetLibrary8xx>8.0.*</DotNetLibrary8xx>
     <DotNetLibrary10xx>10.0.*</DotNetLibrary10xx>
-    <OpenIdConnect>8.0.1</OpenIdConnect>
-    <JsonLib>6.0.0</JsonLib>
+    <OpenIdConnect>8.1.*</OpenIdConnect>
     <IdentityModel>5.2.0</IdentityModel>
-    <NewtonJson>13.0.1</NewtonJson>
-    <AutoMapper>10.1.1</AutoMapper>
+    <NewtonJson>13.0.*</NewtonJson>
+    <AutoMapper>16.0.*</AutoMapper>
     <TestSdk>16.11.0</TestSdk>
   </PropertyGroup>
 
