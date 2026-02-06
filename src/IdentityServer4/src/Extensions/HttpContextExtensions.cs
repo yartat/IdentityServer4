@@ -14,6 +14,7 @@ using IdentityServer4.Stores;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using System.Collections.Generic;
+using Microsoft.Net.Http.Headers;
 
 #pragma warning disable 1591
 
@@ -99,8 +100,7 @@ namespace IdentityServer4.Extensions
             }
 
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            var request = context.Request;
-
+            var request = context.Request ?? throw new InvalidOperationException("HTTP request is not available.");
             if (options.MutualTls.Enabled && options.MutualTls.DomainName.IsPresent())
             {
                 if (!options.MutualTls.DomainName.Contains("."))
@@ -329,8 +329,12 @@ namespace IdentityServer4.Extensions
 
             if (endSessionMsg != null)
             {
-                var clock = context.RequestServices.GetRequiredService<ISystemClock>();
+                var clock = context.GetClock();
+#if NET7_0_OR_GREATER
+                var msg = new Message<LogoutNotificationContext>(endSessionMsg, clock.GetUtcNow().UtcDateTime);
+#else
                 var msg = new Message<LogoutNotificationContext>(endSessionMsg, clock.UtcNow.UtcDateTime);
+#endif
 
                 var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<LogoutNotificationContext>>();
                 var id = await endSessionMessageStore.WriteAsync(msg);
@@ -351,7 +355,7 @@ namespace IdentityServer4.Extensions
         /// <param name="context">HTTP context object.</param>
         /// <param name="tryUseXForwardHeader">Use X-Forwarded-For header</param>
         /// <returns>Returns IP address of the specified HTTP context object.</returns>
-        public static string GetRequestIp(
+        public static string? GetRequestIp(
             this HttpContext? context,
             bool tryUseXForwardHeader = true)
         {
@@ -382,13 +386,13 @@ namespace IdentityServer4.Extensions
 
             if (string.IsNullOrWhiteSpace(ip))
             {
-                ip = context.GetHeaderValueAs<string>("REMOTE_ADDR");
+                ip = context?.GetHeaderValueAs<string>("REMOTE_ADDR");
             }
 
             return ip;
         }
 
-        public static T GetHeaderValueAs<T>(this HttpContext context, string headerName)
+        public static T? GetHeaderValueAs<T>(this HttpContext context, string headerName)
         {
             if (context?.Request?.Headers != null && context.Request.Headers.TryGetValue(headerName, out var values))
             {
@@ -400,17 +404,15 @@ namespace IdentityServer4.Extensions
                 }
             }
 
-            return default(T);
+            return default;
         }
 
-        private static IEnumerable<string> SplitCsv(this string csvList)
-        {
-            return string.IsNullOrWhiteSpace(csvList) ?
+        private static IEnumerable<string> SplitCsv(this string? csvList) => 
+            string.IsNullOrWhiteSpace(csvList) ?
                 Enumerable.Empty<string>() :
                 csvList
                     .TrimEnd(',')
                     .Split(',')
                     .Select(s => s.Trim());
-        }
     }
 }

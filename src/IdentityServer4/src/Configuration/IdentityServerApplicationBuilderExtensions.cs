@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The application.</param>
         /// <param name="options">The options.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseIdentityServer(this IApplicationBuilder app, IdentityServerMiddlewareOptions options = null)
+        public static IApplicationBuilder UseIdentityServer(
+            this IApplicationBuilder app,
+            IdentityServerMiddlewareOptions? options = null)
         {
             app.ValidateIdentityServer();
 
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
             // handler, which just re-assigns the user on the context. claims transformation
             // will run twice, since that's not cached (whereas the authN handler result is)
             // related: https://github.com/aspnet/Security/issues/1399
-            if (options == null) options = new IdentityServerMiddlewareOptions();
+            options ??= new IdentityServerMiddlewareOptions();
             options.AuthenticationMiddleware(app);
 
             app.UseMiddleware<MutualTlsEndpointMiddleware>();
@@ -54,33 +56,28 @@ namespace Microsoft.AspNetCore.Builder
         /// <exception cref="ArgumentNullException">loggerFactory</exception>
         public static void ValidateIdentityServer(this IApplicationBuilder app)
         {
-            var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
-            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
-
+            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("IdentityServer4.Startup");
-            logger.LogInformation("Starting IdentityServer4 version {version}", typeof(IdentityServerApplicationBuilderExtensions).Assembly.GetName().Version.ToString());
+            logger.LogInformation("Starting IdentityServer4 version {version}", typeof(IdentityServerApplicationBuilderExtensions).Assembly.GetName().Version?.ToString());
 
-            var scopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
+            var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var serviceProvider = scope.ServiceProvider;
 
-            using (var scope = scopeFactory.CreateScope())
+            TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
+            TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");
+            TestService(serviceProvider, typeof(IResourceStore), logger, "No storage mechanism for resources specified. Use the 'AddInMemoryIdentityResources' or 'AddInMemoryApiResources' extension method to register a development version.");
+
+            var persistedGrants = serviceProvider.GetRequiredService<IPersistedGrantStore>();
+            if (persistedGrants.GetType().FullName == typeof(InMemoryPersistedGrantStore).FullName)
             {
-                var serviceProvider = scope.ServiceProvider;
-
-                TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
-                TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");
-                TestService(serviceProvider, typeof(IResourceStore), logger, "No storage mechanism for resources specified. Use the 'AddInMemoryIdentityResources' or 'AddInMemoryApiResources' extension method to register a development version.");
-
-                var persistedGrants = serviceProvider.GetService(typeof(IPersistedGrantStore));
-                if (persistedGrants.GetType().FullName == typeof(InMemoryPersistedGrantStore).FullName)
-                {
-                    logger.LogInformation("You are using the in-memory version of the persisted grant store. This will store consent decisions, authorization codes, refresh and reference tokens in memory only. If you are using any of those features in production, you want to switch to a different store implementation.");
-                }
-
-                var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
-                ValidateOptions(options, logger);
-
-                ValidateAsync(serviceProvider, logger).GetAwaiter().GetResult();
+                logger.LogInformation("You are using the in-memory version of the persisted grant store. This will store consent decisions, authorization codes, refresh and reference tokens in memory only. If you are using any of those features in production, you want to switch to a different store implementation.");
             }
+
+            var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
+            ValidateOptions(options, logger);
+
+            ValidateAsync(serviceProvider, logger).GetAwaiter().GetResult();
         }
 
         private static async Task ValidateAsync(IServiceProvider services, ILogger logger)
@@ -95,7 +92,7 @@ namespace Microsoft.AspNetCore.Builder
             }
             else
             {
-                AuthenticationScheme authenticationScheme = null;
+                AuthenticationScheme? authenticationScheme = null;
 
                 if (options.Authentication.CookieAuthenticationScheme != null)
                 {
@@ -105,10 +102,10 @@ namespace Microsoft.AspNetCore.Builder
                 else
                 {
                     authenticationScheme = await schemes.GetDefaultAuthenticateSchemeAsync();
-                    logger.LogInformation("Using the default authentication scheme {scheme} for IdentityServer", authenticationScheme.Name);
+                    logger.LogInformation("Using the default authentication scheme {scheme} for IdentityServer", authenticationScheme?.Name);
                 }
 
-                if (!typeof(IAuthenticationSignInHandler).IsAssignableFrom(authenticationScheme.HandlerType))
+                if (authenticationScheme is not null && !typeof(IAuthenticationSignInHandler).IsAssignableFrom(authenticationScheme.HandlerType))
                 {
                     logger.LogInformation("Authentication scheme {scheme} is configured for IdentityServer, but it is not a scheme that supports signin (like cookies). If you support interactive logins via the browser, then a cookie-based scheme should be used.", authenticationScheme.Name);
                 }
@@ -123,7 +120,10 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void ValidateOptions(IdentityServerOptions options, ILogger logger)
         {
-            if (options.IssuerUri.IsPresent()) logger.LogDebug("Custom IssuerUri set to {0}", options.IssuerUri);
+            if (options.IssuerUri.IsPresent())
+            {
+                logger.LogDebug("Custom IssuerUri set to {0}", options.IssuerUri);
+            }
 
             if (options.PublicOrigin.IsPresent())
             {
@@ -148,14 +148,16 @@ namespace Microsoft.AspNetCore.Builder
 
             if (options.Authentication.CheckSessionCookieName.IsMissing()) throw new InvalidOperationException("CheckSessionCookieName is not configured");
 
-            if (options.Cors.CorsPolicyName.IsMissing()) throw new InvalidOperationException("CorsPolicyName is not configured");
+            if (options.Cors.CorsPolicyName.IsMissing())
+            {
+                throw new InvalidOperationException("CorsPolicyName is not configured");
+            }
         }
 
-        internal static object TestService(IServiceProvider serviceProvider, Type service, ILogger logger, string message = null, bool doThrow = true)
+        internal static object? TestService(IServiceProvider serviceProvider, Type service, ILogger logger, string? message = null, bool doThrow = true)
         {
             var appService = serviceProvider.GetService(service);
-
-            if (appService == null)
+            if (appService is null)
             {
                 var error = message ?? $"Required service {service.FullName} is not registered in the DI container. Aborting startup";
 

@@ -1,7 +1,6 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,19 +12,27 @@ namespace IdentityServer4.Extensions
 {
     internal static class NameValueCollectionExtensions
     {
-        private static readonly Dictionary<string, string> EmptyStringDictionary = new();
+        private static readonly Dictionary<string, string?> EmptyStringDictionary = new();
         private static readonly NameValueCollection EmptyNameValueCollection = new();
 
-        public static IDictionary<string, string[]> ToFullDictionary(this NameValueCollection source)
-        {
-            return source.AllKeys.ToDictionary(k => k, k => source.GetValues(k));
-        }
+        public static IDictionary<string, string[]?>? ToFullDictionary(this NameValueCollection? source) =>
+            source?.AllKeys?.ToDictionary(k => k!, k => source.GetValues(k));
 
-        public static NameValueCollection FromFullDictionary(this IDictionary<string, string[]> source)
+        public static NameValueCollection FromFullDictionary(this IDictionary<string, string[]?>? source)
         {
+            if (source is null)
+            {
+                return EmptyNameValueCollection;
+            }
+
             var nvc = new NameValueCollection();
             foreach (var item in source)
             {
+                if (item.Value is null) 
+                {
+                    continue;
+                }
+
                 foreach (var value in item.Value)
                 {
                     nvc.Add(item.Key, value);
@@ -35,9 +42,9 @@ namespace IdentityServer4.Extensions
             return nvc;
         }
         
-        public static string ToQueryString(this NameValueCollection collection)
+        public static string ToQueryString(this NameValueCollection? collection)
         {
-            if (collection.Count == 0)
+            if (collection is null || collection.Count == 0)
             {
                 return string.Empty;
             }
@@ -47,7 +54,7 @@ namespace IdentityServer4.Extensions
             foreach (string name in collection)
             {
                 var values = collection.GetValues(name);
-                if (values == null || values.Length == 0)
+                if (values is null || values.Length == 0)
                 {
                     first = AppendNameValuePair(builder, first, true, name, String.Empty);
                 }
@@ -63,23 +70,31 @@ namespace IdentityServer4.Extensions
             return builder.ToString();
         }
 
-        public static string ToFormPost(this NameValueCollection collection)
+        public static string ToFormPost(this NameValueCollection? collection)
         {
+            if (collection is null || collection.Count == 0)
+            {
+                return string.Empty;
+            }
+
             var builder = new StringBuilder(128);
             const string inputFieldFormat = "<input type='hidden' name='{0}' value='{1}' />\n";
 
             foreach (string name in collection)
             {
                 var values = collection.GetValues(name);
-                var value = values.First();
-                value = HtmlEncoder.Default.Encode(value);
-                builder.AppendFormat(inputFieldFormat, name, value);
+                if (values?.Length > 0)
+                {
+                    var value = values.First();
+                    value = HtmlEncoder.Default.Encode(value);
+                    builder.AppendFormat(inputFieldFormat, name, value);
+                }
             }
 
             return builder.ToString();
         }
 
-        public static NameValueCollection ToNameValueCollection(this Dictionary<string, string>? data)
+        public static NameValueCollection ToNameValueCollection(this Dictionary<string, string?>? data)
         {
             if (data is null || data.Count == 0)
             {
@@ -98,24 +113,22 @@ namespace IdentityServer4.Extensions
             return result;
         }
 
-        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection? collection, params string[] nameFilter) =>
+        public static Dictionary<string, string?> ToScrubbedDictionary(this NameValueCollection? collection, params string[] nameFilter) =>
             collection.ToScrubbedDictionary(nameFilter.ToHashSet(StringComparer.OrdinalIgnoreCase));
 
-        public static Dictionary<string, string> ToScrubbedDictionary(this NameValueCollection? collection, HashSet<string> nameFilter)
-        {
-            return collection?.AllKeys
+        public static Dictionary<string, string?> ToScrubbedDictionary(this NameValueCollection? collection, HashSet<string> nameFilter) =>
+            collection?.AllKeys
                 .Where(x => x is not null)
                 .ToDictionary(
-                    x => x, 
-                    x => nameFilter.Contains(x) ? 
+                    x => x!,
+                    x => nameFilter.Contains(x!) ?
                             "***REDACTED***" :
                             collection.Get(x)) ??
                 EmptyStringDictionary;
-        }
 
-        internal static string ConvertFormUrlEncodedSpacesToUrlEncodedSpaces(string str)
+        internal static string? ConvertFormUrlEncodedSpacesToUrlEncodedSpaces(string? str)
         {
-            if (!string.IsNullOrEmpty(str) && str.Contains('+'))
+            if (!string.IsNullOrEmpty(str))
             {
                 str = str.Replace("+", "%20");
             }
@@ -138,13 +151,13 @@ namespace IdentityServer4.Extensions
             }
             else
             {
-                builder.Append("&");
+                builder.Append('&');
             }
 
             builder.Append(encodedName);
             if (!String.IsNullOrEmpty(encodedValue))
             {
-                builder.Append("=");
+                builder.Append('=');
                 builder.Append(encodedValue);
             }
             

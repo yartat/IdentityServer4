@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 #pragma warning disable 1591
@@ -13,7 +14,7 @@ namespace IdentityServer4.Extensions
     public static class IEnumerableExtensions
     {
         [DebuggerStepThrough]
-        public static bool IsNullOrEmpty<T>(this IEnumerable<T> list) =>
+        public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IEnumerable<T>? list) =>
             list is null || !list.Any();
     }
 }

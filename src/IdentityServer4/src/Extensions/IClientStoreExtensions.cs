@@ -18,12 +18,10 @@ namespace IdentityServer4.Stores
         /// <param name="store">The store.</param>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
-        public static async Task<Client> FindEnabledClientByIdAsync(this IClientStore store, string clientId)
+        public static async Task<Client?> FindEnabledClientByIdAsync(this IClientStore store, string clientId)
         {
             var client = await store.FindClientByIdAsync(clientId);
-            if (client != null && client.Enabled) return client;
-
-            return null;
+            return client is not null && client.Enabled ? client :  null;
         }
     }
 }

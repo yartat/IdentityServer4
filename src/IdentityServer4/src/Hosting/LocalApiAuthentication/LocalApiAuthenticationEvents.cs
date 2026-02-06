@@ -30,11 +30,11 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
         /// <summary>
         /// The principal
         /// </summary>
-        public ClaimsPrincipal Principal { get; set; }
+        public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
         /// the HTTP context
         /// </summary>
-        public HttpContext HttpContext { get; internal set; }
+        public required HttpContext HttpContext { get; init; }
     }
 }

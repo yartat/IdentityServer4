@@ -22,7 +22,7 @@ namespace IdentityServer4.Configuration
         {
         }
 
-        public void Configure(string name, CookieAuthenticationOptions options)
+        public void Configure(string? name, CookieAuthenticationOptions options)
         {
             if (name == IdentityServerConstants.DefaultCookieAuthenticationScheme)
             {
@@ -64,13 +64,13 @@ namespace IdentityServer4.Configuration
             }
         }
 
-        private static string ExtractLocalUrl(string url)
+        private static string? ExtractLocalUrl(string url)
         {
             if (url.IsLocalUrl())
             {
                 if (url.StartsWith("~/"))
                 {
-                    url = url.Substring(1);
+                    url = url[1..];
                 }
 
                 return url;
@@ -96,7 +96,7 @@ namespace IdentityServer4.Configuration
             _logger = loggerFactory.CreateLogger("IdentityServer4.Startup");
         }
 
-        public void PostConfigure(string name, CookieAuthenticationOptions options)
+        public void PostConfigure(string? name, CookieAuthenticationOptions options)
         {
             var scheme = _idsrv.Authentication.CookieAuthenticationScheme ??
                 _authOptions.Value.DefaultAuthenticateScheme ??

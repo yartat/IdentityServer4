@@ -22,7 +22,11 @@ namespace IdentityServer4.Services
         /// <param name="consent">The consent response.</param>
         /// <param name="context">The HTTP context instance.</param>
         /// <returns>Returns response.</returns>
-        Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context);
+        Task<IEndpointResult> ProcessAuthorizeRequestAsync(
+            NameValueCollection parameters,
+            ClaimsPrincipal user,
+            ConsentResponse? consent,
+            HttpContext context);
 
         /// <summary>
         /// Creates the error result asynchronous.
@@ -35,9 +39,9 @@ namespace IdentityServer4.Services
         /// <returns>Returns response.</returns>
         Task<IEndpointResult> CreateErrorResultAsync(
             string logMessage,
-            ValidatedAuthorizeRequest request = null,
+            ValidatedAuthorizeRequest? request = null,
             string error = OidcConstants.AuthorizeErrors.ServerError,
-            string errorDescription = null,
+            string? errorDescription = null,
             bool logError = true);
     }
 }

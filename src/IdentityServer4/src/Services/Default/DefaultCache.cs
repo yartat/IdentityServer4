@@ -35,10 +35,10 @@ namespace IdentityServer4.Services
         }
 
         /// <inheritdoc/>
-        public Task<T> GetAsync(string key)
+        public Task<T?> GetAsync(string key)
         {
             key = GetKey(key);
-            var item = _cache.Get<T>(key);
+            var item = _cache.Get<T?>(key);
             return Task.FromResult(item);
         }
 

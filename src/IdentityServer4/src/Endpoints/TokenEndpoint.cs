@@ -56,7 +56,7 @@ namespace IdentityServer4.Endpoints
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns></returns>
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing token request.");
 
@@ -122,7 +122,10 @@ namespace IdentityServer4.Endpoints
             return new TokenResult(response);
         }
 
-        private static TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)
+        private static TokenErrorResult Error(
+            string error,
+            string? errorDescription = null,
+            Dictionary<string, object>? custom = null)
         {
             var response = new TokenErrorResponse
             {

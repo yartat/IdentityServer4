@@ -56,7 +56,7 @@ namespace IdentityServer4.Endpoints
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns></returns>
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing revocation request.");
 
@@ -115,7 +115,10 @@ namespace IdentityServer4.Endpoints
                 _logger.LogInformation("No matching token found");
             }
 
-            if (response.Error.IsPresent()) return new TokenRevocationErrorResult(response.Error);
+            if (response.Error.IsPresent())
+            {
+                return new TokenRevocationErrorResult(response.Error);
+            }
 
             return new StatusCodeResult(HttpStatusCode.OK);
         }

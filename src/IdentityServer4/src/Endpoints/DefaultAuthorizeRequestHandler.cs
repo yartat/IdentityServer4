@@ -30,7 +30,7 @@ namespace IdentityServer4.Endpoints
         private readonly IEventService _events;
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
         private readonly IAuthorizeRequestValidator _validator;
-        private readonly ILoginUrlProcessor _loginUrlProcessor;
+        private readonly ILoginUrlProcessor? _loginUrlProcessor;
         private readonly IUserSession _userSession;
         private readonly ILogger _logger;
         private readonly IdentityServerOptions _options;
@@ -60,7 +60,7 @@ namespace IdentityServer4.Endpoints
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
             IOptions<IdentityServerOptions> options,
-            ILoginUrlProcessor loginUrlProcessor = null)
+            ILoginUrlProcessor? loginUrlProcessor = null)
         {
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -73,7 +73,11 @@ namespace IdentityServer4.Endpoints
         }
 
         /// <inheritdoc/>
-        public async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context)
+        public async Task<IEndpointResult> ProcessAuthorizeRequestAsync(
+            NameValueCollection parameters,
+            ClaimsPrincipal user,
+            ConsentResponse? consent,
+            HttpContext context)
         {
             if (user != null)
             {
@@ -141,9 +145,9 @@ namespace IdentityServer4.Endpoints
         /// <inheritdoc/>
         public async Task<IEndpointResult> CreateErrorResultAsync(
             string logMessage,
-            ValidatedAuthorizeRequest request = null,
+            ValidatedAuthorizeRequest? request = null,
             string error = OidcConstants.AuthorizeErrors.ServerError,
-            string errorDescription = null,
+            string? errorDescription = null,
             bool logError = true)
         {
             if (logError)
@@ -194,8 +198,8 @@ namespace IdentityServer4.Endpoints
                 return;
             }
 
-            var clientId = $"{response.Request.ClientId} ({response.Request.Client.ClientName ?? "no name set"})";
-            var subjectId = response.Request.Subject.GetSubjectId();
+            var clientId = $"{response.Request?.ClientId} ({response.Request?.Client.ClientName ?? "no name set"})";
+            var subjectId = response.Request?.Subject.GetSubjectId();
 
             if (response.IdentityToken != null)
             {
@@ -211,7 +215,7 @@ namespace IdentityServer4.Endpoints
             }
         }
 
-        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription) =>
+        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest? request, string error, string? errorDescription) =>
             _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
 
         private Task RaiseResponseEventAsync(AuthorizeResponse response)

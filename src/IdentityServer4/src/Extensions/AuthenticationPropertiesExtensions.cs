@@ -24,11 +24,11 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="properties"></param>
         /// <returns></returns>
-        public static string GetSessionId(this AuthenticationProperties properties)
+        public static string? GetSessionId(this AuthenticationProperties? properties)
         {
             if (properties?.Items.ContainsKey(SessionIdKey) == true)
             {
-                return properties.Items[SessionIdKey];
+                return properties!.Items[SessionIdKey];
             }
 
             return null;
@@ -50,11 +50,12 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="properties"></param>
         /// <returns></returns>
-        public static IEnumerable<string> GetClientList(this AuthenticationProperties properties)
+        public static IEnumerable<string> GetClientList(
+            this AuthenticationProperties? properties)
         {
             if (properties?.Items.ContainsKey(ClientListKey) == true)
             {
-                var value = properties.Items[ClientListKey];
+                var value = properties!.Items[ClientListKey];
                 return DecodeList(value);
             }
 
@@ -65,7 +66,7 @@ namespace IdentityServer4.Extensions
         /// Removes the list of client ids.
         /// </summary>
         /// <param name="properties"></param>
-        public static void RemoveClientList(this AuthenticationProperties properties)
+        public static void RemoveClientList(this AuthenticationProperties? properties)
         {
             properties?.Items.Remove(ClientListKey);
         }
@@ -75,9 +76,14 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="properties"></param>
         /// <param name="clientId"></param>
-        public static void AddClientId(this AuthenticationProperties properties, string clientId)
+        public static void AddClientId(
+            this AuthenticationProperties properties,
+            string? clientId)
         {
-            if (clientId == null) throw new ArgumentNullException(nameof(clientId));
+            if (clientId == null)
+            {
+                throw new ArgumentNullException(nameof(clientId));
+            }
 
             var clients = properties.GetClientList();
             if (!clients.Contains(clientId))
@@ -86,7 +92,7 @@ namespace IdentityServer4.Extensions
                 update.Add(clientId);
 
                 var value = EncodeList(update);
-                if (value == null)
+                if (value is null)
                 {
                     properties.Items.Remove(ClientListKey);
                 }
@@ -98,7 +104,7 @@ namespace IdentityServer4.Extensions
         }
 
 
-        private static IEnumerable<string> DecodeList(string value)
+        private static IEnumerable<string> DecodeList(string? value)
         {
             if (value.IsPresent())
             {
@@ -110,9 +116,9 @@ namespace IdentityServer4.Extensions
             return Enumerable.Empty<string>();
         }
 
-        private static string EncodeList(IEnumerable<string> list)
+        private static string? EncodeList(IEnumerable<string>? list)
         {
-            if (list != null && list.Any())
+            if (list is not null && list.Any())
             {
                 var value = ObjectSerializer.ToString(list);
                 var bytes = Encoding.UTF8.GetBytes(value);

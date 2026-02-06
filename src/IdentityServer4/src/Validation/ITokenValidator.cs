@@ -17,7 +17,7 @@ namespace IdentityServer4.Validation
         /// <param name="token">The access token.</param>
         /// <param name="expectedScope">The expected scope.</param>
         /// <returns>Returns token validation result.</returns>
-        Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null);
+        Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string? expectedScope = null);
 
         /// <summary>
         /// Validates a refresh token.
@@ -25,7 +25,7 @@ namespace IdentityServer4.Validation
         /// <param name="token">The refresh token.</param>
         /// <param name="client">The client.</param>
         /// <returns>Returns token validation result.</returns>
-        Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client client = null);
+        Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client? client = null);
 
         /// <summary>
         /// Validates an identity token.
@@ -34,6 +34,6 @@ namespace IdentityServer4.Validation
         /// <param name="clientId">The client identifier.</param>
         /// <param name="validateLifetime">if set to <c>true</c> the lifetime gets validated. Otherwise not.</param>
         /// <returns>Returns token validation result.</returns>
-        Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null, bool validateLifetime = true);
+        Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string? clientId = null, bool validateLifetime = true);
     }
 }

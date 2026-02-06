@@ -24,12 +24,12 @@ namespace IdentityServer4
         /// <summary>
         /// Display name (optional)
         /// </summary>
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
 
         /// <summary>
         /// Identity provider (optional)
         /// </summary>
-        public string IdentityProvider { get; set; }
+        public string? IdentityProvider { get; set; }
 
         /// <summary>
         /// Authentication methods
@@ -64,8 +64,12 @@ namespace IdentityServer4
         /// <exception cref="ArgumentNullException"></exception>
         public ClaimsPrincipal CreatePrincipal()
         {
-            if (SubjectId.IsMissing()) throw new ArgumentException("SubjectId is mandatory", nameof(SubjectId));
-            var claims = new List<Claim> { new Claim(JwtClaimTypes.Subject, SubjectId) };
+            if (SubjectId.IsMissing())
+            {
+                throw new ArgumentException("SubjectId is mandatory", nameof(SubjectId));
+            }
+
+            var claims = new List<Claim> { new(JwtClaimTypes.Subject, SubjectId) };
 
             if (DisplayName.IsPresent())
             {

@@ -162,10 +162,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IIdentityServerBuilder AddDeveloperSigningCredential(
             this IIdentityServerBuilder builder,
             bool persistKey = true,
-            string filename = null,
+            string? filename = null,
             IdentityServerConstants.RsaSigningAlgorithm signingAlgorithm = IdentityServerConstants.RsaSigningAlgorithm.RS256)
         {
-            if (filename == null)
+            if (string.IsNullOrEmpty(filename))
             {
                 filename = Path.Combine(Directory.GetCurrentDirectory(), "tempkey.jwk");
             }

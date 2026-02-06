@@ -22,7 +22,6 @@ namespace IdentityServer4.Events
         {
             ClientId = request.ValidatedRequest.Client?.ClientId;
             ClientName = request.ValidatedRequest.Client?.ClientName;
-            Endpoint = Constants.EndpointNames.DeviceAuthorization;
             Scopes = request.ValidatedRequest.ValidatedResources?.RawScopeValues.ToSpaceSeparatedString();
         }
 
@@ -44,7 +43,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The client identifier.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the client.
@@ -52,7 +51,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The name of the client.
         /// </value>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -60,7 +59,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The endpoint.
         /// </value>
-        public string Endpoint { get; set; }
+        public string Endpoint { get; set; } = Constants.EndpointNames.DeviceAuthorization;
 
         /// <summary>
         /// Gets or sets the scopes.
@@ -68,6 +67,6 @@ namespace IdentityServer4.Events
         /// <value>
         /// The scopes.
         /// </value>
-        public string Scopes { get; set; }
+        public string? Scopes { get; set; }
     }
 }

@@ -52,7 +52,7 @@ namespace IdentityServer4.Models
         /// <param name="resources">The resources.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public static IdentityResource FindIdentityResourcesByScope(this Resources resources, string name)
+        public static IdentityResource? FindIdentityResourcesByScope(this Resources resources, string name)
         {
             var q = from id in resources.IdentityResources
                     where id.Name == name
@@ -80,7 +80,7 @@ namespace IdentityServer4.Models
         /// <param name="resources">The resources.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public static ApiScope FindApiScope(this Resources resources, string name)
+        public static ApiScope? FindApiScope(this Resources resources, string name)
         {
             var q = from scope in resources.ApiScopes
                     where scope.Name == name

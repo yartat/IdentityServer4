@@ -23,7 +23,7 @@ namespace IdentityServer4.Events
         /// <param name="id">The identifier.</param>
         /// <param name="message">The message.</param>
         /// <exception cref="System.ArgumentNullException">category</exception>
-        protected Event(string category, string name, EventTypes type, int id, string message = null)
+        protected Event(string category, string name, EventTypes type, int id, string? message = null)
         {
             Category = category ?? throw new ArgumentNullException(nameof(category));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -37,10 +37,7 @@ namespace IdentityServer4.Events
         /// Allows implementing custom initialization logic.
         /// </summary>
         /// <returns></returns>
-        protected internal virtual Task PrepareAsync()
-        {
-            return Task.CompletedTask;
-        }
+        protected internal virtual Task PrepareAsync() => Task.CompletedTask;
 
         /// <summary>
         /// Gets or sets the category.
@@ -80,7 +77,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The message.
         /// </value>
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the per-request activity identifier.
@@ -88,7 +85,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The activity identifier.
         /// </value>
-        public string ActivityId { get; set; }
+        public string? ActivityId { get; set; }
 
         /// <summary>
         /// Gets or sets the time stamp when the event was raised.
@@ -112,7 +109,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The local ip address.
         /// </value>
-        public string LocalIpAddress { get; set; }
+        public string? LocalIpAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the remote ip address of the current request.
@@ -120,7 +117,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The remote ip address.
         /// </value>
-        public string RemoteIpAddress { get; set; }
+        public string? RemoteIpAddress { get; set; }
 
         /// <summary>
         /// Obfuscates a token.
@@ -139,9 +136,6 @@ namespace IdentityServer4.Events
         }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return LogSerializer.Serialize(this);
-        }
+        public override string ToString() => LogSerializer.Serialize(this);
     }
 }

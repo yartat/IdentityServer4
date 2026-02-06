@@ -26,7 +26,7 @@ namespace IdentityServer4.ResponseHandling
         /// <value>
         /// The error description.
         /// </value>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the custom entries.
@@ -34,6 +34,6 @@ namespace IdentityServer4.ResponseHandling
         /// <value>
         /// The custom.
         /// </value>
-        public Dictionary<string, object> Custom { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object>? Custom { get; set; } = new();
     }
 }

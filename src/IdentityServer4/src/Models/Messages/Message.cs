@@ -20,7 +20,7 @@ namespace IdentityServer4.Models
         /// Should only be used from unit tests
         /// </summary>
         /// <param name="data"></param>
-        internal Message(TModel data) : this(data, DateTime.UtcNow)
+        internal Message(TModel? data) : this(data, DateTime.UtcNow)
         {
         }
 
@@ -36,7 +36,7 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="now">The current UTC date/time.</param>
-        public Message(TModel data, DateTime now)
+        public Message(TModel? data, DateTime now)
         {
             Created = now.Ticks;
             Data = data;
@@ -60,6 +60,6 @@ namespace IdentityServer4.Models
         /// </value>
         [DataMember(Name = "data")]
         [JsonPropertyName("data")]
-        public TModel Data { get; set; }
+        public TModel? Data { get; set; }
     }
 }

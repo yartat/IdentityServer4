@@ -15,6 +15,6 @@ namespace IdentityServer4.Services
         /// <param name="url">The login URL.</param>
         /// <param name="data">The login data.</param>
         /// <returns>The processed login URL.</returns>
-        string Process(string url, IDictionary<string, string[]> data);
+        string Process(string url, IDictionary<string, string[]?>? data);
     }
 }

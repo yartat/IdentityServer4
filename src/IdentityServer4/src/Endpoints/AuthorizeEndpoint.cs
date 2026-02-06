@@ -30,7 +30,7 @@ namespace IdentityServer4.Endpoints
             _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
         }
 
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Start authorize request");
             NameValueCollection values;

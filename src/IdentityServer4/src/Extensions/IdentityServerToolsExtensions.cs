@@ -27,18 +27,19 @@ namespace IdentityServer4
         /// <param name="audiences">The audiences.</param>
         /// <param name="additionalClaims">Additional claims</param>
         /// <returns></returns>
-        public static async Task<string> IssueClientJwtAsync(this IdentityServerTools tools,
+        public static async Task<string> IssueClientJwtAsync(
+            this IdentityServerTools tools,
             string clientId,
             int lifetime,
-            IEnumerable<string> scopes = null,
-            IEnumerable<string> audiences = null,
-            IEnumerable<Claim> additionalClaims = null)
+            IEnumerable<string>? scopes = null,
+            IEnumerable<string>? audiences = null,
+            IEnumerable<Claim>? additionalClaims = null)
         {
             var claims = new HashSet<Claim>(new ClaimComparer());
-            var context = tools.ContextAccessor.HttpContext;
+            var context = tools.ContextAccessor.HttpContext!;
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
 
-            if (additionalClaims != null)
+            if (additionalClaims is not null)
             {
                 foreach (var claim in additionalClaims)
                 {

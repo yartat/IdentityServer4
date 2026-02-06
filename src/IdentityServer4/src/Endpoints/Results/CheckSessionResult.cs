@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -22,14 +23,15 @@ namespace IdentityServer4.Endpoints.Results
             _options = options;
         }
 
-        private IdentityServerOptions _options;
-        private static volatile string FormattedHtml;
-        private static readonly object Lock = new object();
-        private static volatile string LastCheckSessionCookieName;
+        private IdentityServerOptions? _options;
+        private static volatile string? _formattedHtml;
+        private static readonly object Lock = new();
+        private static volatile string? _lastCheckSessionCookieName;
 
+        [MemberNotNull(nameof(_options))]
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
         }
 
         public async Task ExecuteAsync(HttpContext context)
@@ -39,29 +41,30 @@ namespace IdentityServer4.Endpoints.Results
             AddCspHeaders(context);
 
             var html = GetHtml(_options.Authentication.CheckSessionCookieName);
-            await context.Response.WriteHtmlAsync(html);
+            await context.Response.WriteHtmlAsync(html ?? EmptyHtml);
         }
 
         private void AddCspHeaders(HttpContext context)
         {
-            context.Response.AddScriptCspHeaders(_options.Csp, "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=");
+            context.Response.AddScriptCspHeaders(_options!.Csp, "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=");
         }
-        private string GetHtml(string cookieName)
+        private string? GetHtml(string cookieName)
         {
-            if (cookieName != LastCheckSessionCookieName)
+            if (cookieName != _lastCheckSessionCookieName)
             {
                 lock (Lock)
                 {
-                    if (cookieName != LastCheckSessionCookieName)
+                    if (cookieName != _lastCheckSessionCookieName)
                     {
-                        FormattedHtml = Html.Replace("{cookieName}", cookieName);
-                        LastCheckSessionCookieName = cookieName;
+                        _formattedHtml = Html.Replace("{cookieName}", cookieName);
+                        _lastCheckSessionCookieName = cookieName;
                     }
                 }
             }
-            return FormattedHtml;
+            return _formattedHtml;
         }
 
+        private const string EmptyHtml = "<html><body></body></html>";
         private const string Html = @"
 <!DOCTYPE html>
 <!--Copyright (c) Brock Allen & Dominick Baier. All rights reserved.-->

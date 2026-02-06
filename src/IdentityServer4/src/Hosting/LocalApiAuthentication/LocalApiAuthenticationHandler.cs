@@ -7,7 +7,9 @@ using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -23,8 +25,15 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
         private readonly ILogger _logger;
 
         /// <inheritdoc />
-        public LocalApiAuthenticationHandler(IOptionsMonitor<LocalApiAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, ITokenValidator tokenValidator)
-            : base(options, logger, encoder, clock)
+        public LocalApiAuthenticationHandler(
+            IOptionsMonitor<LocalApiAuthenticationOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+#pragma warning disable CS0618 // Type or member is obsolete
+            ISystemClock clock,
+#pragma warning restore CS0618 // Type or member is obsolete
+            ITokenValidator tokenValidator) : 
+            base(options, logger, encoder, clock)
         {
             _tokenValidator = tokenValidator;
             _logger = logger.CreateLogger<LocalApiAuthenticationHandler>();
@@ -36,7 +45,9 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
         /// </summary>
         protected new LocalApiAuthenticationEvents Events
         {
+#pragma warning disable CS8600, CS8603 // Converting null literal or possible null value to non-nullable type, Possible null reference return.
             get => (LocalApiAuthenticationEvents)base.Events;
+#pragma warning restore CS8600, CS8603
             set => base.Events = value;
         }
 
@@ -48,17 +59,18 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
         {
             _logger.LogTrace("HandleAuthenticateAsync called");
 
-            string token = null;
-            string authorization = Request.Headers["Authorization"];
+            string? token = null;
+            var authorization = Request.Headers.Authorization;
 
             if (string.IsNullOrEmpty(authorization))
             {
                 return AuthenticateResult.NoResult();
             }
 
-            if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            var bearerToken = authorization.FirstOrDefault(x => x!.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(bearerToken))
             {
-                token = authorization.Substring("Bearer ".Length).Trim();
+                token = bearerToken["Bearer ".Length..].Trim();
             }
 
             if (string.IsNullOrEmpty(token))

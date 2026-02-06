@@ -12,11 +12,11 @@ namespace IdentityServer4.Logging
 {
     internal class DeviceAuthorizationRequestValidationLog
     {
-        public string ClientId { get; set; }
-        public string ClientName { get; set; }
-        public string Scopes { get; set; }
+        public string? ClientId { get; set; }
+        public string? ClientName { get; set; }
+        public string? Scopes { get; set; }
 
-        public Dictionary<string, string> Raw { get; set; }
+        public Dictionary<string, string?> Raw { get; set; }
 
         private static readonly HashSet<string> SensitiveValuesFilter = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -40,6 +40,7 @@ namespace IdentityServer4.Logging
             }
         }
 
-        public override string ToString() => LogSerializer.Serialize(this);
+        public override string ToString() =>
+            LogSerializer.Serialize(this);
     }
 }

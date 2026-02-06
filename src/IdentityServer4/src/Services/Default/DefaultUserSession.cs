@@ -10,6 +10,7 @@ using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication;
+using System.Diagnostics.CodeAnalysis;
 
 namespace IdentityServer4.Services
 {
@@ -56,7 +57,7 @@ namespace IdentityServer4.Services
         /// <value>
         /// The HTTP context.
         /// </value>
-        protected HttpContext HttpContext => HttpContextAccessor.HttpContext;
+        protected HttpContext HttpContext => HttpContextAccessor.HttpContext!;
 
         /// <summary>
         /// Gets the name of the check session cookie.
@@ -85,12 +86,12 @@ namespace IdentityServer4.Services
         /// <summary>
         /// The principal
         /// </summary>
-        protected ClaimsPrincipal Principal;
+        protected ClaimsPrincipal? Principal;
 
         /// <summary>
         /// The properties
         /// </summary>
-        protected AuthenticationProperties Properties;
+        protected AuthenticationProperties? Properties;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultUserSession"/> class.
@@ -129,18 +130,18 @@ namespace IdentityServer4.Services
         /// </summary>
         protected virtual async Task AuthenticateAsync()
         {
-            if (Principal == null || Properties == null)
+            if (Principal is null || Properties is null)
             {
                 var scheme = await HttpContext.GetCookieAuthenticationSchemeAsync();
 
                 var handler = await Handlers.GetHandlerAsync(HttpContext, scheme);
-                if (handler == null)
+                if (handler is null)
                 {
                     throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {scheme}");
                 }
 
                 var result = await handler.AuthenticateAsync();
-                if (result != null && result.Succeeded)
+                if (result is not null && result.Succeeded)
                 {
                     Principal = result.Principal;
                     Properties = result.Properties;
@@ -161,13 +162,13 @@ namespace IdentityServer4.Services
         /// </exception>
         public virtual async Task<string> CreateSessionIdAsync(ClaimsPrincipal principal, AuthenticationProperties properties)
         {
-            if (principal == null) throw new ArgumentNullException(nameof(principal));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (principal is null) throw new ArgumentNullException(nameof(principal));
+            if (properties is null) throw new ArgumentNullException(nameof(properties));
 
             var currentSubjectId = (await GetUserAsync())?.GetSubjectId();
             var newSubjectId = principal.GetSubjectId();
 
-            if (properties.GetSessionId() == null || currentSubjectId != newSubjectId)
+            if (properties.GetSessionId() is null || currentSubjectId != newSubjectId)
             {
                 properties.SetSessionId(CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex));
             }
@@ -186,11 +187,11 @@ namespace IdentityServer4.Services
         {
             await AuthenticateAsync();
 
-            return Principal;
+            return Principal!;
         }
 
         /// <inheritdoc/>
-        public virtual async Task<string> GetSessionIdAsync(bool recheck = false)
+        public virtual async Task<string?> GetSessionIdAsync(bool recheck = false)
         {
             await AuthenticateAsync();
 
@@ -254,8 +255,13 @@ namespace IdentityServer4.Services
         /// Issues the cookie that contains the session id.
         /// </summary>
         /// <param name="sid"></param>
-        public virtual void IssueSessionIdCookie(string sid)
+        public virtual void IssueSessionIdCookie([NotNull] string? sid)
         {
+            if (string.IsNullOrEmpty(sid))
+            {
+                throw new ArgumentNullException(nameof(sid));
+            }
+
             if (Options.Endpoints.EnableCheckSessionEndpoint &&
                HttpContext.Request.Cookies[CheckSessionCookieName] != sid)
             {
@@ -271,10 +277,9 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">clientId</exception>
-        public virtual async Task AddClientIdAsync(string clientId)
+        public virtual async Task AddClientIdAsync(string? clientId)
         {
-            if (clientId == null)
+            if (clientId is null)
             {
                 throw new ArgumentNullException(nameof(clientId));
             }
@@ -299,7 +304,7 @@ namespace IdentityServer4.Services
         {
             await AuthenticateAsync();
 
-            if (Properties != null)
+            if (Properties is not null)
             {
                 try
                 {

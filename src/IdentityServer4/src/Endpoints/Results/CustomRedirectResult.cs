@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.Endpoints.Results
@@ -21,8 +22,8 @@ namespace IdentityServer4.Endpoints.Results
     {
         private readonly ValidatedAuthorizeRequest _request;
         private readonly string _url;
-        private IdentityServerOptions _options;
-        private ILogger<CustomRedirectResult> _logger;
+        private IdentityServerOptions? _options;
+        private ILogger<CustomRedirectResult>? _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomRedirectResult"/> class.
@@ -54,6 +55,7 @@ namespace IdentityServer4.Endpoints.Results
             _options = options;
         }
 
+        [MemberNotNull(nameof(_options), nameof(_logger))]
         private void Init(HttpContext context)
         {
             _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();

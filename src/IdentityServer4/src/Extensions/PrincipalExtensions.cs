@@ -5,6 +5,7 @@ using IdentityModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -39,7 +40,7 @@ namespace IdentityServer4.Extensions
         /// <param name="identity">The identity.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static long GetAuthenticationTimeEpoch(this IIdentity identity)
+        public static long GetAuthenticationTimeEpoch(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
             var claim = id?.FindFirst(JwtClaimTypes.AuthenticationTime);
@@ -55,7 +56,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetSubjectId(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? GetSubjectId(this IPrincipal? principal) =>
             principal?.Identity.GetSubjectId();
 
         /// <summary>
@@ -64,7 +66,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string TryGetSubjectId(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? TryGetSubjectId(this IPrincipal? principal) =>
             principal?.Identity.TryGetSubjectId();
 
         /// <summary>
@@ -74,12 +77,10 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">sub claim is missing</exception>
         [DebuggerStepThrough]
-        public static string GetSubjectId(this IIdentity identity)
+        public static string GetSubjectId(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
-            var claim = id?.FindFirst(JwtClaimTypes.Subject);
-
-            if (claim == null) throw new InvalidOperationException("sub claim is missing");
+            var claim = (id?.FindFirst(JwtClaimTypes.Subject)) ?? throw new InvalidOperationException("sub claim is missing");
             return claim.Value;
         }
 
@@ -90,7 +91,8 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">sub claim is missing</exception>
         [DebuggerStepThrough]
-        public static string TryGetSubjectId(this IIdentity identity)
+        [return: NotNullIfNotNull(nameof(identity))]
+        public static string? TryGetSubjectId(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
             var claim = id?.FindFirst(JwtClaimTypes.Subject);
@@ -104,7 +106,8 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         [DebuggerStepThrough]
         [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-        public static string GetName(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? GetName(this IPrincipal? principal) =>
             principal?.Identity?.GetName();
 
         /// <summary>
@@ -113,15 +116,16 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetDisplayName(this ClaimsPrincipal principal)
+        public static string GetDisplayName(this ClaimsPrincipal? principal)
         {
             var name = principal?.Identity?.Name;
-            if (name.IsPresent()) return name;
+            if (name.IsPresent())
+            {
+                return name;
+            }
 
             var sub = principal?.FindFirst(JwtClaimTypes.Subject);
-            if (sub != null) return sub.Value;
-
-            return string.Empty;
+            return sub is not null ? sub.Value : string.Empty;
         }
 
         /// <summary>
@@ -132,12 +136,10 @@ namespace IdentityServer4.Extensions
         /// <exception cref="System.InvalidOperationException">name claim is missing</exception>
         [DebuggerStepThrough]
         [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-        public static string GetName(this IIdentity identity)
+        public static string GetName(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
-            var claim = id?.FindFirst(JwtClaimTypes.Name);
-
-            if (claim == null) throw new InvalidOperationException("name claim is missing");
+            var claim = (id?.FindFirst(JwtClaimTypes.Name)) ?? throw new InvalidOperationException("name claim is missing");
             return claim.Value;
         }
 
@@ -147,7 +149,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetAuthenticationMethod(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? GetAuthenticationMethod(this IPrincipal? principal) =>
             principal?.Identity?.GetAuthenticationMethod();
 
         /// <summary>
@@ -156,7 +159,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static IEnumerable<Claim> GetAuthenticationMethods(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static IEnumerable<Claim>? GetAuthenticationMethods(this IPrincipal? principal) =>
             principal?.Identity?.GetAuthenticationMethods();
 
         /// <summary>
@@ -166,12 +170,10 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">amr claim is missing</exception>
         [DebuggerStepThrough]
-        public static string GetAuthenticationMethod(this IIdentity identity)
+        public static string GetAuthenticationMethod(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
-            var claim = id?.FindFirst(JwtClaimTypes.AuthenticationMethod);
-
-            if (claim == null) throw new InvalidOperationException("amr claim is missing");
+            var claim = (id?.FindFirst(JwtClaimTypes.AuthenticationMethod)) ?? throw new InvalidOperationException("amr claim is missing");
             return claim.Value;
         }
 
@@ -181,7 +183,8 @@ namespace IdentityServer4.Extensions
         /// <param name="identity">The identity.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static IEnumerable<Claim> GetAuthenticationMethods(this IIdentity identity)
+        [return: NotNullIfNotNull(nameof(identity))]
+        public static IEnumerable<Claim>? GetAuthenticationMethods(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
             return id?.FindAll(JwtClaimTypes.AuthenticationMethod);
@@ -193,7 +196,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static string GetIdentityProvider(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? GetIdentityProvider(this IPrincipal? principal) =>
             principal?.Identity?.GetIdentityProvider();
 
         /// <summary>
@@ -203,12 +207,10 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">idp claim is missing</exception>
         [DebuggerStepThrough]
-        public static string GetIdentityProvider(this IIdentity identity)
+        public static string GetIdentityProvider(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
-            var claim = id?.FindFirst(JwtClaimTypes.IdentityProvider);
-
-            if (claim == null) throw new InvalidOperationException("idp claim is missing");
+            var claim = (id?.FindFirst(JwtClaimTypes.IdentityProvider)) ?? throw new InvalidOperationException("idp claim is missing");
             return claim.Value;
         }
 
@@ -218,7 +220,8 @@ namespace IdentityServer4.Extensions
         /// <param name="identity">The identity.</param>
         /// <returns>Returns session id</returns>
         [DebuggerStepThrough]
-        public static string GetSessionId(this IIdentity identity)
+        [return: NotNullIfNotNull(nameof(identity))]
+        public static string? GetSessionId(this IIdentity? identity)
         {
             var id = identity as ClaimsIdentity;
             return id?.FindFirst(JwtClaimTypes.SessionId)?.Value;
@@ -230,7 +233,8 @@ namespace IdentityServer4.Extensions
         /// <param name="principal">The principal.</param>
         /// <returns>Returns session id</returns>
         [DebuggerStepThrough]
-        public static string GetSessionId(this IPrincipal principal) =>
+        [return: NotNullIfNotNull(nameof(principal))]
+        public static string? GetSessionId(this IPrincipal? principal) =>
             principal?.Identity?.GetSessionId();
 
         /// <summary>
@@ -241,7 +245,7 @@ namespace IdentityServer4.Extensions
         ///   <c>true</c> if the specified principal is authenticated; otherwise, <c>false</c>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool IsAuthenticated(this IPrincipal principal) =>
+        public static bool IsAuthenticated([NotNullWhen(true)] this IPrincipal? principal) =>
             principal?.Identity?.IsAuthenticated == true;
     }
 }

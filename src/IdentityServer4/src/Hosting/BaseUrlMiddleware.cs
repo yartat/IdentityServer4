@@ -47,6 +47,6 @@ public class BaseUrlMiddleware(
         }
 
         _logger.LogTrace("BaseUrlMiddleware completed");
-        await _next(context);
+        await _next(context!);
     }
 }

@@ -360,7 +360,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The builder.</param>
         /// <param name="configureClient">The configruation callback.</param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddBackChannelLogoutHttpClient(this IIdentityServerBuilder builder, Action<HttpClient> configureClient = null)
+        public static IHttpClientBuilder AddBackChannelLogoutHttpClient(this IIdentityServerBuilder builder, Action<HttpClient>? configureClient = null)
         {
             const string name = IdentityServerConstants.HttpClients.BackChannelLogoutHttpClient;
             IHttpClientBuilder httpBuilder;
@@ -397,7 +397,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The builder.</param>
         /// <param name="configureClient">The configruation callback.</param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddJwtRequestUriHttpClient(this IIdentityServerBuilder builder, Action<HttpClient> configureClient = null)
+        public static IHttpClientBuilder AddJwtRequestUriHttpClient(this IIdentityServerBuilder builder, Action<HttpClient>? configureClient = null)
         {
             const string name = IdentityServerConstants.HttpClients.JwtRequestUriHttpClient;
             IHttpClientBuilder httpBuilder;

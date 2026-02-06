@@ -32,7 +32,7 @@ namespace IdentityServer4.Endpoints
             _logger = logger;
         }
 
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             NameValueCollection parameters;
             if (HttpMethods.IsGet(context.Request.Method))
@@ -51,7 +51,7 @@ namespace IdentityServer4.Endpoints
 
             var user = await _userSession.GetUserAsync();
 
-            _logger.LogDebug("Processing signout request for {subjectId}", user?.GetSubjectId() ?? "anonymous");
+            _logger.LogDebug("Processing signout request for {subjectId}", user.GetSubjectId() ?? "anonymous");
 
             var result = await _endSessionRequestValidator.ValidateAsync(parameters, user);
 

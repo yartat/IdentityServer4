@@ -27,7 +27,7 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="recheck">Indicates should recheck session.</param>
         /// <returns>Returns session id</returns>
-        Task<string> GetSessionIdAsync(bool recheck = false);
+        Task<string?> GetSessionIdAsync(bool recheck = false);
 
         /// <summary>
         /// Ensures the session identifier cookie asynchronous.
@@ -45,7 +45,7 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
-        Task AddClientIdAsync(string clientId);
+        Task AddClientIdAsync(string? clientId);
 
         /// <summary>
         /// Gets the list of clients the user has signed into during their session.

@@ -20,7 +20,7 @@ namespace IdentityServer4.Events
         public DeviceAuthorizationFailureEvent(DeviceAuthorizationRequestValidationResult result)
             : this()
         {
-            if (result.ValidatedRequest != null)
+            if (result.ValidatedRequest is not null)
             {
                 ClientId = result.ValidatedRequest.Client?.ClientId;
                 ClientName = result.ValidatedRequest.Client?.ClientName;
@@ -28,7 +28,6 @@ namespace IdentityServer4.Events
                 
             }
 
-            Endpoint = Constants.EndpointNames.DeviceAuthorization;
             Error = result.Error;
             ErrorDescription = result.ErrorDescription;
         }
@@ -50,7 +49,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The client identifier.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the client.
@@ -58,7 +57,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The name of the client.
         /// </value>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -66,7 +65,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The endpoint.
         /// </value>
-        public string Endpoint { get; set; }
+        public string Endpoint { get; set; } = Constants.EndpointNames.DeviceAuthorization;
 
         /// <summary>
         /// Gets or sets the scopes.
@@ -74,7 +73,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The scopes.
         /// </value>
-        public string Scopes { get; set; }
+        public string? Scopes { get; set; }
         
         /// <summary>
         /// Gets or sets the error.
@@ -82,7 +81,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The error.
         /// </value>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets or sets the error description.
@@ -90,6 +89,6 @@ namespace IdentityServer4.Events
         /// <value>
         /// The error description.
         /// </value>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace IdentityServer4.Events
         /// <param name="name">The name.</param>
         /// <param name="interactive">if set to <c>true</c> [interactive].</param>
         /// <param name="clientId">The client id.</param>
-        public UserLoginSuccessEvent(string provider, string providerUserId, string subjectId, string name, bool interactive = true, string clientId = null)
+        public UserLoginSuccessEvent(string provider, string providerUserId, string subjectId, string name, bool interactive = true, string? clientId = null)
             : this()
         {
             Provider = provider;
@@ -49,7 +49,12 @@ namespace IdentityServer4.Events
         /// <param name="name">The name.</param>
         /// <param name="interactive">if set to <c>true</c> [interactive].</param>
         /// <param name="clientId">The client id.</param>
-        public UserLoginSuccessEvent(string username, string subjectId, string name, bool interactive = true, string clientId = null)
+        public UserLoginSuccessEvent(
+            string username,
+            string subjectId,
+            string name,
+            bool interactive = true,
+            string? clientId = null)
             : this()
         {
             Username = username;
@@ -84,7 +89,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The username.
         /// </value>
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         /// <summary>
         /// Gets or sets the provider.
@@ -92,7 +97,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The provider.
         /// </value>
-        public string Provider { get; set; }
+        public string? Provider { get; set; }
 
         /// <summary>
         /// Gets or sets the provider user identifier.
@@ -100,7 +105,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The provider user identifier.
         /// </value>
-        public string ProviderUserId { get; set; }
+        public string? ProviderUserId { get; set; }
 
         /// <summary>
         /// Gets or sets the subject identifier.
@@ -108,7 +113,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The subject identifier.
         /// </value>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the display name.
@@ -116,7 +121,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The display name.
         /// </value>
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -124,7 +129,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The endpoint.
         /// </value>
-        public string Endpoint { get; set; }
+        public string Endpoint { get; set; } = default!;
         
         /// <summary>
         /// Gets or sets the client id.
@@ -132,6 +137,6 @@ namespace IdentityServer4.Events
         /// <value>
         /// The client id.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
     }
 }

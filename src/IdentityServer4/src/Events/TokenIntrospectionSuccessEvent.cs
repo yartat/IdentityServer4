@@ -61,7 +61,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The token.
         /// </value>
-        public string Token { get; set; }
+        public string? Token { get; set; }
 
         /// <summary>
         /// Gets or sets the claim types.
@@ -69,7 +69,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The claim types.
         /// </value>
-        public IEnumerable<string> ClaimTypes { get; set; }
+        public IEnumerable<string>? ClaimTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the token scopes.
@@ -77,6 +77,6 @@ namespace IdentityServer4.Events
         /// <value>
         /// The token scopes.
         /// </value>
-        public IEnumerable<string> TokenScopes { get; set; }
+        public IEnumerable<string>? TokenScopes { get; set; }
     }
 }

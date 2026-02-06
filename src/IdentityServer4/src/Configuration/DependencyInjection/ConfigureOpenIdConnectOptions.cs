@@ -22,10 +22,10 @@ namespace IdentityServer4.Configuration
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public void PostConfigure(string name, OpenIdConnectOptions options)
+        public void PostConfigure(string? name, OpenIdConnectOptions options)
         {
             // no schemes means configure them all
-            if (_schemes.Length == 0 || _schemes.Contains(name))
+            if (!string.IsNullOrEmpty(name) && (_schemes.Length == 0 || _schemes.Contains(name)))
             {
                 options.StateDataFormat = new DistributedCacheStateDataFormatter(_httpContextAccessor, name);
             }

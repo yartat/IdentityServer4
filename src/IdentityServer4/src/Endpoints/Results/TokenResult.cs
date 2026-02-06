@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace IdentityServer4.Endpoints.Results
 {
     internal class TokenResult : IEndpointResult
     {
-        private ILogger<TokenResult> _logger;
+        private ILogger<TokenResult>? _logger;
 
         public TokenResult(TokenResponse response)
         {
@@ -49,6 +50,7 @@ namespace IdentityServer4.Endpoints.Results
             _logger.LogTrace("Token result completed");
         }
 
+        [MemberNotNull(nameof(_logger))]
         private void Initialize(HttpContext context)
         {
             _logger ??= context.RequestServices.GetRequiredService<ILogger<TokenResult>>();
@@ -56,20 +58,22 @@ namespace IdentityServer4.Endpoints.Results
 
         internal class ResultDto
         {
-            public string id_token { get; set; }
+#pragma warning disable CS8618, IDE1006 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable, Naming Styles
+            public required string id_token { get; set; }
 
-            public string access_token { get; set; }
+            public required string access_token { get; set; }
 
-            public int expires_in { get; set; }
+            public required int expires_in { get; set; }
 
-            public string token_type { get; set; }
+            public required string token_type { get; set; }
 
-            public string refresh_token { get; set; }
+            public required string refresh_token { get; set; }
 
-            public string scope { get; set; }
+            public required string scope { get; set; }
 
             [JsonExtensionData]
-            public Dictionary<string, object> Custom { get; set; }
+            public Dictionary<string, object>? Custom { get; set; }
         }
-    }
+ #pragma warning restore CS8618, IDE1006 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+   }
 }

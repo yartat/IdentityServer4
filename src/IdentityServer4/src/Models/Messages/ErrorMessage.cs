@@ -15,7 +15,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The display mode.
         /// </value>
-        public string DisplayMode { get; set; }
+        public string? DisplayMode { get; init; }
 
         /// <summary>
         /// The UI locales passed from the authorization request.
@@ -23,7 +23,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The UI locales.
         /// </value>
-        public string UiLocales { get; set; }
+        public string? UiLocales { get; init; }
 
         /// <summary>
         /// Gets or sets the error code.
@@ -31,7 +31,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The error code.
         /// </value>
-        public string Error { get; set; }
+        public string? Error { get; init; }
 
         /// <summary>
         /// Gets or sets the error description.
@@ -39,7 +39,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The error description.
         /// </value>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; init; }
 
         /// <summary>
         /// The per-request identifier. This can be used to display to the end user and can be used in diagnostics.
@@ -47,21 +47,21 @@ namespace IdentityServer4.Models
         /// <value>
         /// The request identifier.
         /// </value>
-        public string RequestId { get; set; }
+        public required string RequestId { get; init; }
 
         /// <summary>
         /// The redirect URI.
         /// </summary>
-        public string RedirectUri { get; set; }
+        public string? RedirectUri { get; set; }
         
         /// <summary>
         /// The response mode.
         /// </summary>
-        public string ResponseMode { get; set; }
+        public string? ResponseMode { get; set; }
 
         /// <summary>
         /// The client id making the request (if available).
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; init; }
     }
 }

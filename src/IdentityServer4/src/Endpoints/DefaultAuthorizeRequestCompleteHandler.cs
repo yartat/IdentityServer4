@@ -21,7 +21,7 @@ namespace IdentityServer4.Endpoints
     {
         private readonly IAuthorizeRequestHandler _authorizeRequestHandler;
         private readonly IConsentMessageStore _consentResponseStore;
-        private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+        private readonly IAuthorizationParametersMessageStore? _authorizationParametersMessageStore;
         private readonly ILogger<DefaultAuthorizeRequestCompleteHandler> _logger;
         private readonly IUserSession _userSession;
 
@@ -42,7 +42,7 @@ namespace IdentityServer4.Endpoints
             IConsentMessageStore consentResponseStore,
             IUserSession userSession,
             ILogger<DefaultAuthorizeRequestCompleteHandler> logger,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+            IAuthorizationParametersMessageStore? authorizationParametersMessageStore = null)
         {
             _authorizeRequestHandler = authorizeRequestHandler ?? throw new ArgumentNullException(nameof(authorizeRequestHandler));
             _consentResponseStore = consentResponseStore ?? throw new ArgumentNullException(nameof(consentResponseStore));
@@ -52,26 +52,26 @@ namespace IdentityServer4.Endpoints
         }
 
         /// <inheritdoc/>
-        public async Task<IEndpointResult> ProcessCompleteAuthorizeRequestAsync(
+        public async Task<IEndpointResult?> ProcessCompleteAuthorizeRequestAsync(
             NameValueCollection parameters,
             HttpContext context,
-            ClaimsPrincipal principal = null)
+            ClaimsPrincipal? principal = null)
         {
             _logger.LogTrace("Processing complete authorize request");
-            if (_authorizationParametersMessageStore != null)
+            if (_authorizationParametersMessageStore is not null)
             {
                 _logger.LogTrace("Check parameters from message store");
                 var messageStoreId = parameters[Constants.AuthorizationParamsStore.MessageStoreIdParameterName];
-                var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId);
+                var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId!);
                 parameters = entry?.Data.FromFullDictionary() ?? new NameValueCollection();
 
                 _logger.LogTrace("Remove parameters from message store");
-                await _authorizationParametersMessageStore.DeleteAsync(messageStoreId);
+                await _authorizationParametersMessageStore.DeleteAsync(messageStoreId!);
             }
 
             _logger.LogTrace("Get user session");
             var user = principal ?? await _userSession.GetUserAsync();
-            var consentRequest = new ConsentRequest(parameters, user?.GetSubjectId());
+            var consentRequest = new ConsentRequest(parameters, user.GetSubjectId());
             var consent = await _consentResponseStore.ReadAsync(consentRequest.Id);
 
             if (consent != null && consent.Data == null)

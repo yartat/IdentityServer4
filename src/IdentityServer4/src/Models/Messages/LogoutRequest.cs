@@ -91,7 +91,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Gets the entire parameter collection.
         /// </summary>
-        public IDictionary<string, string[]> Parameters { get; set; } = new Dictionary<string, string[]>();
+        public IDictionary<string, string[]?> Parameters { get; set; } = new Dictionary<string, string[]?>();
 
         /// <summary>
         ///  Flag to indicate if the payload contains useful information or not to avoid serailization.
@@ -158,7 +158,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Gets the entire parameter collection.
         /// </summary>
-        public NameValueCollection Parameters { get; } = new NameValueCollection();
+        public NameValueCollection Parameters { get; } = new();
 
         /// <summary>
         /// Gets or sets the sign out iframe URL.

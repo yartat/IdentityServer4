@@ -17,6 +17,6 @@ namespace IdentityServer4.Hosting
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns></returns>
-        Task<IEndpointResult> ProcessAsync(HttpContext context);
+        Task<IEndpointResult?> ProcessAsync(HttpContext context);
     }
 }

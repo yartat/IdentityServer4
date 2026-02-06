@@ -25,7 +25,7 @@ namespace IdentityServer4.Models
         public ConsentRequest(AuthorizationRequest request, string subject)
         {
             ClientId = request.Client.ClientId;
-            Nonce = request.Parameters[OidcConstants.AuthorizeRequest.Nonce];
+            Nonce = request.Parameters[OidcConstants.AuthorizeRequest.Nonce]!;
             ScopesRequested = request.Parameters[OidcConstants.AuthorizeRequest.Scope].ParseScopesString();
             Subject = subject;
         }
@@ -35,10 +35,10 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="parameters">The parameters.</param>
         /// <param name="subject">The subject.</param>
-        public ConsentRequest(NameValueCollection parameters, string subject)
+        public ConsentRequest(NameValueCollection parameters, string? subject)
         {
-            ClientId = parameters[OidcConstants.AuthorizeRequest.ClientId];
-            Nonce = parameters[OidcConstants.AuthorizeRequest.Nonce];
+            ClientId = parameters[OidcConstants.AuthorizeRequest.ClientId]!;
+            Nonce = parameters[OidcConstants.AuthorizeRequest.Nonce]!;
             ScopesRequested = parameters[OidcConstants.AuthorizeRequest.Scope].ParseScopesString();
             Subject = subject;
         }
@@ -65,7 +65,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The scopes requested.
         /// </value>
-        public IEnumerable<string> ScopesRequested { get; set; }
+        public IEnumerable<string>? ScopesRequested { get; set; }
 
         /// <summary>
         /// Gets or sets the subject.
@@ -73,7 +73,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The subject.
         /// </value>
-        public string Subject { get; set; }
+        public string? Subject { get; set; }
 
         /// <summary>
         /// Gets the identifier.
@@ -88,13 +88,11 @@ namespace IdentityServer4.Models
                 var normalizedScopes = ScopesRequested?.OrderBy(x => x).Distinct().Aggregate((x, y) => x + "," + y);
                 var value = $"{ClientId}:{Subject}:{Nonce}:{normalizedScopes}";
 
-                using (var sha = SHA256.Create())
-                {
-                    var bytes = Encoding.UTF8.GetBytes(value);
-                    var hash = sha.ComputeHash(bytes);
+                using var sha = SHA256.Create();
+                var bytes = Encoding.UTF8.GetBytes(value);
+                var hash = sha.ComputeHash(bytes);
 
-                    return Base64Url.Encode(hash);
-                }
+                return Base64Url.Encode(hash);
             }
         }
     }

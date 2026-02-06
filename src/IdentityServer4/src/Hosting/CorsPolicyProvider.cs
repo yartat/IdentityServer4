@@ -28,13 +28,13 @@ namespace IdentityServer4.Hosting
             IdentityServerOptions options,
             IHttpContextAccessor httpContext)
         {
-            _logger = logger;
-            _inner = inner.Instance;
-            _options = options;
-            _httpContext = httpContext;
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+            _inner = inner.Instance ?? throw new System.ArgumentNullException(nameof(inner));
+            _options = options ?? throw new System.ArgumentNullException(nameof(options));
+            _httpContext = httpContext ?? throw new System.ArgumentNullException(nameof(httpContext));
         }
 
-        public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
+        public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
         {
             if (_options.Cors.CorsPolicyName == policyName)
             {
@@ -46,7 +46,7 @@ namespace IdentityServer4.Hosting
             }
         }
 
-        private async Task<CorsPolicy> ProcessAsync(HttpContext context)
+        private async Task<CorsPolicy?> ProcessAsync(HttpContext context)
         {
             var origin = context.Request.GetCorsOrigin();
             if (origin != null)
@@ -58,7 +58,7 @@ namespace IdentityServer4.Hosting
 
                     // manually resolving this from DI because this: 
                     // https://github.com/aspnet/CORS/issues/105
-                    var corsPolicyService = _httpContext.HttpContext.RequestServices.GetRequiredService<ICorsPolicyService>();
+                    var corsPolicyService = _httpContext.HttpContext!.RequestServices.GetRequiredService<ICorsPolicyService>();
 
                     if (await corsPolicyService.IsOriginAllowedAsync(origin))
                     {
@@ -94,9 +94,7 @@ namespace IdentityServer4.Hosting
             return policyBuilder.Build();
         }
 
-        private bool IsPathAllowed(PathString path)
-        {
-            return _options.Cors.CorsPaths.Any(x => path == x);
-        }
+        private bool IsPathAllowed(PathString path) =>
+            _options.Cors.CorsPaths.Any(x => path == x);
     }
 }

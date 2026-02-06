@@ -13,6 +13,7 @@ using System;
 using IdentityServer4.Extensions;
 using IdentityServer4.Configuration;
 using System.Text.Encodings.Web;
+using System.Diagnostics.CodeAnalysis;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -33,11 +34,12 @@ namespace IdentityServer4.Endpoints.Results
             _options = options;
         }
 
-        private IdentityServerOptions _options;
+        private IdentityServerOptions? _options;
 
+        [MemberNotNull(nameof(_options))]
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
         }
 
         public async Task ExecuteAsync(HttpContext context)
@@ -60,11 +62,11 @@ namespace IdentityServer4.Endpoints.Results
 
         private void AddCspHeaders(HttpContext context)
         {
-            if (_options.Authentication.RequireCspFrameSrcForSignout)
+            if (_options!.Authentication.RequireCspFrameSrcForSignout)
             {
-                string frameSources = null;
+                string? frameSources = null;
                 var origins = _result.FrontChannelLogoutUrls?.Select(x => x.GetOrigin());
-                if (origins != null && origins.Any())
+                if (origins is not null && origins.Any())
                 {
                     frameSources = origins.Distinct().Aggregate((x, y) => $"{x} {y}");
                 }
@@ -76,9 +78,9 @@ namespace IdentityServer4.Endpoints.Results
 
         private string GetHtml()
         {
-            string framesHtml = null;
+            string? framesHtml = null;
 
-            if (_result.FrontChannelLogoutUrls != null && _result.FrontChannelLogoutUrls.Any())
+            if (_result.FrontChannelLogoutUrls is not null && _result.FrontChannelLogoutUrls.Any())
             {
                 var frameUrls = _result.FrontChannelLogoutUrls.Select(url => $"<iframe src='{HtmlEncoder.Default.Encode(url)}'></iframe>");
                 framesHtml = frameUrls.Aggregate((x, y) => x + y);

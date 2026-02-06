@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <PackageId>IdentityServer4.EntityFramework</PackageId>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
 

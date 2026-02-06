@@ -22,10 +22,8 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="context">The manager.</param>
         /// <param name="user">The IdentityServer user.</param>
         /// <returns></returns>
-        public static async Task SignInAsync(this HttpContext context, IdentityServerUser user)
-        {
+        public static async Task SignInAsync(this HttpContext context, IdentityServerUser user) =>
             await context.SignInAsync(await context.GetCookieAuthenticationSchemeAsync(), user.CreatePrincipal());
-        }
 
         /// <summary>
         /// Signs the user in.
@@ -34,15 +32,16 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="user">The IdentityServer user.</param>
         /// <param name="properties">The authentication properties.</param>
         /// <returns></returns>
-        public static async Task SignInAsync(this HttpContext context, IdentityServerUser user, AuthenticationProperties properties)
-        {
+        public static async Task SignInAsync(this HttpContext context, IdentityServerUser user, AuthenticationProperties properties) =>
             await context.SignInAsync(await context.GetCookieAuthenticationSchemeAsync(), user.CreatePrincipal(), properties);
-        }
 
-        internal static ISystemClock GetClock(this HttpContext context)
-        {
-            return context.RequestServices.GetRequiredService<ISystemClock>();
-        }
+#if NET7_0_OR_GREATER
+        internal static TimeProvider GetClock(this HttpContext context) =>
+            context.RequestServices.GetRequiredService<TimeProvider>();
+#else
+        internal static ISystemClock GetClock(this HttpContext context) =>
+            context.RequestServices.GetRequiredService<ISystemClock>();
+#endif
 
         /// <summary>
         /// Gets the cookie authentication scheme as an asynchronous operation.

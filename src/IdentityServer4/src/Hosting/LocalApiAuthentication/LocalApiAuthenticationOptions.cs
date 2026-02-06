@@ -15,7 +15,7 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
         /// <summary>
         /// Allows setting a specific required scope (optional)
         /// </summary>
-        public string ExpectedScope { get; set; }
+        public string? ExpectedScope { get; set; }
 
         /// <summary>
         /// Specifies whether the token should be saved in the authentication properties

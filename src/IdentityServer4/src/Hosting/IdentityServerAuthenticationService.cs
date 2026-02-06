@@ -27,7 +27,11 @@ namespace IdentityServer4.Hosting
     {
         private readonly IAuthenticationService _inner;
         private readonly IAuthenticationSchemeProvider _schemes;
+#if NET7_0_OR_GREATER
+        private readonly TimeProvider _clock;
+#else
         private readonly ISystemClock _clock;
+#endif
         private readonly IUserSession _session;
         private readonly IBackChannelLogoutService _backChannelLogoutService;
         private readonly IdentityServerOptions _options;
@@ -36,7 +40,11 @@ namespace IdentityServer4.Hosting
         public IdentityServerAuthenticationService(
             Decorator<IAuthenticationService> decorator,
             IAuthenticationSchemeProvider schemes,
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             IUserSession session,
             IBackChannelLogoutService backChannelLogoutService,
             IdentityServerOptions options,
@@ -52,7 +60,7 @@ namespace IdentityServer4.Hosting
             _logger = logger;
         }
 
-        public async Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        public async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
         {
             var defaultScheme = await _schemes.GetDefaultSignInSchemeAsync();
             var cookieScheme = await context.GetCookieAuthenticationSchemeAsync();
@@ -85,10 +93,14 @@ namespace IdentityServer4.Hosting
             _logger.LogDebug("Augmenting SignInContext");
 
             AssertRequiredClaims(principal);
+#if NET7_0_OR_GREATER
+            AugmentMissingClaims(principal, _clock.GetUtcNow().DateTime);
+#else
             AugmentMissingClaims(principal, _clock.UtcNow.UtcDateTime);
+#endif
         }
 
-        public async Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public async Task SignOutAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             var defaultScheme = await _schemes.GetDefaultSignOutSchemeAsync();
             var cookieScheme = await context.GetCookieAuthenticationSchemeAsync();
@@ -102,25 +114,23 @@ namespace IdentityServer4.Hosting
             await _inner.SignOutAsync(context, scheme, properties);
         }
 
-        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
-        {
-            return _inner.AuthenticateAsync(context, scheme);
-        }
+        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme) =>
+            _inner.AuthenticateAsync(context, scheme);
 
-        public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-        {
-            return _inner.ChallengeAsync(context, scheme, properties);
-        }
+        public Task ChallengeAsync(HttpContext context, string? scheme, AuthenticationProperties? properties) =>
+            _inner.ChallengeAsync(context, scheme, properties);
 
-        public Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-        {
-            return _inner.ForbidAsync(context, scheme, properties);
-        }
+        public Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties) =>
+            _inner.ForbidAsync(context, scheme, properties);
 
         private void AssertRequiredClaims(ClaimsPrincipal principal)
         {
             // for now, we don't allow more than one identity in the principal/cookie
-            if (principal.Identities.Count() != 1) throw new InvalidOperationException("only a single identity supported");
+            if (principal.Identities.Count() != 1)
+            {
+                throw new InvalidOperationException("only a single identity supported");
+            }
+
             SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Email);
             SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.Name);
             SetClaimByExistName(principal, JwtClaimTypes.Subject, ClaimTypes.GivenName);
@@ -175,7 +185,7 @@ namespace IdentityServer4.Hosting
 
             if (identity.FindFirst(JwtClaimTypes.AuthenticationMethod) == null)
             {
-                if (identity.FindFirst(JwtClaimTypes.IdentityProvider).Value == IdentityServerConstants.LocalIdentityProvider)
+                if (identity.FindFirst(JwtClaimTypes.IdentityProvider)?.Value == IdentityServerConstants.LocalIdentityProvider)
                 {
                     _logger.LogDebug("Adding amr claim with value: {value}", OidcConstants.AuthenticationMethods.Password);
                     identity.AddClaim(new Claim(JwtClaimTypes.AuthenticationMethod, OidcConstants.AuthenticationMethods.Password));

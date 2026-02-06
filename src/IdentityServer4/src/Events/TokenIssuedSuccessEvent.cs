@@ -24,13 +24,13 @@ namespace IdentityServer4.Events
         public TokenIssuedSuccessEvent(AuthorizeResponse response)
             : this()
         {
-            ClientId = response.Request.ClientId;
-            ClientName = response.Request.Client.ClientName;
+            ClientId = response.Request?.ClientId;
+            ClientName = response.Request?.Client.ClientName;
             RedirectUri = response.RedirectUri;
             Endpoint = EndpointNames.Authorize;
-            SubjectId = response.Request.Subject.GetSubjectId();
+            SubjectId = response.Request?.Subject.GetSubjectId();
             Scopes = response.Scope;
-            GrantType = response.Request.GrantType;
+            GrantType = response.Request?.GrantType;
 
             var tokens = new List<Token>();
             if (response.IdentityToken != null)
@@ -58,7 +58,6 @@ namespace IdentityServer4.Events
         {
             ClientId = request.ValidatedRequest.Client.ClientId;
             ClientName = request.ValidatedRequest.Client.ClientName;
-            Endpoint = EndpointNames.Token;
             SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
             GrantType = request.ValidatedRequest.GrantType;
 
@@ -108,7 +107,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The client identifier.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the client.
@@ -116,7 +115,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The name of the client.
         /// </value>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
@@ -124,7 +123,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The redirect URI.
         /// </value>
-        public string RedirectUri { get; set; }
+        public string? RedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -132,7 +131,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The endpoint.
         /// </value>
-        public string Endpoint { get; set; }
+        public string Endpoint { get; set; } = EndpointNames.Token;
 
         /// <summary>
         /// Gets or sets the subject identifier.
@@ -140,7 +139,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The subject identifier.
         /// </value>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the scopes.
@@ -148,7 +147,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The scopes.
         /// </value>
-        public string Scopes { get; set; }
+        public string? Scopes { get; set; }
 
         /// <summary>
         /// Gets or sets the grant type.
@@ -156,7 +155,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The grant type.
         /// </value>
-        public string GrantType { get; set; }
+        public string? GrantType { get; set; }
 
         /// <summary>
         /// Gets or sets the tokens.
@@ -164,7 +163,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The tokens.
         /// </value>
-        public IEnumerable<Token> Tokens { get; set; }
+        public IEnumerable<Token>? Tokens { get; set; }
 
         /// <summary>
         /// Data structure serializing issued tokens

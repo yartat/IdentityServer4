@@ -15,43 +15,43 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the subject identifier.
         /// </summary>
         /// <value>The subject identifier.</value>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier.
         /// </summary>
         /// <value>The client identifier.</value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
         /// </summary>
         /// <value>The redirect URI.</value>
-        public string RedirectUri { get; set; }
+        public string? RedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public string State { get; set; }
+        public string? State { get; set; }
 
         /// <summary>
         /// Gets or sets the scope.
         /// </summary>
         /// <value>The scope.</value>
-        public string Scope { get; set; }
+        public string? Scope { get; set; }
 
         /// <summary>
         /// Gets or sets the error.
         /// </summary>
         /// <value>The error.</value>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets or sets the error description.
         /// </summary>
         /// <value>The error description.</value>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeResponseLog"/> class.
@@ -69,9 +69,7 @@ namespace IdentityServer4.Logging.Models
         }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return LogSerializer.Serialize(this);
-        }
+        public override string ToString() =>
+            LogSerializer.Serialize(this);
     }
 }

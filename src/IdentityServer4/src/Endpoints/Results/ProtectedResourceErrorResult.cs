@@ -15,9 +15,9 @@ namespace IdentityServer4.Endpoints.Results
     internal class ProtectedResourceErrorResult : IEndpointResult
     {
         public string Error;
-        public string ErrorDescription;
+        public string? ErrorDescription;
 
-        public ProtectedResourceErrorResult(string error, string errorDescription = null)
+        public ProtectedResourceErrorResult(string error, string? errorDescription = null)
         {
             Error = error;
             ErrorDescription = errorDescription;
@@ -42,12 +42,12 @@ namespace IdentityServer4.Endpoints.Results
             var errorString = string.Format($"error=\"{Error}\"");
             if (ErrorDescription.IsMissing())
             {
-                context.Response.Headers.Add(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString }).ToString());
+                context.Response.Headers[HeaderNames.WWWAuthenticate] = new StringValues(["Bearer realm=\"IdentityServer\"", errorString]).ToString();
             }
             else
             {
                 var errorDescriptionString = string.Format($"error_description=\"{ErrorDescription}\"");
-                context.Response.Headers.Add(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString, errorDescriptionString }).ToString());
+                context.Response.Headers[HeaderNames.WWWAuthenticate] = new StringValues(["Bearer realm=\"IdentityServer\"", errorString, errorDescriptionString]).ToString();
             }
 
             return Task.CompletedTask;

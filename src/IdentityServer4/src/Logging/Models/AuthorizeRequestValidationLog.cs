@@ -20,13 +20,13 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the client identifier.
         /// </summary>
         /// <value>The client identifier.</value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the client.
         /// </summary>
         /// <value>The name of the client.</value>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
@@ -38,13 +38,13 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the allowed redirect URIs.
         /// </summary>
         /// <value>The allowed redirect URIs.</value>
-        public IEnumerable<Uri> AllowedRedirectUris { get; set; }
+        public IEnumerable<Uri>? AllowedRedirectUris { get; set; }
 
         /// <summary>
         /// Gets or sets the subject identifier.
         /// </summary>
         /// <value>The subject identifier.</value>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the response.
@@ -92,7 +92,7 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the authentication context reference classes.
         /// </summary>
         /// <value>The authentication context reference classes.</value>
-        public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
+        public IEnumerable<string>? AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
         /// Gets or sets the display mode.
@@ -128,7 +128,7 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the raw.
         /// </summary>
         /// <value>The raw.</value>
-        public Dictionary<string, string> Raw { get; set; }
+        public Dictionary<string, string?> Raw { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeRequestValidationLog"/> class.
@@ -139,7 +139,7 @@ namespace IdentityServer4.Logging.Models
         {
             Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter);
 
-            if (request.Client != null)
+            if (request.Client is not null)
             {
                 ClientId = request.Client.ClientId;
                 ClientName = request.Client.ClientName;
@@ -147,10 +147,10 @@ namespace IdentityServer4.Logging.Models
                 AllowedRedirectUris = request.Client.RedirectUris;
             }
 
-            if (request.Subject != null)
+            if (request.Subject is not null)
             {
                 var subjectClaim = request.Subject.FindFirst(JwtClaimTypes.Subject);
-                if (subjectClaim != null)
+                if (subjectClaim is not null)
                 {
                     SubjectId = subjectClaim.Value;
                 }

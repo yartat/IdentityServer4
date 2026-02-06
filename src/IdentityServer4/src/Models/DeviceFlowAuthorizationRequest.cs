@@ -17,7 +17,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The client.
         /// </value>
-        public Client Client { get; set; }
+        public required Client Client { get; set; }
 
         /// <summary>
         /// Gets or sets the validated resources.
@@ -25,6 +25,6 @@ namespace IdentityServer4.Models
         /// <value>
         /// The scopes requested.
         /// </value>
-        public ResourceValidationResult ValidatedResources { get; set; }
+        public required ResourceValidationResult ValidatedResources { get; set; }
     }
 }

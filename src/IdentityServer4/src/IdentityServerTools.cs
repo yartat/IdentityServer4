@@ -22,7 +22,11 @@ namespace IdentityServer4
     {
         internal readonly IHttpContextAccessor ContextAccessor;
         private readonly ITokenCreationService _tokenCreation;
+#if NET7_0_OR_GREATER
+        private readonly TimeProvider _clock;
+#else        
         private readonly ISystemClock _clock;
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
@@ -30,7 +34,14 @@ namespace IdentityServer4
         /// <param name="contextAccessor">The context accessor.</param>
         /// <param name="tokenCreation">The token creation service.</param>
         /// <param name="clock">The clock.</param>
-        public IdentityServerTools(IHttpContextAccessor contextAccessor, ITokenCreationService tokenCreation, ISystemClock clock)
+        public IdentityServerTools(
+            IHttpContextAccessor contextAccessor,
+            ITokenCreationService tokenCreation,
+#if NET7_0_OR_GREATER
+            TimeProvider clock)
+#else
+            ISystemClock clock)
+#endif
         {
             ContextAccessor = contextAccessor;
             _tokenCreation = tokenCreation;
@@ -46,13 +57,20 @@ namespace IdentityServer4
         /// <exception cref="System.ArgumentNullException">claims</exception>
         public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
         {
-            if (claims == null) throw new ArgumentNullException(nameof(claims));
+            if (claims is null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
 
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
 
             var token = new Token
             {
+#if NET7_0_OR_GREATER
+                CreationTime = _clock.GetUtcNow().UtcDateTime,
+#else
                 CreationTime = _clock.UtcNow.UtcDateTime,
+#endif
                 Issuer = issuer,
                 Lifetime = lifetime,
 
@@ -72,12 +90,23 @@ namespace IdentityServer4
         /// <exception cref="System.ArgumentNullException">claims</exception>
         public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
         {
-            if (String.IsNullOrWhiteSpace(issuer)) throw new ArgumentNullException(nameof(issuer));
-            if (claims == null) throw new ArgumentNullException(nameof(claims));
+            if (string.IsNullOrWhiteSpace(issuer))
+            {
+                throw new ArgumentNullException(nameof(issuer));
+            }
+
+            if (claims is null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
 
             var token = new Token
             {
+#if NET7_0_OR_GREATER
+                CreationTime = _clock.GetUtcNow().UtcDateTime,
+#else
                 CreationTime = _clock.UtcNow.UtcDateTime,
+#endif
                 Issuer = issuer,
                 Lifetime = lifetime,
 

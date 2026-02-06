@@ -39,12 +39,14 @@ namespace IdentityServer4.Endpoints.Results
 
         internal class ResultDto
         {
-            public string device_code { get; set; }
-            public string user_code { get; set; }
-            public string verification_uri { get; set; }
-            public string verification_uri_complete { get; set; }
-            public int expires_in { get; set; }
-            public int interval { get; set; }
+#pragma warning disable IDE1006 // Naming Styles
+            public required string device_code { get; set; }
+            public required string user_code { get; set; }
+            public required string verification_uri { get; set; }
+            public required string verification_uri_complete { get; set; }
+            public required int expires_in { get; set; }
+            public required int interval { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
         }
     }
 }

@@ -38,7 +38,7 @@ namespace IdentityServer4.Hosting.FederatedSignOut
         }
 
         /// <inheritdoc/>
-        public async virtual Task<IAuthenticationHandler> GetHandlerAsync(HttpContext context, string authenticationScheme)
+        public async virtual Task<IAuthenticationHandler?> GetHandlerAsync(HttpContext context, string authenticationScheme)
         {
             if (_handlerMap.TryGetValue(authenticationScheme, out var handler))
             {
@@ -69,7 +69,11 @@ namespace IdentityServer4.Hosting.FederatedSignOut
                 return wrapper;
             }
 
-            _handlerMap[authenticationScheme] = handler;
+            if (handler is not null)
+            {
+                _handlerMap[authenticationScheme] = handler;
+            }
+            
             return handler;
         }
     }

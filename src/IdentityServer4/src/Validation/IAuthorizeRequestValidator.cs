@@ -19,6 +19,8 @@ namespace IdentityServer4.Validation
         /// <param name="parameters"></param>
         /// <param name="subject"></param>
         /// <returns></returns>
-        Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null);
+        Task<AuthorizeRequestValidationResult> ValidateAsync(
+            NameValueCollection parameters,
+            ClaimsPrincipal? subject = null);
     }
 }

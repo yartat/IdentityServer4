@@ -20,10 +20,13 @@ namespace IdentityServer4.Events
         /// <param name="request">The request.</param>
         /// <param name="error">The error.</param>
         /// <param name="description">The description.</param>
-        public TokenIssuedFailureEvent(ValidatedAuthorizeRequest request, string error, string description)
+        public TokenIssuedFailureEvent(
+            ValidatedAuthorizeRequest? request,
+            string error,
+            string? description)
             : this()
         {
-            if (request != null)
+            if (request is not null)
             {
                 ClientId = request.ClientId;
                 ClientName = request.Client?.ClientName;
@@ -31,7 +34,7 @@ namespace IdentityServer4.Events
                 Scopes = request.RequestedScopes?.ToSpaceSeparatedString();
                 GrantType = request.GrantType;
 
-                if (request.Subject != null && request.Subject.Identity?.IsAuthenticated == true)
+                if (request.Subject is not null && request.Subject.Identity?.IsAuthenticated == true)
                 {
                     SubjectId = request.Subject.GetSubjectId();
                 }
@@ -49,14 +52,14 @@ namespace IdentityServer4.Events
         public TokenIssuedFailureEvent(TokenRequestValidationResult result)
             : this()
         {
-            if (result.ValidatedRequest != null)
+            if (result.ValidatedRequest is not null)
             {
                 ClientId = result.ValidatedRequest.Client.ClientId;
                 ClientName = result.ValidatedRequest.Client.ClientName;
                 GrantType = result.ValidatedRequest.GrantType;
                 Scopes = result.ValidatedRequest.RequestedScopes?.ToSpaceSeparatedString();
 
-                if (result.ValidatedRequest.Subject != null && result.ValidatedRequest.Subject.Identity.IsAuthenticated)
+                if (result.ValidatedRequest.Subject is not null && result.ValidatedRequest.Subject.Identity?.IsAuthenticated == true)
                 {
                     SubjectId = result.ValidatedRequest.Subject.GetSubjectId();
                 }
@@ -84,7 +87,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The client identifier.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the client.
@@ -92,7 +95,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The name of the client.
         /// </value>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
@@ -100,7 +103,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The redirect URI.
         /// </value>
-        public string RedirectUri { get; set; }
+        public string? RedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -108,7 +111,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The endpoint.
         /// </value>
-        public string Endpoint { get; set; }
+        public string? Endpoint { get; set; }
 
         /// <summary>
         /// Gets or sets the subject identifier.
@@ -116,7 +119,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The subject identifier.
         /// </value>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the scopes.
@@ -124,7 +127,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The scopes.
         /// </value>
-        public string Scopes { get; set; }
+        public string? Scopes { get; set; }
 
         /// <summary>
         /// Gets or sets the grant type.
@@ -132,7 +135,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The grant type.
         /// </value>
-        public string GrantType { get; set; }
+        public string? GrantType { get; set; }
 
         /// <summary>
         /// Gets or sets the error.
@@ -140,7 +143,7 @@ namespace IdentityServer4.Events
         /// <value>
         /// The error.
         /// </value>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets or sets the error description.
@@ -148,6 +151,6 @@ namespace IdentityServer4.Events
         /// <value>
         /// The error description.
         /// </value>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
     }
 }

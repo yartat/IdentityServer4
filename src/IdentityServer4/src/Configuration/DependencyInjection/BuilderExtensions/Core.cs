@@ -288,7 +288,7 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static IServiceCollection AddDecorator<TService>(this IServiceCollection services)
         {
             var registration = services.LastOrDefault(x => x.ServiceType == typeof(TService));
-            if (registration == null)
+            if (registration is null)
             {
                 throw new InvalidOperationException("Service type: " + typeof(TService).Name + " not registered.");
             }
@@ -316,8 +316,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else
             {
-                var type = registration.ImplementationType;
-                var innerType = typeof(Decorator<,>).MakeGenericType(typeof(TService), registration.ImplementationType);
+                var type = registration.ImplementationType ?? throw new InvalidOperationException("Cannot register decorator for type: " + typeof(TService).Name + ".");
+                var innerType = typeof(Decorator<,>).MakeGenericType(typeof(TService), type);
                 services.Add(new ServiceDescriptor(typeof(Decorator<TService>), innerType, ServiceLifetime.Transient));
                 services.Add(new ServiceDescriptor(type, type, registration.Lifetime));
             }

@@ -15,12 +15,6 @@ namespace IdentityServer4.Models
     public class ProfileDataRequestContext
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProfileDataRequestContext"/> class.
-        /// </summary>
-        public ProfileDataRequestContext()
-        { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ProfileDataRequestContext" /> class.
         /// </summary>
         /// <param name="subject">The subject.</param>
@@ -41,7 +35,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The validatedRequest.
         /// </value>
-        public ValidatedRequest ValidatedRequest { get; set; }
+        public ValidatedRequest? ValidatedRequest { get; set; }
 
         /// <summary>
         /// Gets or sets the subject.
@@ -81,7 +75,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The resources.
         /// </value>
-        public ResourceValidationResult RequestedResources { get; set; }
+        public ResourceValidationResult? RequestedResources { get; set; }
 
         /// <summary>
         /// Gets or sets the issued claims.

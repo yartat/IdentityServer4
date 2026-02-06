@@ -47,22 +47,31 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         /// <exception cref="Exception">
         /// </exception>
-        public static JwtPayload CreateJwtPayload(this Token token, ISystemClock clock, IdentityServerOptions options, ILogger logger)
+        public static JwtPayload CreateJwtPayload(
+            this Token token,
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
+            ISystemClock clock,
+#endif
+            IdentityServerOptions options,
+            ILogger logger)
         {
+#if NET7_0_OR_GREATER
+            var now = clock.GetUtcNow();
+#else
+            var now = clock.UtcNow;
+#endif
             var issuedAtClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.IssuedAt).ToArray();
             var payload = new JwtPayload(
                 token.Issuer,
                 null,
                 null,
-                clock.UtcNow.UtcDateTime,
-                clock.UtcNow.UtcDateTime.AddSeconds(token.Lifetime),
-                issuedAtClaims.FirstOrDefault().GetDateTime());
+                now.UtcDateTime,
+                now.UtcDateTime.AddSeconds(token.Lifetime),
+                issuedAtClaims.FirstOrDefault()?.GetDateTime());
 
-            foreach (var aud in token.Audiences)
-            {
-                payload.AddClaim(new Claim(JwtClaimTypes.Audience, aud));
-            }
-
+            payload.AddClaims(token.Audiences.Select(x => new Claim(JwtClaimTypes.Audience, x)));
             var amrClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.AuthenticationMethod).ToArray();
             var scopeClaims = token.Claims.Where(x => x.Type == JwtClaimTypes.Scope).ToArray();
             var jsonClaims = token.Claims.Where(x => x.ValueType == IdentityServerConstants.ClaimValueTypes.Json).ToList();

@@ -12,32 +12,32 @@ namespace IdentityServer4.Logging.Models
 {
     internal class TokenRequestValidationLog
     {
-        public string ClientId { get; set; }
-        public string ClientName { get; set; }
+        public string? ClientId { get; set; }
+        public string? ClientName { get; set; }
         public string GrantType { get; set; }
-        public string Scopes { get; set; }
+        public string? Scopes { get; set; }
 
         public string AuthorizationCode { get; set; }
         public string RefreshToken { get; set; }
 
         public string UserName { get; set; }
-        public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
-        public string Tenant { get; set; }
-        public string IdP { get; set; }
+        public IEnumerable<string>? AuthenticationContextReferenceClasses { get; set; }
+        public string? Tenant { get; set; }
+        public string? IdP { get; set; }
 
-        public Dictionary<string, string> Raw { get; set; }
+        public Dictionary<string, string?> Raw { get; set; }
 
         public TokenRequestValidationLog(ValidatedTokenRequest request, HashSet<string> sensitiveValuesFilter)
         {
             Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter);
 
-            if (request.Client != null)
+            if (request.Client is not null)
             {
                 ClientId = request.Client.ClientId;
                 ClientName = request.Client.ClientName;
             }
 
-            if (request.RequestedScopes != null)
+            if (request.RequestedScopes is not null)
             {
                 Scopes = request.RequestedScopes.ToSpaceSeparatedString();
             }
@@ -48,9 +48,7 @@ namespace IdentityServer4.Logging.Models
             UserName = request.UserName;
         }
 
-        public override string ToString()
-        {
-            return LogSerializer.Serialize(this);
-        }
+        public override string ToString() =>
+            LogSerializer.Serialize(this);
     }
 }

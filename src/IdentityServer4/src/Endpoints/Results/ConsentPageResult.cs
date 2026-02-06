@@ -13,6 +13,7 @@ using IdentityServer4.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using IdentityServer4.Stores;
 using IdentityServer4.Models;
+using System.Diagnostics.CodeAnalysis;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -37,20 +38,22 @@ namespace IdentityServer4.Endpoints.Results
         internal ConsentPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
+            IAuthorizationParametersMessageStore? authorizationParametersMessageStore = null) 
             : this(request)
         {
             _options = options;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
 
-        private IdentityServerOptions _options;
-        private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+        private IdentityServerOptions? _options;
+        private IAuthorizationParametersMessageStore? _authorizationParametersMessageStore;
 
+
+        [MemberNotNull(nameof(_options))]
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _authorizationParametersMessageStore = _authorizationParametersMessageStore ?? context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _authorizationParametersMessageStore ??= context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
         }
 
         /// <summary>
@@ -63,9 +66,9 @@ namespace IdentityServer4.Endpoints.Results
             Init(context);
 
             var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
-            if (_authorizationParametersMessageStore != null)
+            if (_authorizationParametersMessageStore is not null)
             {
-                var msg = new Message<IDictionary<string, string[]>>(_request.Raw.ToFullDictionary());
+                var msg = new Message<IDictionary<string, string[]?>>(_request.Raw.ToFullDictionary());
                 var id = await _authorizationParametersMessageStore.WriteAsync(msg);
                 returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
             }

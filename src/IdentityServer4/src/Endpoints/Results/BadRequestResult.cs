@@ -10,10 +10,10 @@ namespace IdentityServer4.Endpoints.Results
 {
     internal class BadRequestResult : IEndpointResult
     {
-        public string Error { get; set; }
-        public string ErrorDescription { get; set; }
+        public string? Error { get; set; }
+        public string? ErrorDescription { get; set; }
 
-        public BadRequestResult(string error = null, string errorDescription = null)
+        public BadRequestResult(string? error = null, string? errorDescription = null)
         {
             Error = error;
             ErrorDescription = errorDescription;
@@ -38,9 +38,11 @@ namespace IdentityServer4.Endpoints.Results
 
         internal class ResultDto
         {
-            public string error { get; set; }
+#pragma warning disable IDE1006 // Naming Styles
+            public string? error { get; init; }
 
-            public string error_description { get; set; }
+            public string? error_description { get; init; }
+#pragma warning restore IDE1006 // Naming Styles
         }
     }
 }

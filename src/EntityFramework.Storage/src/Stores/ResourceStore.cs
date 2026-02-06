@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
@@ -34,16 +35,22 @@ namespace IdentityServer4.EntityFramework.Stores
         /// </summary>
         protected readonly ILogger<ResourceStore> Logger;
 
+        private readonly IMapper _mapper;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentNullException">context</exception>
-        public ResourceStore(IConfigurationDbContext context, ILogger<ResourceStore> logger)
+        /// <param name="mapper">The mapper instance.</param>
+        public ResourceStore(
+            IConfigurationDbContext context,
+            ILogger<ResourceStore> logger,
+            IMapper mapper)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         /// <summary>
@@ -69,7 +76,7 @@ namespace IdentityServer4.EntityFramework.Stores
 
             var result = (await apis.ToArrayAsync())
                 .Where(x => apiResourceNames.Contains(x.Name))
-                .Select(x => x.ToModel()).ToArray();
+                .Select(x => _mapper.Map<ApiResource>(x)).ToArray();
 
             if (result.Any())
             {
@@ -106,7 +113,7 @@ namespace IdentityServer4.EntityFramework.Stores
 
             var results = (await apis.ToArrayAsync())
                 .Where(api => api.Scopes.Any(x => names.Contains(x.Scope)));
-            var models = results.Select(x => x.ToModel()).ToArray();
+            var models = results.Select(x => _mapper.Map<ApiResource>(x)).ToArray();
 
             Logger.LogDebug("Found {apis} API resources in database", models.Select(x => x.Name));
 
@@ -137,7 +144,7 @@ namespace IdentityServer4.EntityFramework.Stores
 
             Logger.LogDebug("Found {scopes} identity scopes in database", results.Select(x => x.Name));
 
-            return results.Select(x => x.ToModel()).ToArray();
+            return results.Select(x => _mapper.Map<IdentityResource>(x)).ToArray();
         }
 
         /// <summary>
@@ -164,7 +171,7 @@ namespace IdentityServer4.EntityFramework.Stores
 
             Logger.LogDebug("Found {scopes} scopes in database", results.Select(x => x.Name));
 
-            return results.Select(x => x.ToModel()).ToArray();
+            return results.Select(x => _mapper.Map<ApiScope>(x)).ToArray();
         }
 
         /// <summary>
@@ -190,9 +197,9 @@ namespace IdentityServer4.EntityFramework.Stores
                 .AsNoTracking();
 
             var result = new Resources(
-                (await identity.ToArrayAsync()).Select(x => x.ToModel()),
-                (await apis.ToArrayAsync()).Select(x => x.ToModel()),
-                (await scopes.ToArrayAsync()).Select(x => x.ToModel())
+                (await identity.ToArrayAsync()).Select(x => _mapper.Map<IdentityResource>(x)),
+                (await apis.ToArrayAsync()).Select(x => _mapper.Map<ApiResource>(x)),
+                (await scopes.ToArrayAsync()).Select(x => _mapper.Map<ApiScope>(x))
             );
 
             Logger.LogDebug("Found {scopes} as all scopes, and {apis} as API resources", 

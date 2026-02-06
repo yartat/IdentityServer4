@@ -13,16 +13,16 @@ namespace IdentityServer4.Models
         /// <summary>
         ///  The SubjectId of the user.
         /// </summary>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// The session Id of the user's authentication session.
         /// </summary>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         /// <summary>
         /// The list of client Ids that the user has authenticated to.
         /// </summary>
-        public IEnumerable<string> ClientIds { get; set; }
+        public IEnumerable<string>? ClientIds { get; set; }
     }
 }

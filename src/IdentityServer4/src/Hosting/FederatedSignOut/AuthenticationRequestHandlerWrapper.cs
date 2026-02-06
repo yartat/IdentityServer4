@@ -4,6 +4,7 @@
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -18,13 +19,15 @@ namespace IdentityServer4.Hosting.FederatedSignOut
         private readonly HttpContext _context;
         private readonly ILogger _logger;
 
-        public AuthenticationRequestHandlerWrapper(IAuthenticationRequestHandler inner, IHttpContextAccessor httpContextAccessor)
+        public AuthenticationRequestHandlerWrapper(
+            IAuthenticationRequestHandler inner,
+            IHttpContextAccessor httpContextAccessor)
         {
             _inner = inner;
-            _context = httpContextAccessor.HttpContext;
+            _context = httpContextAccessor.HttpContext!;
 
-            var factory = (ILoggerFactory)_context.RequestServices.GetService(typeof(ILoggerFactory));
-            _logger = factory?.CreateLogger(GetType());
+            var factory = _context.RequestServices.GetRequiredService<ILoggerFactory>();
+            _logger = factory.CreateLogger(GetType());
         }
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
@@ -49,7 +52,7 @@ namespace IdentityServer4.Hosting.FederatedSignOut
 
             if (_context.Response.StatusCode == (int)System.Net.HttpStatusCode.Redirect)
             {
-                _logger.LogDebug("Redirect to {location}", _context.Response.Headers["location"]);
+                _logger.LogDebug("Redirect to {location}", _context.Response.Headers["location"]!);
             }
 
             return result;
@@ -60,12 +63,12 @@ namespace IdentityServer4.Hosting.FederatedSignOut
             return _inner.AuthenticateAsync();
         }
 
-        public Task ChallengeAsync(AuthenticationProperties properties)
+        public Task ChallengeAsync(AuthenticationProperties? properties)
         {
             return _inner.ChallengeAsync(properties);
         }
 
-        public Task ForbidAsync(AuthenticationProperties properties)
+        public Task ForbidAsync(AuthenticationProperties? properties)
         {
             return _inner.ForbidAsync(properties);
         }

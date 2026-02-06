@@ -28,7 +28,7 @@ namespace IdentityServer4.Endpoints
         private readonly IdentityServerOptions _options;
         private readonly IAuthorizeInteractionResponseGenerator _interactionGenerator;
         private readonly IAuthorizeRequestValidator _validator;
-        private readonly ILoginUrlProcessor _loginUrlProcessor;
+        private readonly ILoginUrlProcessor? _loginUrlProcessor;
 
         protected AuthorizeEndpointBase(
             IEventService events,
@@ -38,7 +38,7 @@ namespace IdentityServer4.Endpoints
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
-            ILoginUrlProcessor loginUrlProcessor = null)
+            ILoginUrlProcessor? loginUrlProcessor = null)
         {
             _events = events;
             _options = options;
@@ -54,7 +54,7 @@ namespace IdentityServer4.Endpoints
 
         protected IUserSession UserSession { get; }
 
-        public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
+        public abstract Task<IEndpointResult?> ProcessAsync(HttpContext context);
 
         internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent, HttpContext context)
         {
@@ -116,9 +116,9 @@ namespace IdentityServer4.Endpoints
 
         protected async Task<IEndpointResult> CreateErrorResultAsync(
             string logMessage,
-            ValidatedAuthorizeRequest request = null,
+            ValidatedAuthorizeRequest? request = null,
             string error = OidcConstants.AuthorizeErrors.ServerError,
-            string errorDescription = null,
+            string? errorDescription = null,
             bool logError = true)
         {
             if (logError)
@@ -140,7 +140,7 @@ namespace IdentityServer4.Endpoints
                 Request = request,
                 Error = error,
                 ErrorDescription = errorDescription,
-                SessionState = request?.GenerateSessionStateValue()
+                SessionState = request.GenerateSessionStateValue()
             });
         }
 
@@ -158,8 +158,8 @@ namespace IdentityServer4.Endpoints
 
         private void LogTokens(AuthorizeResponse response)
         {
-            var clientId = $"{response.Request.ClientId} ({response.Request.Client.ClientName ?? "no name set"})";
-            var subjectId = response.Request.Subject.GetSubjectId();
+            var clientId = $"{response.Request?.ClientId} ({response.Request?.Client.ClientName ?? "no name set"})";
+            var subjectId = response.Request?.Subject.GetSubjectId();
 
             if (response.IdentityToken != null)
             {
@@ -175,10 +175,8 @@ namespace IdentityServer4.Endpoints
             }
         }
 
-        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
-        {
-            return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
-        }
+        private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest? request, string error, string? errorDescription) =>
+            _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
 
         private Task RaiseResponseEventAsync(AuthorizeResponse response)
         {

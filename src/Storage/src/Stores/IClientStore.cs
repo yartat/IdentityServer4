@@ -17,6 +17,6 @@ namespace IdentityServer4.Stores
         /// </summary>
         /// <param name="clientId">The client id</param>
         /// <returns>The client</returns>
-        Task<Client> FindClientByIdAsync(string clientId);
+        Task<Client?> FindClientByIdAsync(string clientId);
     }
 }

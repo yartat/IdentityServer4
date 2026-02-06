@@ -19,7 +19,7 @@ namespace IdentityServer4.Hosting.FederatedSignOut
             _inner = inner;
         }
 
-        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             return _inner.SignInAsync(user, properties);
         }

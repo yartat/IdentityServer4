@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Extensions;
@@ -33,15 +34,22 @@ namespace IdentityServer4.EntityFramework.Stores
         /// </summary>
         protected readonly ILogger Logger;
 
+        private readonly IMapper _mapper;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PersistedGrantStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
-        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger)
+        /// <param name="mapper">The mapper instance.</param>
+        public PersistedGrantStore(
+            IPersistedGrantDbContext context,
+            ILogger<PersistedGrantStore> logger,
+            IMapper mapper)
         {
             Context = context;
             Logger = logger;
+            _mapper = mapper;
         }
 
         /// <inheritdoc/>
@@ -52,14 +60,13 @@ namespace IdentityServer4.EntityFramework.Stores
             {
                 Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
 
-                var persistedGrant = token.ToEntity();
+                var persistedGrant = _mapper.Map<Entities.PersistedGrant>(token);
                 Context.PersistedGrants.Add(persistedGrant);
             }
             else
             {
                 Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
 
-                token.UpdateEntity(existing);
             }
 
             try
@@ -76,7 +83,7 @@ namespace IdentityServer4.EntityFramework.Stores
         public virtual async Task<PersistedGrant> GetAsync(string key)
         {
             var persistedGrant = await Context.PersistedGrants.AsNoTracking().FirstOrDefaultAsync(x => x.Key == key);
-            var model = persistedGrant?.ToModel();
+            var model = persistedGrant is null ? null : _mapper.Map<PersistedGrant>(persistedGrant);
 
             Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
 
@@ -87,13 +94,13 @@ namespace IdentityServer4.EntityFramework.Stores
         public virtual async Task<PersistedGrant> GetAndRemoveAsync(string key)
         {
             var persistedGrant = await Context.PersistedGrants.FirstOrDefaultAsync(x => x.Key == key);
-            if (persistedGrant == null)
+            if (persistedGrant is null)
             {
                 Logger.LogDebug("{persistedGrantKey} not found in database", key);
                 return null;
             }
 
-            var model = persistedGrant.ToModel();
+            var model = _mapper.Map<PersistedGrant>(persistedGrant);
             Context.PersistedGrants.Remove(persistedGrant);
             await Context.SaveChangesAsync();
 
@@ -109,7 +116,7 @@ namespace IdentityServer4.EntityFramework.Stores
 
             var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync();
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
-            var model = persistedGrants.Select(x => x.ToModel());
+            var model = persistedGrants.Select(x => _mapper.Map<PersistedGrant>(x));
 
             Logger.LogDebug("{persistedGrantCount} persisted grants found for {@filter}", persistedGrants.Length, filter);
 

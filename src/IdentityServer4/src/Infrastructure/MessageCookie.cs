@@ -44,7 +44,7 @@ namespace IdentityServer4
             return _protector.Protect(json);
         }
 
-        private Message<TModel> Unprotect(string data)
+        private Message<TModel>? Unprotect(string data)
         {
             var json = _protector.Unprotect(data);
             var message = ObjectSerializer.FromString<Message<TModel>>(json);
@@ -63,7 +63,7 @@ namespace IdentityServer4
         private IEnumerable<string> GetCookieNames()
         {
             var key = CookiePrefix;
-            foreach ((string name, var _) in _context.HttpContext.Request.Cookies)
+            foreach ((string name, var _) in _context.HttpContext!.Request.Cookies)
             {
                 if (name.StartsWith(key))
                 {
@@ -72,18 +72,21 @@ namespace IdentityServer4
             }
         }
 
-        private bool Secure => _context.HttpContext.Request.IsHttps;
+        private bool Secure => _context.HttpContext!.Request.IsHttps;
 
         public void Write(string id, Message<TModel> message)
         {
             ClearOverflow();
 
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
             var name = GetCookieFullName(id);
             var data = Protect(message);
 
-            _context.HttpContext.Response.Cookies.Append(
+            _context.HttpContext!.Response.Cookies.Append(
                 name,
                 data,
                 new CookieOptions
@@ -97,17 +100,20 @@ namespace IdentityServer4
                 });
         }
 
-        public Message<TModel> Read(string id)
+        public Message<TModel>? Read(string id)
         {
-            if (id.IsMissing()) return null;
+            if (id.IsMissing())
+            {
+                return default;
+            }
 
             var name = GetCookieFullName(id);
             return ReadByCookieName(name);
         }
 
-        private Message<TModel> ReadByCookieName(string name)
+        private Message<TModel>? ReadByCookieName(string name)
         {
-            var data = _context.HttpContext.Request.Cookies[name];
+            var data = _context.HttpContext!.Request.Cookies[name];
             if (data.IsPresent())
             {
                 try
@@ -120,7 +126,7 @@ namespace IdentityServer4
                     ClearByCookieName(name);
                 }
             }
-            return null;
+            return default;
         }
 
         protected internal void Clear(string id)
@@ -131,7 +137,7 @@ namespace IdentityServer4
 
         private void ClearByCookieName(string name)
         {
-            _context.HttpContext.Response.Cookies.Append(
+            _context.HttpContext!.Response.Cookies.Append(
                 name,
                 ".",
                 new CookieOptions

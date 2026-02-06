@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The service collection</param>
         /// <param name="transformationFunc">Function to transform the resulting principal</param>
         /// <returns></returns>
-        public static IServiceCollection AddLocalApiAuthentication(this IServiceCollection services, Func<ClaimsPrincipal, Task<ClaimsPrincipal>> transformationFunc = null)
+        public static IServiceCollection AddLocalApiAuthentication(this IServiceCollection services, Func<ClaimsPrincipal?, Task<ClaimsPrincipal>>? transformationFunc = null)
         {
             services.AddAuthentication()
                 .AddLocalApi(options =>
@@ -88,9 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="displayName">The display name of this scheme.</param>
         /// <param name="configureOptions">The configure options.</param>
         /// <returns></returns>
-        public static AuthenticationBuilder AddLocalApi(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<LocalApiAuthenticationOptions> configureOptions)
-        {
-            return builder.AddScheme<LocalApiAuthenticationOptions, LocalApiAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
-        }
+        public static AuthenticationBuilder AddLocalApi(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<LocalApiAuthenticationOptions> configureOptions) =>
+            builder.AddScheme<LocalApiAuthenticationOptions, LocalApiAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
     }
 }

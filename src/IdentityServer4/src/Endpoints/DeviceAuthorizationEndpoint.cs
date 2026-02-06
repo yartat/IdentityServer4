@@ -49,7 +49,7 @@ namespace IdentityServer4.Endpoints
         /// <param name="context">The HTTP context.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing device authorize request.");
 
@@ -63,7 +63,7 @@ namespace IdentityServer4.Endpoints
             return await ProcessDeviceAuthorizationRequestAsync(context);
         }
 
-        private async Task<IEndpointResult> ProcessDeviceAuthorizationRequestAsync(HttpContext context)
+        private async Task<IEndpointResult?> ProcessDeviceAuthorizationRequestAsync(HttpContext context)
         {
             _logger.LogDebug("Start device authorize request.");
 
@@ -94,7 +94,7 @@ namespace IdentityServer4.Endpoints
             return new DeviceAuthorizationResult(response);
         }
 
-        private TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)
+        private TokenErrorResult Error(string error, string? errorDescription = null, Dictionary<string, object>? custom = null)
         {
             var response = new TokenErrorResponse
             {

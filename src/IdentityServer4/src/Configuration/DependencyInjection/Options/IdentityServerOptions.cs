@@ -19,7 +19,7 @@ namespace IdentityServer4.Configuration
         /// If not set, the base URI is inferred from the request
         /// </summary>
         /// <value>The base URI.</value>
-        public string BaseUri { get; set; }
+        public string? BaseUri { get; set; }
 
         /// <summary>
         /// Gets or sets the unique name of this server instance, e.g. https://myissuer.com.
@@ -28,7 +28,7 @@ namespace IdentityServer4.Configuration
         /// <value>
         /// Unique name of this server instance, e.g. https://myissuer.com
         /// </value>
-        public string IssuerUri { get; set; }
+        public string? IssuerUri { get; set; }
 
         /// <summary>
         /// Set to false to preserve the original casing of the <see cref="IssuerUri"/>. Defaults to true.
@@ -43,7 +43,7 @@ namespace IdentityServer4.Configuration
         /// <value>
         /// Origin of this server instance, e.g. https://myorigin.com
         /// </value>
-        public string PublicOrigin { get; set; }
+        public string? PublicOrigin { get; set; }
 
         /// <summary>
         /// Gets or sets the value for the JWT typ header for access tokens.

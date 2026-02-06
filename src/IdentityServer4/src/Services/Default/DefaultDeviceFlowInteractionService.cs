@@ -36,13 +36,19 @@ namespace IdentityServer4.Services
             _logger = logger;
         }
 
-        public async Task<DeviceFlowAuthorizationRequest> GetAuthorizationContextAsync(string userCode)
+        public async Task<DeviceFlowAuthorizationRequest?> GetAuthorizationContextAsync(string userCode)
         {
             var deviceAuth = await _devices.FindByUserCodeAsync(userCode);
-            if (deviceAuth == null) return null;
+            if (deviceAuth is null)
+            {
+                return null;
+            }
 
             var client = await _clients.FindClientByIdAsync(deviceAuth.ClientId);
-            if (client == null) return null;
+            if (client is null)
+            {
+                return null;
+            }
 
             var parsedScopesResult = _scopeParser.ParseScopeValues(deviceAuth.RequestedScopes);
             var validatedResources = await _resourceStore.CreateResourceValidationResult(parsedScopesResult);

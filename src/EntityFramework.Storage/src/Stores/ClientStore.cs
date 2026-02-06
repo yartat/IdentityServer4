@@ -5,8 +5,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using Microsoft.EntityFrameworkCore;
@@ -30,16 +30,22 @@ namespace IdentityServer4.EntityFramework.Stores
         /// </summary>
         protected readonly ILogger<ClientStore> Logger;
 
+        private readonly IMapper _mapper;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientStore"/> class.
         /// </summary>
-        /// <param name="context">The context.</param>
+        /// <param name="context">The configuration DbContext.</param>
+        /// <param name="mapper">The mapper for mapping between entities and models.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentNullException">context</exception>
-        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger)
+        public ClientStore(
+            IConfigurationDbContext context,
+            IMapper mapper,
+            ILogger<ClientStore> logger)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         /// <summary>
@@ -68,7 +74,7 @@ namespace IdentityServer4.EntityFramework.Stores
             await baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).LoadAsync();
             await baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).LoadAsync();
 
-            var model = client.ToModel();
+            var model = _mapper.Map<Client>(client);
 
             Logger.LogDebug("{clientId} found in database: {clientIdFound}", clientId, model != null);
 

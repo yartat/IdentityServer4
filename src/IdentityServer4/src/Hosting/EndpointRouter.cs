@@ -8,36 +8,36 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IdentityServer4.Hosting
 {
     internal class EndpointRouter : IEndpointRouter
     {
-        private readonly IEnumerable<Endpoint> _endpoints;
+        private readonly Dictionary<string, Endpoint> _endpoints;
         private readonly IdentityServerOptions _options;
         private readonly ILogger _logger;
 
         public EndpointRouter(IEnumerable<Endpoint> endpoints, IdentityServerOptions options, ILogger<EndpointRouter> logger)
         {
-            _endpoints = endpoints;
-            _options = options;
-            _logger = logger;
+            _endpoints = endpoints?.Where(e => e.Path.HasValue).ToDictionary(x => x.Path.Value!, x => x) ?? throw new ArgumentNullException(nameof(endpoints));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IEndpointHandler Find(HttpContext context)
+        public IEndpointHandler? Find(HttpContext? context)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-
-            foreach(var endpoint in _endpoints)
+            if (context == null)
             {
-                var path = endpoint.Path;
-                if (context.Request.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-                {
-                    var endpointName = endpoint.Name;
-                    _logger.LogDebug("Request path {path} matched to endpoint type {endpoint}", context.Request.Path, endpointName);
+                throw new ArgumentNullException(nameof(context));
+            }
 
-                    return GetEndpointHandler(endpoint, context);
-                }
+            if (_endpoints.TryGetValue(context.Request.Path, out var endpoint))
+            {
+                var endpointName = endpoint.Name;
+                _logger.LogDebug("Request path {path} matched to endpoint type {endpoint}", context.Request.Path, endpointName);
+
+                return GetEndpointHandler(endpoint, context);
             }
 
             _logger.LogTrace("No endpoint entry found for request path: {path}", context.Request.Path);
@@ -45,7 +45,7 @@ namespace IdentityServer4.Hosting
             return null;
         }
 
-        private IEndpointHandler GetEndpointHandler(Endpoint endpoint, HttpContext context)
+        private IEndpointHandler? GetEndpointHandler(Endpoint endpoint, HttpContext context)
         {
             if (_options.Endpoints.IsEndpointEnabled(endpoint))
             {

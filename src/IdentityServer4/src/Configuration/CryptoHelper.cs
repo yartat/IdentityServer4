@@ -153,9 +153,9 @@ namespace IdentityServer4.Configuration
                 _ => throw new ArgumentException("Invalid ECDsa signing algorithm value", nameof(value)),
             };
 
-        internal static X509Certificate2 FindCertificate(string name, StoreLocation location, NameType nameType)
+        internal static X509Certificate2? FindCertificate(string name, StoreLocation location, NameType nameType)
         {
-            X509Certificate2 certificate = null;
+            X509Certificate2? certificate = null;
 
             if (location == StoreLocation.LocalMachine)
             {

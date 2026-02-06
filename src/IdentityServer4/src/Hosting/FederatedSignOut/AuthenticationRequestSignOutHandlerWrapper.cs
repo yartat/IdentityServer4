@@ -18,9 +18,7 @@ namespace IdentityServer4.Hosting.FederatedSignOut
             _inner = inner;
         }
 
-        public Task SignOutAsync(AuthenticationProperties properties)
-        {
-            return _inner.SignOutAsync(properties);
-        }
+        public Task SignOutAsync(AuthenticationProperties? properties) =>
+            _inner.SignOutAsync(properties);
     }
 }

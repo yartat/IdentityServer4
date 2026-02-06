@@ -42,12 +42,14 @@ namespace IdentityServer4.Endpoints.Results
 
         internal class ResultDto
         {
-            public string error { get; set; }
+#pragma warning disable IDE1006 // Naming Styles
+            public required string error { get; set; }
 
-            public string error_description { get; set; }
+            public string? error_description { get; set; }
 
             [JsonExtensionData]
-            public Dictionary<string, object> custom { get; set; }
+            public Dictionary<string, object>? custom { get; set; }
         }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

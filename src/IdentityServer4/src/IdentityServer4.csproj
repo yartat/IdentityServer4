@@ -2,6 +2,7 @@
   
   <PropertyGroup>
     <PackageId>IdentityServer4</PackageId>
+    <LangVersion>latest</LangVersion>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
     <Authors>Brock Allen;Dominick Baier</Authors>
@@ -26,6 +27,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
+    <nullable>enable</nullable>
   </PropertyGroup>
   
   <ItemGroup>

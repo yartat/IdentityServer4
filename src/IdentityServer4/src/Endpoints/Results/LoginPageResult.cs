@@ -11,6 +11,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using IdentityServer4.Services;
+using System.Diagnostics.CodeAnalysis;
 
 namespace IdentityServer4.Endpoints.Results
 {
@@ -22,9 +23,9 @@ namespace IdentityServer4.Endpoints.Results
     {
         private readonly ValidatedAuthorizeRequest _request;
 
-        private IdentityServerOptions _options;
-        private IAuthorizationParametersProcessor _authorizationParametersProcessor;
-        private readonly ILoginUrlProcessor _loginUrlProcessor;
+        private IdentityServerOptions? _options;
+        private IAuthorizationParametersProcessor? _authorizationParametersProcessor;
+        private readonly ILoginUrlProcessor? _loginUrlProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPageResult"/> class.
@@ -34,7 +35,7 @@ namespace IdentityServer4.Endpoints.Results
         /// <exception cref="ArgumentNullException">request</exception>
         public LoginPageResult(
             ValidatedAuthorizeRequest request,
-            ILoginUrlProcessor loginUrlProcessor = null)
+            ILoginUrlProcessor? loginUrlProcessor = null)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
             _loginUrlProcessor = loginUrlProcessor;
@@ -43,18 +44,19 @@ namespace IdentityServer4.Endpoints.Results
         internal LoginPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
-            IAuthorizationParametersProcessor authorizationParametersProcessor = null,
-            ILoginUrlProcessor loginUrlProcessor = null)
+            IAuthorizationParametersProcessor? authorizationParametersProcessor = null,
+            ILoginUrlProcessor? loginUrlProcessor = null)
             : this(request, loginUrlProcessor)
         {
             _options = options;
             _authorizationParametersProcessor = authorizationParametersProcessor;
         }
 
+        [MemberNotNull(nameof(_options), nameof(_authorizationParametersProcessor))]
         private void Init(HttpContext context)
         {
             _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _authorizationParametersProcessor ??= context.RequestServices.GetService<IAuthorizationParametersProcessor>();
+            _authorizationParametersProcessor ??= context.RequestServices.GetRequiredService<IAuthorizationParametersProcessor>();
         }
 
         /// <summary>
@@ -88,7 +90,7 @@ namespace IdentityServer4.Endpoints.Results
 
             if (_loginUrlProcessor != null)
             {
-                resultUrl = _loginUrlProcessor.Process(resultUrl, _request.Raw.ToFullDictionary());
+                resultUrl = _loginUrlProcessor.Process(resultUrl, _request!.Raw.ToFullDictionary());
             }
 
             context.Response.RedirectToAbsoluteUrl(resultUrl);

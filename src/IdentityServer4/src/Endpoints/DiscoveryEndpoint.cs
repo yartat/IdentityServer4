@@ -40,7 +40,7 @@ namespace IdentityServer4.Endpoints
             _responseGenerator = responseGenerator;
         }
 
-        public async Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public async Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
             _logger.LogTrace("Processing discovery request.");
 
@@ -48,13 +48,13 @@ namespace IdentityServer4.Endpoints
             if (!HttpMethods.IsGet(context.Request.Method))
             {
                 _logger.LogWarning("Discovery endpoint only supports GET requests");
-                return (IEndpointResult) new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
+                return (IEndpointResult?) new StatusCodeResult(HttpStatusCode.MethodNotAllowed);
             }
 
             if (!_options.Endpoints.EnableDiscoveryEndpoint)
             {
                 _logger.LogInformation("Discovery endpoint disabled. 404.");
-                return (IEndpointResult) new StatusCodeResult(HttpStatusCode.NotFound);
+                return (IEndpointResult?) new StatusCodeResult(HttpStatusCode.NotFound);
             }
 
             var baseUrl = context.GetIdentityServerBaseUri();
@@ -70,7 +70,7 @@ namespace IdentityServer4.Endpoints
                 });
 
             _logger.LogTrace("Discovery request completed. Return DiscoveryDocumentResult");
-            return (IEndpointResult) new DiscoveryDocumentResult(response, _options.Discovery.ResponseCacheInterval);
+            return (IEndpointResult?) new DiscoveryDocumentResult(response!, _options.Discovery.ResponseCacheInterval);
         }
     }
 }

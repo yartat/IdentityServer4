@@ -26,10 +26,46 @@ namespace IdentityServer4.Extensions
         /// </summary>
         /// <param name="userAgent">The user agent string.</param>
         /// <returns>Returns device name.</returns>
-        public static string GetDevice(this string? userAgent) =>
-            string.IsNullOrEmpty(userAgent) ?
-                string.Empty :
-                userAgent;
+        [DebuggerStepThrough]
+        public static string GetDevice(this string? userAgent)
+        {
+            if (string.IsNullOrEmpty(userAgent))
+            {
+                return string.Empty;
+            }
+
+            // Check for mobile devices
+            if (userAgent.Contains("Mobile", StringComparison.OrdinalIgnoreCase) ||
+                userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase) ||
+                userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase))
+            {
+                if (userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "iPad";
+                }
+
+                if (userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "iPhone";
+                }
+
+                if (userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Android";
+                }
+
+                return "Mobile";
+            }
+
+            // Check for tablets
+            if (userAgent.Contains("Tablet", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Tablet";
+            }
+
+            // Default to desktop
+            return "Desktop";
+        }
 
         /// <summary>
         /// Converts to space separated string.
@@ -398,8 +434,13 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns URL with hash fragment.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string AddHashFragment(this string url, string query)
+        public static string AddHashFragment(this string? url, string query)
         {
+            if (url is null)
+            {
+                url = string.Empty;
+            }
+
             var result = new StringBuilder(url.Length + 1 + query.Length);
             result.Append(url);
             if (!url.Contains('#'))

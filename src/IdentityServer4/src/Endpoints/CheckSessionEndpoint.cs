@@ -20,9 +20,9 @@ namespace IdentityServer4.Endpoints
             _logger = logger;
         }
 
-        public Task<IEndpointResult> ProcessAsync(HttpContext context)
+        public Task<IEndpointResult?> ProcessAsync(HttpContext context)
         {
-            IEndpointResult result;
+            IEndpointResult? result;
 
             if (!HttpMethods.IsGet(context.Request.Method))
             {
@@ -35,7 +35,7 @@ namespace IdentityServer4.Endpoints
                 result = new CheckSessionResult();
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult((IEndpointResult?)result);
         }
    }
 }

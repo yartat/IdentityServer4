@@ -8,6 +8,7 @@ using System;
 using IdentityServer4.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using IdentityServer4.EntityFramework.Mappers;
 
 namespace IdentityServer4.EntityFramework.Storage
 {
@@ -55,6 +56,7 @@ namespace IdentityServer4.EntityFramework.Storage
                 });
             }
             services.AddScoped<IConfigurationDbContext, TContext>();
+            services.AddAutoMapper(cfg => { }, typeof(ClientMapperProfile).Assembly);
 
             return services;
         }
