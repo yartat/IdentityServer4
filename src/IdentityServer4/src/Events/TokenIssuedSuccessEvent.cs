@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -25,7 +25,7 @@ namespace IdentityServer4.Events
             : this()
         {
             ClientId = response.Request?.ClientId;
-            ClientName = response.Request?.Client.ClientName;
+            ClientName = response.Request?.Client?.ClientName;
             RedirectUri = response.RedirectUri;
             Endpoint = EndpointNames.Authorize;
             SubjectId = response.Request?.Subject.GetSubjectId();
@@ -56,8 +56,8 @@ namespace IdentityServer4.Events
         public TokenIssuedSuccessEvent(TokenResponse response, TokenRequestValidationResult request)
             : this()
         {
-            ClientId = request.ValidatedRequest.Client.ClientId;
-            ClientName = request.ValidatedRequest.Client.ClientName;
+            ClientId = request.ValidatedRequest.Client?.ClientId;
+            ClientName = request.ValidatedRequest.Client?.ClientName;
             SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
             GrantType = request.ValidatedRequest.GrantType;
 

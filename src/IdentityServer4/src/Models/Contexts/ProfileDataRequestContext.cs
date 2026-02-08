@@ -21,7 +21,7 @@ namespace IdentityServer4.Models
         /// <param name="client">The client.</param>
         /// <param name="caller">The caller.</param>
         /// <param name="requestedClaimTypes">The requested claim types.</param>
-        public ProfileDataRequestContext(ClaimsPrincipal subject, Client client, string caller, IEnumerable<string> requestedClaimTypes)
+        public ProfileDataRequestContext(ClaimsPrincipal subject, Client? client, string caller, IEnumerable<string> requestedClaimTypes)
         {
             Subject = subject ?? throw new ArgumentNullException(nameof(subject));
             Client = client ?? throw new ArgumentNullException(nameof(client));

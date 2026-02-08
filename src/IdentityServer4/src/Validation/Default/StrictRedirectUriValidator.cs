@@ -26,7 +26,7 @@ namespace IdentityServer4.Validation
         /// <param name="uris">The uris.</param>
         /// <param name="requestedUri">The requested URI.</param>
         /// <returns></returns>
-        protected static bool StringCollectionContainsString(IEnumerable<Uri> uris, string requestedUri) =>
+        protected static bool StringCollectionContainsString(IEnumerable<Uri>? uris, string requestedUri) =>
             !uris.IsNullOrEmpty() && uris.Contains(new Uri(requestedUri), Comparer);
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace IdentityServer4.Validation
         /// <returns>
         ///   <c>true</c> is the URI is valid; <c>false</c> otherwise.
         /// </returns>
-        public virtual Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client) =>
-            Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
+        public virtual Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client? client) =>
+            Task.FromResult(StringCollectionContainsString(client?.PostLogoutRedirectUris, requestedUri));
 
         private sealed class UriComparer : IEqualityComparer<Uri>
         {

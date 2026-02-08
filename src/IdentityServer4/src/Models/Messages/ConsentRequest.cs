@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -22,9 +22,9 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="subject">The subject.</param>
-        public ConsentRequest(AuthorizationRequest request, string subject)
+        public ConsentRequest(AuthorizationRequest request, string? subject)
         {
-            ClientId = request.Client.ClientId;
+            ClientId = request.Client?.ClientId;
             Nonce = request.Parameters[OidcConstants.AuthorizeRequest.Nonce]!;
             ScopesRequested = request.Parameters[OidcConstants.AuthorizeRequest.Scope].ParseScopesString();
             Subject = subject;
@@ -49,7 +49,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The client identifier.
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the nonce.

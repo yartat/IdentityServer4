@@ -7,7 +7,10 @@ using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
+#if NET7_0_OR_GREATER
+#else
 using Microsoft.AspNetCore.Authentication;
+#endif
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,6 +26,8 @@ namespace IdentityServer4.Services
     /// </summary>
     public class DefaultTokenService : ITokenService
     {
+        private static readonly ClaimComparer ClaimComparer = new();
+
         /// <summary>
         /// The logger
         /// </summary>
@@ -51,7 +56,11 @@ namespace IdentityServer4.Services
         /// <summary>
         /// The clock
         /// </summary>
+#if NET7_0_OR_GREATER
+        protected readonly TimeProvider Clock;
+#else
         protected readonly ISystemClock Clock;
+#endif
 
         /// <summary>
         /// The key material service
@@ -79,7 +88,11 @@ namespace IdentityServer4.Services
             IReferenceTokenStore referenceTokenStore,
             ITokenCreationService creationService,
             IHttpContextAccessor contextAccessor,
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             IKeyMaterialService keyMaterialService,
             IdentityServerOptions options,
             ILogger<DefaultTokenService> logger)
@@ -107,7 +120,7 @@ namespace IdentityServer4.Services
             request.Validate();
 
             // todo: Dom, add a test for this. validate the at and c hashes are correct for the id_token when the client's alg doesn't match the server default.
-            var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.ValidatedRequest.Client.AllowedIdentityTokenSigningAlgorithms);
+            var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.ValidatedRequest.Client?.AllowedIdentityTokenSigningAlgorithms);
             if (credential == null)
             {
                 Logger.LogDebug("No signing credential is configured.");
@@ -126,7 +139,11 @@ namespace IdentityServer4.Services
             }
 
             // add iat claim
+#if NET7_0_OR_GREATER
+            claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.GetUtcNow().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+#else
             claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+#endif
 
             // add at_hash claim
             if (request.AccessTokenToHash.IsPresent())
@@ -162,14 +179,18 @@ namespace IdentityServer4.Services
             Logger.LogTrace("Add issuer '{issuer}' to token", issuer);
             var token = new Token(OidcConstants.TokenTypes.IdentityToken)
             {
+#if NET7_0_OR_GREATER
+                CreationTime = Clock.GetUtcNow().UtcDateTime,
+#else
                 CreationTime = Clock.UtcNow.UtcDateTime,
-                Audiences = { request.ValidatedRequest.Client.ClientId },
+#endif
+                Audiences = { request.ValidatedRequest.Client?.ClientId },
                 Issuer = issuer,
-                Lifetime = request.ValidatedRequest.Client.IdentityTokenLifetime,
+                Lifetime = request.ValidatedRequest.Client?.IdentityTokenLifetime ?? 0,
                 Claims = claims.Distinct(new ClaimComparer()).ToList(),
-                ClientId = request.ValidatedRequest.Client.ClientId,
+                ClientId = request.ValidatedRequest.Client?.ClientId,
                 AccessTokenType = request.ValidatedRequest.AccessTokenType,
-                AllowedSigningAlgorithms = request.ValidatedRequest.Client.AllowedIdentityTokenSigningAlgorithms
+                AllowedSigningAlgorithms = request.ValidatedRequest.Client?.AllowedIdentityTokenSigningAlgorithms
             };
 
             Logger.LogDebug("Create identity token complete");
@@ -194,7 +215,7 @@ namespace IdentityServer4.Services
                 request.ValidatedResources,
                 request.ValidatedRequest));
 
-            if (request.ValidatedRequest.Client.IncludeJwtId)
+            if (request.ValidatedRequest.Client?.IncludeJwtId == true)
             {
                 claims.Add(new Claim(JwtClaimTypes.JwtId, CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)));
             }
@@ -203,9 +224,14 @@ namespace IdentityServer4.Services
             {
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
-            
+
             // iat claim as required by JWT profile
-            claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(),
+#if NET7_0_OR_GREATER
+            var now = Clock.GetUtcNow();
+#else
+            var now = Clock.UtcNow;
+#endif
+            claims.Add(new Claim(JwtClaimTypes.IssuedAt, now.ToUnixTimeSeconds().ToString(),
                 ClaimValueTypes.Integer64));
 
             if (request.IpAddress.IsPresent())
@@ -221,11 +247,11 @@ namespace IdentityServer4.Services
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
             var token = new Token(OidcConstants.TokenTypes.AccessToken)
             {
-                CreationTime = Clock.UtcNow.UtcDateTime,
+                CreationTime = now.UtcDateTime,
                 Issuer = issuer,
                 Lifetime = request.ValidatedRequest.AccessTokenLifetime,
-                Claims = claims.Distinct(new ClaimComparer()).ToList(),
-                ClientId = request.ValidatedRequest.Client.ClientId,
+                Claims = claims.Distinct(ClaimComparer).ToList(),
+                ClientId = request.ValidatedRequest.Client?.ClientId,
                 Description = request.Description,
                 AccessTokenType = request.ValidatedRequest.AccessTokenType,
                 AllowedSigningAlgorithms = request.ValidatedResources.Resources.ApiResources.FindMatchingSigningAlgorithms()
@@ -251,7 +277,9 @@ namespace IdentityServer4.Services
             {
                 if (Options.MutualTls.AlwaysEmitConfirmationClaim)
                 {
-                    var clientCertificate = await ContextAccessor.HttpContext.Connection.GetClientCertificateAsync();
+                    var clientCertificate = ContextAccessor.HttpContext is null ?
+                        null :
+                        await ContextAccessor.HttpContext.Connection.GetClientCertificateAsync();
                     if (clientCertificate != null)
                     {
                         token.Confirmation = clientCertificate.CreateThumbprintCnf();

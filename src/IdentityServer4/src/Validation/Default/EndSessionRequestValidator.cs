@@ -125,7 +125,7 @@ namespace IdentityServer4.Validation
                 validatedRequest.Client = tokenValidationResult.Client;
 
                 // validate sub claim against currently logged on user
-                var subClaim = tokenValidationResult.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Subject);
+                var subClaim = tokenValidationResult.Claims?.FirstOrDefault(c => c.Type == JwtClaimTypes.Subject);
                 if (subClaim != null && isAuthenticated)
                 {
                     if (subject.GetSubjectId() != subClaim.Value)

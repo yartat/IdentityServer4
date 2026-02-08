@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -17,7 +17,7 @@ namespace IdentityServer4.Services
         /// Gets the authorization context.
         /// </summary>
         /// <param name="returnUrl">The return URL.</param>
-        Task<AuthorizationRequest> GetAuthorizationContextAsync(string returnUrl);
+        Task<AuthorizationRequest?> GetAuthorizationContextAsync(string returnUrl);
 
         /// <summary>
         /// Indicates if the returnUrl is a valid URL for redirect after login or consent.
@@ -29,7 +29,7 @@ namespace IdentityServer4.Services
         /// Gets the error context.
         /// </summary>
         /// <param name="errorId">The error identifier.</param>
-        Task<ErrorMessage> GetErrorContextAsync(string errorId);
+        Task<ErrorMessage?> GetErrorContextAsync(string errorId);
 
         /// <summary>
         /// Gets the logout context.
@@ -41,7 +41,7 @@ namespace IdentityServer4.Services
         /// Used to create a logoutId if there is not one presently.
         /// </summary>
         /// <returns></returns>
-        Task<string> CreateLogoutContextAsync();
+        Task<string?> CreateLogoutContextAsync();
 
         /// <summary>
         /// Informs IdentityServer of the user's consent.
@@ -49,7 +49,7 @@ namespace IdentityServer4.Services
         /// <param name="request">The request.</param>
         /// <param name="consent">The consent.</param>
         /// <param name="subject">The subject.</param>
-        Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string subject = null);
+        Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string? subject = null);
 
         /// <summary>
         /// Triggers error back to the client for the authorization request.
@@ -58,7 +58,7 @@ namespace IdentityServer4.Services
         /// <param name="request">The request.</param>
         /// <param name="error"></param>
         /// <param name="errorDescription"></param>
-        Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string errorDescription = null);
+        Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string? errorDescription = null);
 
         /// <summary>
         /// Returns a collection representing all of the user's consents and grants.

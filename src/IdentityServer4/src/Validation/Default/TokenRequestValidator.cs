@@ -382,7 +382,7 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
-            if (!_validatedRequest.Client.AllowedGrantTypes.Contains(GrantType.ResourceOwnerPassword))
+            if (_validatedRequest.Client?.AllowedGrantTypes.Contains(GrantType.ResourceOwnerPassword) == false)
             {
                 LogError("Client not authorized for resource owner flow, check the AllowedGrantTypes setting", new { client_id = _validatedRequest.Client.ClientId });
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
@@ -454,7 +454,7 @@ namespace IdentityServer4.Validation
                 }
 
                 LogInformation("User authentication failed: ", errorDescription ?? resourceOwnerContext.Result.Error);
-                await RaiseFailedResourceOwnerAuthenticationEventAsync(userName, errorDescription, resourceOwnerContext.Request.Client.ClientId);
+                await RaiseFailedResourceOwnerAuthenticationEventAsync(userName, errorDescription, resourceOwnerContext.Request.Client?.ClientId);
 
                 return Invalid(resourceOwnerContext.Result.Error, errorDescription, resourceOwnerContext.Result.CustomResponse);
             }
@@ -532,7 +532,7 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
-            if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains(GrantType.DeviceFlow))
+            if (_validatedRequest.Client?.AllowedGrantTypes.ToList().Contains(GrantType.DeviceFlow) == false)
             {
                 LogError("Client not authorized for device flow");
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
@@ -574,7 +574,7 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if client is allowed to use grant type
             /////////////////////////////////////////////
-            if (!_validatedRequest.Client.AllowedGrantTypes.Contains(_validatedRequest.GrantType))
+            if (_validatedRequest.Client?.AllowedGrantTypes.Contains(_validatedRequest.GrantType) == false)
             {
                 LogError("Client does not have the custom grant type in the allowed list, therefore requested grant is not allowed", new { clientId = _validatedRequest.Client.ClientId });
                 return Invalid(OidcConstants.TokenErrors.UnsupportedGrantType);
@@ -658,7 +658,7 @@ namespace IdentityServer4.Validation
             {
                 _logger.LogTrace("Client provided no scopes - checking allowed scopes list");
 
-                if (!_validatedRequest.Client.AllowedScopes.IsNullOrEmpty())
+                if (_validatedRequest.Client?.AllowedScopes.IsNullOrEmpty() == false)
                 {
                     // this finds all the scopes the client is allowed to access
                     var clientAllowedScopes = new List<string>();
@@ -683,7 +683,7 @@ namespace IdentityServer4.Validation
                 }
                 else
                 {
-                    LogError("No allowed scopes configured for client", new { clientId = _validatedRequest.Client.ClientId });
+                    LogError("No allowed scopes configured for client", new { clientId = _validatedRequest.Client?.ClientId });
                     return false;
                 }
             }
@@ -733,7 +733,7 @@ namespace IdentityServer4.Validation
         {
             if (authZcode.CodeChallenge.IsMissing() || authZcode.CodeChallengeMethod.IsMissing())
             {
-                LogError("Client is missing code challenge or code challenge method", new { clientId = _validatedRequest.Client.ClientId });
+                LogError("Client is missing code challenge or code challenge method", new { clientId = _validatedRequest.Client?.ClientId });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
@@ -779,22 +779,22 @@ namespace IdentityServer4.Validation
             return TimeConstantComparer.IsEqual(transformedCodeVerifier.Sha256(), codeChallenge);
         }
 
-        private TokenRequestValidationResult Valid(Dictionary<string, object> customResponse = null) =>
+        private TokenRequestValidationResult Valid(Dictionary<string, object>? customResponse = null) =>
             new(_validatedRequest, customResponse);
 
-        private TokenRequestValidationResult Invalid(string error, string errorDescription = null, Dictionary<string, object> customResponse = null) =>
+        private TokenRequestValidationResult Invalid(string error, string? errorDescription = null, Dictionary<string, object>? customResponse = null) =>
             new(_validatedRequest, error, errorDescription, customResponse);
 
-        private void LogError(string message = null, object values = null) =>
+        private void LogError(string? message = null, object? values = null) =>
             LogWithRequestDetails(LogLevel.Error, message, values);
 
-        private void LogWarning(string message = null, object values = null) =>
+        private void LogWarning(string? message = null, object? values = null) =>
             LogWithRequestDetails(LogLevel.Warning, message, values);
 
-        private void LogInformation(string message = null, object values = null) =>
+        private void LogInformation(string? message = null, object? values = null) =>
             LogWithRequestDetails(LogLevel.Information, message, values);
 
-        private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
+        private void LogWithRequestDetails(LogLevel logLevel, string? message = null, object? values = null)
         {
             var details = new TokenRequestValidationLog(_validatedRequest, _options.Logging.TokenRequestSensitiveValuesFilter);
 
@@ -828,7 +828,7 @@ namespace IdentityServer4.Validation
         private Task RaiseSuccessfulResourceOwnerAuthenticationEventAsync(string userName, string subjectId, string clientId) =>
             _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, interactive: false, clientId));
 
-        private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string error, string clientId) =>
+        private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string? error, string? clientId) =>
             _events.RaiseAsync(new UserLoginFailureEvent(userName, error, interactive: false, clientId: clientId));
     }
 }

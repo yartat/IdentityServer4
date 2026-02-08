@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -46,11 +46,16 @@ namespace IdentityServer4.Stores
         /// <returns>
         /// The client
         /// </returns>
-        public async Task<Client?> FindClientByIdAsync(string clientId)
+        public async Task<Client?> FindClientByIdAsync(string? clientId)
         {
+            if (clientId is null)
+            {
+                return null;
+            }
+
             var client = await _cache.GetAsync(clientId,
                 _options.Caching.ClientStoreExpiration,
-                () => _inner.FindClientByIdAsync(clientId),
+                () => _inner.FindClientByIdAsync(clientId)!,
                 _logger);
 
             return client;

@@ -85,6 +85,11 @@ namespace IdentityServer4.Endpoints.Results
                     returnUrl += otherParameters;
                 }
 
+                if (string.IsNullOrEmpty(_options.UserInteraction.LoginReturnUrlParameter))
+                {
+                    throw new InvalidOperationException("No return URL parameter configured for login page");
+                }
+
                 resultUrl = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
             }
 
@@ -93,7 +98,7 @@ namespace IdentityServer4.Endpoints.Results
                 resultUrl = _loginUrlProcessor.Process(resultUrl, _request!.Raw.ToFullDictionary());
             }
 
-            context.Response.RedirectToAbsoluteUrl(resultUrl);
+            context.Response.RedirectToAbsoluteUrl(resultUrl!);
         }
     }
 }

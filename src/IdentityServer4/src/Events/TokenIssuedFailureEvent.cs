@@ -54,8 +54,8 @@ namespace IdentityServer4.Events
         {
             if (result.ValidatedRequest is not null)
             {
-                ClientId = result.ValidatedRequest.Client.ClientId;
-                ClientName = result.ValidatedRequest.Client.ClientName;
+                ClientId = result.ValidatedRequest.Client?.ClientId;
+                ClientName = result.ValidatedRequest.Client?.ClientName;
                 GrantType = result.ValidatedRequest.GrantType;
                 Scopes = result.ValidatedRequest.RequestedScopes?.ToSpaceSeparatedString();
 

@@ -34,7 +34,7 @@ namespace IdentityServer4.Services
         }
 
         /// <inheritdoc />
-        public async Task<string> GetJwtAsync(string url, Client client)
+        public async Task<string?> GetJwtAsync(string url, Client client)
         {
             var req = new HttpRequestMessage(HttpMethod.Get, url);
 #if NET5_0_OR_GREATER
@@ -47,10 +47,10 @@ namespace IdentityServer4.Services
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 if (_options.StrictJarValidation &&
-                    !string.Equals(response.Content.Headers.ContentType.MediaType,
+                    !string.Equals(response.Content.Headers.ContentType?.MediaType,
                         $"application/{JwtClaimTypes.JwtTypes.AuthorizationRequest}", StringComparison.Ordinal))
                 {
-                    _logger.LogError("Invalid content type {type} from jwt url {url}", response.Content.Headers.ContentType.MediaType, url);
+                    _logger.LogError("Invalid content type {type} from jwt url {url}", response.Content.Headers.ContentType?.MediaType, url);
                     return null;
                 }
 

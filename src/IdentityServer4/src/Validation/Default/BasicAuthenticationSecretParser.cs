@@ -49,11 +49,11 @@ namespace IdentityServer4.Validation
         /// <returns>
         /// A parsed secret
         /// </returns>
-        public Task<ParsedSecret> ParseAsync(HttpContext context)
+        public Task<ParsedSecret?> ParseAsync(HttpContext context)
         {
             _logger.LogDebug("Start parsing Basic Authentication secret");
 
-            var notfound = Task.FromResult<ParsedSecret>(null);
+            var notfound = Task.FromResult<ParsedSecret?>(null);
             var authorizationHeader = context.Request.Headers[HeaderNames.Authorization].FirstOrDefault();
 
             if (authorizationHeader.IsMissing())
@@ -118,7 +118,7 @@ namespace IdentityServer4.Validation
                         Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
                     };
 
-                    return Task.FromResult(parsedSecret);
+                    return Task.FromResult((ParsedSecret?) parsedSecret);
                 }
                 else
                 {
@@ -131,7 +131,7 @@ namespace IdentityServer4.Validation
                         Type = IdentityServerConstants.ParsedSecretTypes.NoSecret
                     };
 
-                    return Task.FromResult(parsedSecret);
+                    return Task.FromResult((ParsedSecret?) parsedSecret);
                 }
             }
 
@@ -141,11 +141,9 @@ namespace IdentityServer4.Validation
 
         // RFC6749 says individual values must be application/x-www-form-urlencoded
         // 2.3.1
-        private string Decode(string value)
-        {
-            if (value.IsMissing()) return string.Empty;
-
-            return Uri.UnescapeDataString(value.Replace("+", "%20"));
-        }
+        private string Decode(string value) =>
+            value.IsMissing() ?
+                string.Empty :
+                Uri.UnescapeDataString(value.Replace("+", "%20"));
     }
 }

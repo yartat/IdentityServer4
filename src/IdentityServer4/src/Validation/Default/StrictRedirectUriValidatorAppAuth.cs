@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -53,15 +53,18 @@ namespace IdentityServer4.Validation
         /// <returns>
         /// <c>true</c> is the URI is valid; <c>false</c> otherwise.
         /// </returns>
-        public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
+        public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client? client)
         {
             var isAllowed = await base.IsPostLogoutRedirectUriValidAsync(requestedUri, client);
-            if (isAllowed) return isAllowed;
+            if (isAllowed)
+            {
+                return isAllowed;
+            }
 
             // since this is appauth specific, we can require pkce
-            if (client.RequirePkce && client.RedirectUris.Contains(new Uri("http://127.0.0.1"))) return IsLoopback(requestedUri);
-
-            return false;
+            return client?.RequirePkce == true && client.RedirectUris.Contains(new Uri("http://127.0.0.1")) ?
+                IsLoopback(requestedUri) :
+                false;
         }
 
         /// <summary>

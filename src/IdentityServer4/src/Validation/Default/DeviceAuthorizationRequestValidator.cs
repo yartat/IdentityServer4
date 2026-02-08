@@ -54,7 +54,7 @@ namespace IdentityServer4.Validation
                 return scopeResult;
             }
 
-            _logger.LogDebug("{clientId} device authorization request validation success", request.Client.ClientId);
+            _logger.LogDebug("{clientId} device authorization request validation success", request.Client?.ClientId);
             return Valid(request);
         }
 
@@ -64,7 +64,7 @@ namespace IdentityServer4.Validation
         private static DeviceAuthorizationRequestValidationResult Invalid(
             ValidatedDeviceAuthorizationRequest request,
             string error = OidcConstants.AuthorizeErrors.InvalidRequest,
-            string description = null) =>
+            string? description = null) =>
             new(request, error, description);
 
         private void LogError(string message, ValidatedDeviceAuthorizationRequest request)
@@ -73,13 +73,15 @@ namespace IdentityServer4.Validation
             _logger.LogError(message + "\n{requestDetails}", requestDetails);
         }
 
-        private void LogError(string message, string detail, ValidatedDeviceAuthorizationRequest request)
+        private void LogError(string message, string? detail, ValidatedDeviceAuthorizationRequest request)
         {
             var requestDetails = new DeviceAuthorizationRequestValidationLog(request);
             _logger.LogError(message + ": {detail}\n{requestDetails}", detail, requestDetails);
         }
 
-        private DeviceAuthorizationRequestValidationResult ValidateClient(ValidatedDeviceAuthorizationRequest request, ClientSecretValidationResult clientValidationResult)
+        private DeviceAuthorizationRequestValidationResult ValidateClient(
+            ValidatedDeviceAuthorizationRequest request,
+            ClientSecretValidationResult clientValidationResult)
         {
             //////////////////////////////////////////////////////////
             // set client & secret
@@ -90,9 +92,9 @@ namespace IdentityServer4.Validation
             //////////////////////////////////////////////////////////
             // check if client protocol type is oidc
             //////////////////////////////////////////////////////////
-            if (request.Client.ProtocolType != IdentityServerConstants.ProtocolTypes.OpenIdConnect)
+            if (request.Client?.ProtocolType != IdentityServerConstants.ProtocolTypes.OpenIdConnect)
             {
-                LogError("Invalid protocol type for OIDC authorize endpoint", request.Client.ProtocolType, request);
+                LogError("Invalid protocol type for OIDC authorize endpoint", request.Client?.ProtocolType, request);
                 return Invalid(request, OidcConstants.AuthorizeErrors.UnauthorizedClient, "Invalid protocol");
             }
 

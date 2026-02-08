@@ -19,7 +19,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The claims.
         /// </value>
-        public IEnumerable<Claim> Claims { get; set; }
+        public IEnumerable<Claim>? Claims { get; set; }
         
         /// <summary>
         /// Gets or sets the JWT.
@@ -64,6 +64,6 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The client.
         /// </value>
-        public Client Client { get; set; }
+        public Client? Client { get; set; }
     }
 }

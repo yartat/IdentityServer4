@@ -62,7 +62,7 @@ namespace IdentityServer4.ResponseHandling
             Logger.LogDebug("Creating userinfo response");
 
             // extract scopes and turn into requested claim types
-            var scopes = validationResult.TokenValidationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope).Select(c => c.Value);
+            var scopes = validationResult.TokenValidationResult.Claims?.Where(c => c.Type == JwtClaimTypes.Scope).Select(c => c.Value);
 
             var validatedResources = await GetRequestedResourcesAsync(scopes);
             var requestedClaimTypes = await GetRequestedClaimTypesAsync(validatedResources);
@@ -112,9 +112,9 @@ namespace IdentityServer4.ResponseHandling
         /// </summary>
         /// <param name="scopes"></param>
         /// <returns></returns>
-        protected internal virtual async Task<ResourceValidationResult> GetRequestedResourcesAsync(IEnumerable<string> scopes)
+        protected internal virtual async Task<ResourceValidationResult?> GetRequestedResourcesAsync(IEnumerable<string>? scopes)
         {
-            if (scopes == null || !scopes.Any())
+            if (scopes is null || !scopes.Any())
             {
                 return null;
             }
@@ -136,11 +136,11 @@ namespace IdentityServer4.ResponseHandling
         /// </summary>
         /// <param name="resourceValidationResult"></param>
         /// <returns></returns>
-        protected internal virtual Task<IEnumerable<string>> GetRequestedClaimTypesAsync(ResourceValidationResult resourceValidationResult)
+        protected internal virtual Task<IEnumerable<string>> GetRequestedClaimTypesAsync(ResourceValidationResult? resourceValidationResult)
         {
-            IEnumerable<string> result = null;
+            IEnumerable<string>? result = null;
 
-            if (resourceValidationResult == null)
+            if (resourceValidationResult is null)
             {
                 result = Enumerable.Empty<string>();
             }

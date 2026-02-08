@@ -29,7 +29,7 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
-        public virtual async Task<AuthorizationRequest> ParseAsync(string returnUrl)
+        public virtual async Task<AuthorizationRequest?> ParseAsync(string returnUrl)
         {
             foreach (var parser in _parsers)
             {

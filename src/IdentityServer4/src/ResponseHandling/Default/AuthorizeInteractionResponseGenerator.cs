@@ -39,7 +39,11 @@ namespace IdentityServer4.ResponseHandling
         /// <summary>
         /// The clock
         /// </summary>
+#if NET7_0_OR_GREATER
+        protected readonly TimeProvider Clock;
+#else
         protected readonly ISystemClock Clock;
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeInteractionResponseGenerator"/> class.
@@ -49,7 +53,11 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="consent">The consent.</param>
         /// <param name="profile">The profile.</param>
         public AuthorizeInteractionResponseGenerator(
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             ILogger<AuthorizeInteractionResponseGenerator> logger,
             IConsentService consent,
             IProfileService profile)
@@ -66,7 +74,7 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="request">The request.</param>
         /// <param name="consent">The consent.</param>
         /// <returns></returns>
-        public virtual async Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
+        public virtual async Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse? consent = null)
         {
             Logger.LogTrace("ProcessInteractionAsync");
 
@@ -137,7 +145,7 @@ namespace IdentityServer4.ResponseHandling
 
             // user de-activated
             var isActive = false;
-            string errorCode = null;
+            string? errorCode = null;
 
             if (isAuthenticated)
             {
@@ -206,7 +214,12 @@ namespace IdentityServer4.ResponseHandling
             if (request.MaxAge.HasValue)
             {
                 var authTime = request.Subject.GetAuthenticationTime();
-                if (Clock.UtcNow > authTime.AddSeconds(request.MaxAge.Value))
+#if NET7_0_OR_GREATER
+                var now = Clock.GetUtcNow();
+#else
+                var now = Clock.UtcNow;
+#endif
+                if (now > authTime.AddSeconds(request.MaxAge.Value))
                 {
                     Logger.LogInformation("Showing login: Requested MaxAge exceeded.");
 
@@ -217,14 +230,14 @@ namespace IdentityServer4.ResponseHandling
             // check local idp restrictions
             if (currentIdp == IdentityServerConstants.LocalIdentityProvider)
             {
-                if (!request.Client.EnableLocalLogin)
+                if (!request.Client?.EnableLocalLogin ?? false)
                 {
                     Logger.LogInformation("Showing login: User logged in locally, but client does not allow local logins");
                     return new InteractionResponse { IsLogin = true };
                 }
             }
             // check external idp restrictions if user not using local idp
-            else if (request.Client.IdentityProviderRestrictions?.Any() == true &&
+            else if (request.Client?.IdentityProviderRestrictions?.Any() == true &&
                 !request.Client.IdentityProviderRestrictions.Contains(currentIdp))
             {
                 Logger.LogInformation("Showing login: User is logged in with idp: {idp}, but idp not in client restriction list.", currentIdp);
@@ -232,10 +245,14 @@ namespace IdentityServer4.ResponseHandling
             }
 
             // check client's user SSO timeout
-            if (request.Client.UserSsoLifetime.HasValue)
+            if (request.Client?.UserSsoLifetime.HasValue ?? false)
             {
                 var authTimeEpoch = request.Subject.GetAuthenticationTimeEpoch();
+#if NET7_0_OR_GREATER
+                var nowEpoch = Clock.GetUtcNow().ToUnixTimeSeconds();
+#else
                 var nowEpoch = Clock.UtcNow.ToUnixTimeSeconds();
+#endif
 
                 var diff = nowEpoch - authTimeEpoch;
                 if (diff > request.Client.UserSsoLifetime.Value)
@@ -256,7 +273,7 @@ namespace IdentityServer4.ResponseHandling
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException">Invalid PromptMode</exception>
-        protected internal virtual async Task<InteractionResponse> ProcessConsentAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
+        protected internal virtual async Task<InteractionResponse> ProcessConsentAsync(ValidatedAuthorizeRequest request, ConsentResponse? consent = null)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
@@ -285,7 +302,7 @@ namespace IdentityServer4.ResponseHandling
                 var response = new InteractionResponse();
 
                 // did user provide consent
-                if (consent == null)
+                if (consent is null)
                 {
                     // user was not yet shown conset screen
                     response.IsConsent = true;
@@ -319,7 +336,7 @@ namespace IdentityServer4.ResponseHandling
                     {
                         // double check that required scopes are in the list of consented scopes
                         var requiredScopes = request.ValidatedResources.GetRequiredScopeValues();
-                        var valid = requiredScopes.All(x => consent.ScopesValuesConsented.Contains(x));
+                        var valid = requiredScopes.All(x => consent.ScopesValuesConsented?.Contains(x) == true);
                         if (!valid)
                         {
                             response.Error = OidcConstants.AuthorizeErrors.AccessDenied;
@@ -332,7 +349,7 @@ namespace IdentityServer4.ResponseHandling
                             request.ValidatedResources = request.ValidatedResources.Filter(consent.ScopesValuesConsented);
                             Logger.LogInformation("User consented to scopes: {scopes}", consent.ScopesValuesConsented);
 
-                            if (request.Client.AllowRememberConsent)
+                            if (request.Client?.AllowRememberConsent ?? false)
                             {
                                 // remember consent
                                 var parsedScopes = Enumerable.Empty<ParsedScopeValue>();

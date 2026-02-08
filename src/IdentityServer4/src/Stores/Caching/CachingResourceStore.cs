@@ -70,7 +70,7 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<Resources> GetAllResourcesAsync()
+        public async Task<Resources?> GetAllResourcesAsync()
         {
             var key = AllKey;
 
@@ -83,7 +83,7 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
+        public async Task<IEnumerable<ApiResource>?> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
         {
             var key = GetKey(apiResourceNames);
 
@@ -96,7 +96,7 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> names)
+        public async Task<IEnumerable<IdentityResource>?> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> names)
         {
             var key = GetKey(names);
 
@@ -109,7 +109,7 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> names)
+        public async Task<IEnumerable<ApiResource>?> FindApiResourcesByScopeNameAsync(IEnumerable<string> names)
         {
             var key = GetKey(names);
 
@@ -122,7 +122,7 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        public async Task<IEnumerable<ApiScope>?> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
         {
             var key = GetKey(scopeNames);
 

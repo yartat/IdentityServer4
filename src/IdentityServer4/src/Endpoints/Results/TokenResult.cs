@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityModel;
@@ -59,7 +59,7 @@ namespace IdentityServer4.Endpoints.Results
         internal class ResultDto
         {
 #pragma warning disable CS8618, IDE1006 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable, Naming Styles
-            public required string id_token { get; set; }
+            public string? id_token { get; set; }
 
             public required string access_token { get; set; }
 

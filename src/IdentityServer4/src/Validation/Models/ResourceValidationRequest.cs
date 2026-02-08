@@ -15,7 +15,7 @@ namespace IdentityServer4.Validation
         /// <summary>
         /// The client.
         /// </summary>
-        public Client Client { get; set; }
+        public Client? Client { get; set; }
 
         /// <summary>
         /// The requested scope values.

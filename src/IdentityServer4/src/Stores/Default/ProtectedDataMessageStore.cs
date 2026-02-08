@@ -42,9 +42,9 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc />
-        public virtual Task<Message<TModel>> ReadAsync(string value)
+        public virtual Task<Message<TModel>?> ReadAsync(string value)
         {
-            Message<TModel> result = null;
+            Message<TModel>? result = null;
 
             if (!String.IsNullOrWhiteSpace(value))
             {
@@ -65,9 +65,9 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc />
-        public virtual Task<string> WriteAsync(Message<TModel> message)
+        public virtual Task<string?> WriteAsync(Message<TModel> message)
         {
-            string value = null;
+            string? value = null;
 
             try
             {

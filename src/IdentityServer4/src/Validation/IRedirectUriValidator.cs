@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -26,6 +26,6 @@ namespace IdentityServer4.Validation
         /// <param name="requestedUri">The requested URI.</param>
         /// <param name="client">The client.</param>
         /// <returns><c>true</c> is the URI is valid; <c>false</c> otherwise.</returns>
-        Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client);
+        Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client? client);
     }
 }

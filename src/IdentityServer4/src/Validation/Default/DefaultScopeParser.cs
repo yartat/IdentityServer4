@@ -90,7 +90,7 @@ namespace IdentityServer4.Validation
             /// <summary>
             /// The error encountered parsing the scope.
             /// </summary>
-            public string Error { get; private set; }
+            public string? Error { get; private set; }
             
             /// <summary>
             /// Indicates if the scope should be excluded from the parsed results.

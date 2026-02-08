@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+#nullable enable
+
 #pragma warning disable 1591
 
 namespace IdentityServer4.Extensions

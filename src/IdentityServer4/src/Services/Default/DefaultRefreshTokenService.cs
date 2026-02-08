@@ -62,7 +62,7 @@ namespace IdentityServer4.Services
         /// <param name="tokenHandle">The token handle.</param>
         /// <param name="client">The client.</param>
         /// <returns></returns>
-        public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
+        public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client? client)
         {
             var invalidGrant = new TokenValidationResult
             {
@@ -93,9 +93,9 @@ namespace IdentityServer4.Services
             /////////////////////////////////////////////
             // check if client belongs to requested refresh token
             /////////////////////////////////////////////
-            if (client.ClientId != refreshToken.ClientId)
+            if (client?.ClientId != refreshToken.ClientId)
             {
-                Logger.LogError("{0} tries to refresh token belonging to {1}", client.ClientId, refreshToken.ClientId);
+                Logger.LogError("{0} tries to refresh token belonging to {1}", client?.ClientId, refreshToken.ClientId);
                 return invalidGrant;
             }
 
@@ -164,7 +164,7 @@ namespace IdentityServer4.Services
         /// <param name="ip">IP address.</param>
         /// <param name="device">The device name.</param>
         /// <returns>The refresh token handle</returns>
-        public virtual async Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string ip, string device)
+        public virtual async Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string? ip, string? device)
         {
             Logger.LogDebug("Creating refresh token");
 

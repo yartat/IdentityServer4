@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -20,7 +20,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Error description.
         /// </summary>
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
 
         /// <summary>
         /// Gets if consent was granted.
@@ -36,7 +36,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The scopes.
         /// </value>
-        public IEnumerable<string> ScopesValuesConsented { get; set; }
+        public IEnumerable<string>? ScopesValuesConsented { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user wishes the consent to be remembered.

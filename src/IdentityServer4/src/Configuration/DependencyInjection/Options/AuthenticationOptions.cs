@@ -60,7 +60,7 @@ namespace IdentityServer4.Configuration
         /// <summary>
         /// Gets or sets the domain of the cookie used for the check session endpoint. Defaults to null.
         /// </summary>
-        public string CheckSessionCookieDomain { get; set; }
+        public string? CheckSessionCookieDomain { get; set; }
 
         /// <summary>
         /// Gets or sets the SameSite mode of the cookie used for the check session endpoint. Defaults to SameSiteMode.None.

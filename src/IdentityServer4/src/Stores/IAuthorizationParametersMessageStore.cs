@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -25,7 +25,7 @@ namespace IdentityServer4.Stores
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        Task<Message<IDictionary<string, string[]?>>> ReadAsync(string id);
+        Task<Message<IDictionary<string, string[]?>>?> ReadAsync(string id);
 
         /// <summary>
         /// Deletes the authorization parameters.

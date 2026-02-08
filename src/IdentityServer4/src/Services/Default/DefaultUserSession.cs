@@ -73,7 +73,7 @@ namespace IdentityServer4.Services
         /// <value>
         /// The domain of the check session cookie.
         /// </value>
-        protected string CheckSessionCookieDomain => Options.Authentication.CheckSessionCookieDomain;
+        protected string? CheckSessionCookieDomain => Options.Authentication.CheckSessionCookieDomain;
 
         /// <summary>
         /// Gets the SameSite mode of the check session cookie.

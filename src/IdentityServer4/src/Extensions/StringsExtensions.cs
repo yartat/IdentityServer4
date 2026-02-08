@@ -277,7 +277,7 @@ namespace IdentityServer4.Extensions
         /// Invalid patterns include URLs starting with "//" or "/\" or "~//" or "~/\".
         /// </remarks>
         [DebuggerStepThrough]
-        public static bool IsLocalUrl(this string url)
+        public static bool IsLocalUrl([NotNullWhen(true)] this string? url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -362,9 +362,27 @@ namespace IdentityServer4.Extensions
         [DebuggerStepThrough]
         public static string AddQueryString(this string? url, string? query)
         {
+            StringBuilder result;
+            if (string.IsNullOrEmpty(url))
+            {
+                if (string.IsNullOrEmpty(query))
+                {
+                    return string.Empty;
+                }
+
+                result = new StringBuilder();
+                result.Append('?').Append(query);
+                return result.ToString();
+            }
+
+            if (string.IsNullOrEmpty(query))
+            {
+                return url;
+            }
+
             var urlSpan = url.AsSpan();
             var querySpan = query.AsSpan();
-            var result = new StringBuilder(urlSpan.Length + 2 + querySpan.Length);
+            result = new StringBuilder(urlSpan.Length + 2 + querySpan.Length);
             result.Append(urlSpan);
             if (!urlSpan.Contains('?'))
             {
@@ -411,8 +429,8 @@ namespace IdentityServer4.Extensions
         /// <returns>Returns URL with query.</returns>
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string AddQueryString(this string url, string name, string value) =>
-            url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value));
+        public static string AddQueryString(this string? url, string name, string? value) =>
+            url.AddQueryString(name + "=" + UrlEncoder.Default.Encode(value ?? string.Empty));
 
         /// <summary>
         /// Adds the query parameters with value to URL.

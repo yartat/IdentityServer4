@@ -23,7 +23,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The principal.
         /// </value>
-        public ClaimsPrincipal Subject { get; set; }
+        public ClaimsPrincipal? Subject { get; set; }
 
         /// <summary>
         /// Custom fields for the token response
@@ -34,17 +34,17 @@ namespace IdentityServer4.Validation
         /// Initializes a new instance of the <see cref="GrantValidationResult"/> class with no subject.
         /// Warning: the resulting access token will only contain the client identity.
         /// </summary>
-        public GrantValidationResult(Dictionary<string, object> customResponse = null)
+        public GrantValidationResult(Dictionary<string, object>? customResponse = null)
         {
             IsError = false;
-            CustomResponse = customResponse;
+            CustomResponse = customResponse ?? new Dictionary<string, object>();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GrantValidationResult"/> class with a given principal.
         /// Warning: the principal needs to include the required claims - it is recommended to use the other constructor that does validation.
         /// </summary>
-        public GrantValidationResult(ClaimsPrincipal principal, Dictionary<string, object> customResponse = null)
+        public GrantValidationResult(ClaimsPrincipal principal, Dictionary<string, object>? customResponse = null)
         {
             IsError = false;
 
@@ -55,7 +55,7 @@ namespace IdentityServer4.Validation
             if (principal.FindFirst(JwtClaimTypes.AuthenticationTime) == null) throw new InvalidOperationException("auth_time claim is missing");
 
             Subject = principal;
-            CustomResponse = customResponse;
+            CustomResponse = customResponse ?? new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -64,11 +64,11 @@ namespace IdentityServer4.Validation
         /// <param name="error">The error.</param>
         /// <param name="errorDescription">The error description.</param>
         /// <param name="customResponse">Custom response elements</param>
-        public GrantValidationResult(TokenRequestErrors error, string errorDescription = null, Dictionary<string, object> customResponse = null)
+        public GrantValidationResult(TokenRequestErrors error, string? errorDescription = null, Dictionary<string, object>? customResponse = null)
         {
             Error = ConvertTokenErrorEnumToString(error);
             ErrorDescription = errorDescription;
-            CustomResponse = customResponse;
+            CustomResponse = customResponse ?? new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace IdentityServer4.Validation
         public GrantValidationResult(
             string subject,
             string authenticationMethod,
-            IEnumerable<Claim> claims = null,
+            IEnumerable<Claim>? claims = null,
             string identityProvider = IdentityServerConstants.LocalIdentityProvider,
-            Dictionary<string, object> customResponse = null)
+            Dictionary<string, object>? customResponse = null)
             : this(subject, authenticationMethod, DateTime.UtcNow, claims, identityProvider, customResponse)
         {
         }
@@ -104,9 +104,9 @@ namespace IdentityServer4.Validation
             string subject,
             string authenticationMethod,
             DateTime authTime,
-            IEnumerable<Claim> claims = null,
+            IEnumerable<Claim>? claims = null,
             string identityProvider = IdentityServerConstants.LocalIdentityProvider,
-            Dictionary<string, object> customResponse = null)
+            Dictionary<string, object>? customResponse = null)
         {
             IsError = false;
 
@@ -127,7 +127,7 @@ namespace IdentityServer4.Validation
             id.AddClaims(resultClaims.Distinct(new ClaimComparer()));
 
             Subject = new(id);
-            CustomResponse = customResponse;
+            CustomResponse = customResponse ?? new Dictionary<string, object>();
         }
 
         private static string ConvertTokenErrorEnumToString(TokenRequestErrors error) =>

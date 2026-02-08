@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -8,6 +8,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.Validation
@@ -61,7 +62,7 @@ namespace IdentityServer4.Validation
             }
 
             // the token must have a one sub claim
-            var subClaim = tokenResult.Claims.SingleOrDefault(c => c.Type == JwtClaimTypes.Subject);
+            var subClaim = tokenResult.Claims?.SingleOrDefault(c => c.Type == JwtClaimTypes.Subject);
             if (subClaim == null)
             {
                 _logger.LogError("Token contains no sub claim");
@@ -74,7 +75,7 @@ namespace IdentityServer4.Validation
             }
 
             // create subject from incoming access token
-            var claims = tokenResult.Claims.Where(x => !Constants.Filters.ProtocolClaimsFilter.Contains(x.Type));
+            var claims = tokenResult.Claims?.Where(x => !Constants.Filters.ProtocolClaimsFilter.Contains(x.Type)) ?? Enumerable.Empty<Claim>();
             var subject = Principal.Create("UserInfo", claims.ToArray());
 
             // make sure user is still active

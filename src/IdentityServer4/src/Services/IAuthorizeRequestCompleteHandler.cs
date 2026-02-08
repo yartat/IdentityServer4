@@ -1,4 +1,4 @@
-﻿using IdentityServer4.Hosting;
+using IdentityServer4.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Specialized;
 using System.Security.Claims;
@@ -18,6 +18,6 @@ namespace IdentityServer4.Services
         /// <param name="context">HTTP context instance.</param>
         /// <param name="principal">The claims principal.</param>
         /// <returns>Returns response result.</returns>
-        Task<IEndpointResult?> ProcessCompleteAuthorizeRequestAsync(NameValueCollection parameters, HttpContext context, ClaimsPrincipal principal = null);
+        Task<IEndpointResult?> ProcessCompleteAuthorizeRequestAsync(NameValueCollection parameters, HttpContext context, ClaimsPrincipal? principal = null);
     }
 }

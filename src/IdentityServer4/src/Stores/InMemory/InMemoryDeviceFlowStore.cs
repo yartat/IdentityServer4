@@ -15,7 +15,7 @@ namespace IdentityServer4.Stores
     /// <seealso cref="IdentityServer4.Stores.IDeviceFlowStore" />
     public class InMemoryDeviceFlowStore : IDeviceFlowStore
     {
-        private readonly List<InMemoryDeviceAuthorization> _repository = new List<InMemoryDeviceAuthorization>();
+        private readonly List<InMemoryDeviceAuthorization> _repository = new();
 
         /// <summary>
         /// Stores the device authorization request.
@@ -38,9 +38,9 @@ namespace IdentityServer4.Stores
         /// Finds device authorization by user code.
         /// </summary>
         /// <param name="userCode">The user code.</param>
-        public Task<DeviceCode> FindByUserCodeAsync(string userCode)
+        public Task<DeviceCode?> FindByUserCodeAsync(string userCode)
         {
-            DeviceCode foundDeviceCode;
+            DeviceCode? foundDeviceCode;
 
             lock (_repository)
             {
@@ -54,9 +54,9 @@ namespace IdentityServer4.Stores
         /// Finds device authorization by device code.
         /// </summary>
         /// <param name="deviceCode">The device code.</param>
-        public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
+        public Task<DeviceCode?> FindByDeviceCodeAsync(string deviceCode)
         {
-            DeviceCode foundDeviceCode;
+            DeviceCode? foundDeviceCode;
 
             lock (_repository)
             {

@@ -94,7 +94,7 @@ namespace IdentityServer4.Services
             return new DeviceFlowInteractionResult();
         }
 
-        private DeviceFlowInteractionResult LogAndReturnError(string error, string errorDescription = null)
+        private DeviceFlowInteractionResult LogAndReturnError(string error, string? errorDescription = null)
         {
             _logger.LogError(errorDescription);
             return DeviceFlowInteractionResult.Failure(error);

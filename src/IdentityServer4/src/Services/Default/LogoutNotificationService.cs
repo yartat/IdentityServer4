@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityModel;
@@ -39,11 +39,17 @@ namespace IdentityServer4.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<string>> GetFrontChannelLogoutNotificationsUrlsAsync(LogoutNotificationContext context)
         {
+            if (context.ClientIds is null)
+            {
+                _logger.LogDebug("No client ids provided for logout notification");
+                return Enumerable.Empty<string>();
+            }
+
             var frontChannelUrls = new List<string>();
             foreach (var clientId in context.ClientIds)
             {
                 var client = await _clientStore.FindEnabledClientByIdAsync(clientId);
-                if (client != null)
+                if (client is not null)
                 {
                     if (client.FrontChannelLogoutUri.IsPresent())
                     {
@@ -84,6 +90,12 @@ namespace IdentityServer4.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<BackChannelLogoutRequest>> GetBackChannelLogoutNotificationsAsync(LogoutNotificationContext context)
         {
+            if (context.ClientIds is null)
+            {
+                _logger.LogDebug("No client ids provided for logout notification");
+                return Enumerable.Empty<BackChannelLogoutRequest>();
+            }
+
             var backChannelLogouts = new List<BackChannelLogoutRequest>();
             foreach (var clientId in context.ClientIds)
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -17,7 +17,7 @@ namespace IdentityServer4.Services
         /// </summary>
         /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
-        Task<AuthorizationRequest> ParseAsync(string returnUrl);
+        Task<AuthorizationRequest?> ParseAsync(string returnUrl);
 
         /// <summary>
         /// Determines whether the return URL is valid.

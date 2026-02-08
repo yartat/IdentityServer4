@@ -71,7 +71,7 @@ namespace IdentityServer4.Validation
         /// </summary>
         /// <param name="scopeValues"></param>
         /// <returns></returns>
-        public ResourceValidationResult Filter(IEnumerable<string> scopeValues)
+        public ResourceValidationResult Filter(IEnumerable<string>? scopeValues)
         {
             scopeValues ??= Enumerable.Empty<string>();
 

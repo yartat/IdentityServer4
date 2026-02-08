@@ -34,7 +34,11 @@ namespace IdentityServer4.Services
         /// <summary>
         ///  The clock
         /// </summary>
+#if NET7_0_OR_GREATER
+        protected readonly TimeProvider Clock;
+#else
         protected readonly ISystemClock Clock;
+#endif
 
         /// <summary>
         /// The options
@@ -49,7 +53,11 @@ namespace IdentityServer4.Services
         /// <param name="options">The options.</param>
         /// <param name="logger">The logger.</param>
         public DefaultTokenCreationService(
+#if NET7_0_OR_GREATER
+             TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             IKeyMaterialService keys,
             IdentityServerOptions options,
             ILogger<DefaultTokenCreationService> logger)
@@ -95,7 +103,11 @@ namespace IdentityServer4.Services
             if (credential.Key is X509SecurityKey x509Key)
             {
                 var cert = x509Key.Certificate;
+#if NET7_0_OR_GREATER
+                if (Clock.GetUtcNow() > cert.NotAfter)
+#else
                 if (Clock.UtcNow.UtcDateTime > cert.NotAfter)
+#endif
                 {
                     Logger.LogWarning("Certificate {subjectName} has expired on {expiration}", cert.Subject, cert.NotAfter.ToString(CultureInfo.InvariantCulture));
                 }

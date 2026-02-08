@@ -32,7 +32,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The client.
         /// </value>
-        public Client Client { get; set; }
+        public Client? Client { get; set; }
 
         /// <summary>
         /// Gets or sets the secret used to authenticate the client.
@@ -74,7 +74,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The session identifier.
         /// </value>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
         
         /// <summary>
         /// Gets or sets the identity server options.
@@ -106,7 +106,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The client ID
         /// </value>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the client IP address.

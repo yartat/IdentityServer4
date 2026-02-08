@@ -110,21 +110,21 @@ namespace IdentityServer4.Validation
                 var handler = new JwtSecurityTokenHandler();
                 handler.ValidateToken(jwtTokenString, tokenValidationParameters, out var token);
 
-                var jwtToken = (JwtSecurityToken)token;
-                if (jwtToken.Subject != jwtToken.Issuer)
+                var jwtToken = (JwtSecurityToken?)token;
+                if (!string.Equals(jwtToken?.Subject, jwtToken?.Issuer))
                 {
                     _logger.LogError("Both 'sub' and 'iss' in the client assertion token must have a value of client_id.");
                     return fail;
                 }
                 
-                var exp = jwtToken.Payload.Exp;
+                var exp = jwtToken?.Payload.Expiration;
                 if (!exp.HasValue)
                 {
                     _logger.LogError("exp is missing.");
                     return fail;
                 }
                 
-                var jti = jwtToken.Payload.Jti;
+                var jti = jwtToken?.Payload.Jti;
                 if (jti.IsMissing())
                 {
                     _logger.LogError("jti is missing.");

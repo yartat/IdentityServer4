@@ -51,7 +51,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The access token to hash.
         /// </value>
-        public string AccessTokenToHash { get; set; }
+        public string? AccessTokenToHash { get; set; }
 
         /// <summary>
         /// Gets or sets the authorization code to hash.
@@ -59,7 +59,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The authorization code to hash.
         /// </value>
-        public string AuthorizationCodeToHash { get; set; }
+        public string? AuthorizationCodeToHash { get; set; }
 
         /// <summary>
         /// Gets or sets pre-hashed state
@@ -67,7 +67,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The pre-hashed state
         /// </value>
-        public string StateHash { get; set; }
+        public string? StateHash { get; set; }
 
         /// <summary>
         /// Gets or sets the nonce.
@@ -75,7 +75,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The nonce.
         /// </value>
-        public string Nonce { get; set; }
+        public string? Nonce { get; set; }
 
         /// <summary>
         /// Gets the description the user assigned to the device being authorized.
@@ -83,19 +83,19 @@ namespace IdentityServer4.Models
         /// <value>
         /// The description.
         /// </value>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the client IP address.
         /// </summary>
         /// <value>The client IP address.</value>
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the client logged device.
         /// </summary>
         /// <value>The client logged device.</value>
-        public string Device { get; set; }
+        public string? Device { get; set; }
 
         /// <summary>
         /// Called to validate the <see cref="TokenCreationRequest"/> before it is processed.

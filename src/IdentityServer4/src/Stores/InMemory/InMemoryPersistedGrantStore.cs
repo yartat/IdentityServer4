@@ -26,25 +26,25 @@ namespace IdentityServer4.Stores
         }
 
         /// <inheritdoc/>
-        public Task<PersistedGrant> GetAsync(string key)
+        public Task<PersistedGrant?> GetAsync(string key)
         {
             if (_repository.TryGetValue(key, out var token))
             {
-                return Task.FromResult(token);
+                return Task.FromResult((PersistedGrant?) token);
             }
 
-            return Task.FromResult<PersistedGrant>(null);
+            return Task.FromResult<PersistedGrant?>(null);
         }
 
         /// <inheritdoc/>
-        public Task<PersistedGrant> GetAndRemoveAsync(string key)
+        public Task<PersistedGrant?> GetAndRemoveAsync(string key)
         {
             if (_repository.TryRemove(key, out var token))
             {
-                return Task.FromResult(token);
+                return Task.FromResult((PersistedGrant?) token);
             }
 
-            return Task.FromResult<PersistedGrant>(null);
+            return Task.FromResult<PersistedGrant?>(null);
         }
 
         /// <inheritdoc/>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -80,10 +80,7 @@ namespace IdentityServer4.Extensions
             this AuthenticationProperties properties,
             string? clientId)
         {
-            if (clientId == null)
-            {
-                throw new ArgumentNullException(nameof(clientId));
-            }
+            ArgumentNullException.ThrowIfNull(clientId);
 
             var clients = properties.GetClientList();
             if (!clients.Contains(clientId))
@@ -110,7 +107,7 @@ namespace IdentityServer4.Extensions
             {
                 var bytes = Base64Url.Decode(value);
                 value = Encoding.UTF8.GetString(bytes);
-                return ObjectSerializer.FromString<string[]>(value);
+                return ObjectSerializer.FromString<string[]>(value) ?? Enumerable.Empty<string>();
             }
 
             return Enumerable.Empty<string>();

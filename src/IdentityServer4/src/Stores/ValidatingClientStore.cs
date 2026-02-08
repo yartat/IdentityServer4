@@ -37,7 +37,7 @@ namespace IdentityServer4.Stores
             _events = events;
             _logger = logger;
 
-            _validatorType = validator.GetType().FullName;
+            _validatorType = validator.GetType().FullName!;
         }
 
         /// <summary>
@@ -47,11 +47,11 @@ namespace IdentityServer4.Stores
         /// <returns>
         /// The client or an InvalidOperationException
         /// </returns>
-        public async Task<Client> FindClientByIdAsync(string clientId)
+        public async Task<Client?> FindClientByIdAsync(string? clientId)
         {
             var client = await _inner.FindClientByIdAsync(clientId);
 
-            if (client != null)
+            if (client is not null)
             {
                 _logger.LogTrace("Calling into client configuration validator: {validatorType}", _validatorType);
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -64,10 +64,10 @@ namespace IdentityServer4.Services
         /// or
         /// subject
         /// </exception>
-        public virtual async Task<bool> RequiresConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
+        public virtual async Task<bool> RequiresConsentAsync(ClaimsPrincipal subject, Client? client, IEnumerable<ParsedScopeValue> parsedScopes)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (subject == null) throw new ArgumentNullException(nameof(subject));
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentNullException.ThrowIfNull(subject);
 
             if (!client.RequireConsent)
             {

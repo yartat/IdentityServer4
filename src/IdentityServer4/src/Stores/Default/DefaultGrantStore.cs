@@ -83,7 +83,7 @@ namespace IdentityServer4.Stores
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected virtual async Task<T> GetItemAsync(string key)
+        protected virtual async Task<T?> GetItemAsync(string key)
         {
             var hashedKey = GetHashedKey(key);
 
@@ -138,7 +138,7 @@ namespace IdentityServer4.Stores
         /// <param name="expiration">The expiration.</param>
         /// <param name="consumedTime">The consumed time.</param>
         /// <returns></returns>
-        protected virtual async Task StoreItemAsync(string key, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
+        protected virtual async Task StoreItemAsync(string key, T item, string clientId, string subjectId, string? sessionId, string? description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
         {
             key = GetHashedKey(key);
 

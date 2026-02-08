@@ -161,12 +161,12 @@ namespace IdentityServer4.ResponseHandling
             if (request.ValidatedRequest.AuthorizationCode.IsOpenId)
             {
                 // load the client that belongs to the authorization code
-                Client client = null;
+                Client? client = null;
                 if (request.ValidatedRequest.AuthorizationCode.ClientId != null)
                 {
                     client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.AuthorizationCode.ClientId);
                 }
-                if (client == null)
+                if (client is null)
                 {
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
@@ -283,12 +283,12 @@ namespace IdentityServer4.ResponseHandling
             if (request.ValidatedRequest.DeviceCode.IsOpenId)
             {
                 // load the client that belongs to the device code
-                Client client = null;
+                Client? client = null;
                 if (request.ValidatedRequest.DeviceCode.ClientId != null)
                 {
                     client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.DeviceCode.ClientId);
                 }
-                if (client == null)
+                if (client is null)
                 {
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
@@ -356,7 +356,7 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="request">The request.</param>
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">Client does not exist anymore.</exception>
-        protected virtual async Task<(string accessToken, string refreshToken)> CreateAccessTokenAsync(ValidatedTokenRequest request)
+        protected virtual async Task<(string accessToken, string? refreshToken)> CreateAccessTokenAsync(ValidatedTokenRequest request)
         {
             TokenCreationRequest tokenRequest;
             bool createRefreshToken;
@@ -366,12 +366,12 @@ namespace IdentityServer4.ResponseHandling
                 createRefreshToken = request.AuthorizationCode.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OfflineAccess);
 
                 // load the client that belongs to the authorization code
-                Client client = null;
+                Client? client = null;
                 if (request.AuthorizationCode.ClientId != null)
                 {
                     client = await Clients.FindEnabledClientByIdAsync(request.AuthorizationCode.ClientId);
                 }
-                if (client == null)
+                if (client is null)
                 {
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
@@ -393,12 +393,12 @@ namespace IdentityServer4.ResponseHandling
             {
                 createRefreshToken = request.DeviceCode.AuthorizedScopes.Contains(IdentityServerConstants.StandardScopes.OfflineAccess);
 
-                Client client = null;
+                Client? client = null;
                 if (request.DeviceCode.ClientId != null)
                 {
                     client = await Clients.FindEnabledClientByIdAsync(request.DeviceCode.ClientId);
                 }
-                if (client == null)
+                if (client is null)
                 {
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
@@ -444,7 +444,13 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="device">The requested device.</param>
         /// <param name="createRefreshToken">Indicates to create refresh token.</param>
         /// <returns>Task.</returns>
-        protected virtual async Task<(string AccessToken, string RefreshToken)> GetTokenAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device, bool createRefreshToken)
+        protected virtual async Task<(string AccessToken, string? RefreshToken)> GetTokenAsync(
+            ClaimsPrincipal claimsPrincipal,
+            Token token,
+            Client client,
+            string? ip,
+            string? device,
+            bool createRefreshToken)
         {
             Logger.LogDebug("Getting token");
             var accessToken = await TokenService.CreateSecurityTokenAsync(token);
@@ -465,7 +471,7 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="request">The request.</param>
         /// <param name="newAccessToken">The new access token.</param>
         /// <returns></returns>
-        protected virtual async Task<string> CreateIdTokenFromRefreshTokenRequestAsync(ValidatedTokenRequest request, string newAccessToken)
+        protected virtual async Task<string?> CreateIdTokenFromRefreshTokenRequestAsync(ValidatedTokenRequest request, string newAccessToken)
         {
             var resources = await Resources.FindEnabledResourcesByScopeAsync(request.RefreshToken.Scopes);
             if (resources.IdentityResources.Count > 0)

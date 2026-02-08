@@ -32,7 +32,11 @@ namespace IdentityServer4.Validation
         private readonly IClientStore _clients;
         private readonly IProfileService _profile;
         private readonly IKeyMaterialService _keys;
+#if NET7_0_OR_GREATER
+        private readonly TimeProvider _clock;
+#else
         private readonly ISystemClock _clock;
+#endif
         private readonly TokenValidationLog _log;
 
         public TokenValidator(
@@ -44,7 +48,11 @@ namespace IdentityServer4.Validation
             IRefreshTokenService refreshTokenService,
             ICustomTokenValidator customValidator,
             IKeyMaterialService keys,
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             ILogger<TokenValidator> logger)
         {
             _options = options;
@@ -61,7 +69,7 @@ namespace IdentityServer4.Validation
             _log = new TokenValidationLog();
         }
 
-        public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null, bool validateLifetime = true)
+        public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string? clientId = null, bool validateLifetime = true)
         {
             _logger.LogDebug("Start identity token validation");
 
@@ -121,7 +129,7 @@ namespace IdentityServer4.Validation
             return customResult;
         }
 
-        public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null)
+        public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string? expectedScope = null)
         {
             _logger.LogTrace("Start access token validation");
 
@@ -175,11 +183,11 @@ namespace IdentityServer4.Validation
             }
 
             // make sure client is still active (if client_id claim is present)
-            var clientClaim = result.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.ClientId);
-            if (clientClaim != null)
+            var clientClaim = result.Claims?.FirstOrDefault(c => c.Type == JwtClaimTypes.ClientId);
+            if (clientClaim is not null)
             {
                 var client = await _clients.FindEnabledClientByIdAsync(clientClaim.Value);
-                if (client == null)
+                if (client is null)
                 {
                     _logger.LogError("Client deleted or disabled: {clientId}", clientClaim.Value);
 
@@ -192,10 +200,10 @@ namespace IdentityServer4.Validation
             }
 
             // make sure user is still active (if sub claim is present)
-            var subClaim = result.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Subject);
-            if (subClaim != null)
+            var subClaim = result.Claims?.FirstOrDefault(c => c.Type == JwtClaimTypes.Subject);
+            if (subClaim is not null)
             {
-                var principal = Principal.Create("tokenvalidator", result.Claims.ToArray());
+                var principal = Principal.Create("tokenvalidator", result.Claims?.ToArray());
 
                 if (result.ReferenceTokenId.IsPresent())
                 {
@@ -220,7 +228,7 @@ namespace IdentityServer4.Validation
             // check expected scope(s)
             if (expectedScope.IsPresent())
             {
-                var scope = result.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
+                var scope = result.Claims?.FirstOrDefault(c => c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
                 if (scope == null)
                 {
                     LogError(string.Format("Checking for expected scope {0} failed", expectedScope));
@@ -244,7 +252,11 @@ namespace IdentityServer4.Validation
             return customResult;
         }
 
-        private async Task<TokenValidationResult> ValidateJwtAsync(string jwt, IEnumerable<SecurityKeyInfo> validationKeys, bool validateLifetime = true, string audience = null)
+        private async Task<TokenValidationResult> ValidateJwtAsync(
+            string jwt,
+            IEnumerable<SecurityKeyInfo> validationKeys,
+            bool validateLifetime = true,
+            string? audience = null)
         {
             var handler = new JwtSecurityTokenHandler();
             handler.InboundClaimTypeMap.Clear();
@@ -275,7 +287,7 @@ namespace IdentityServer4.Validation
                 {
                     if (_options.AccessTokenJwtType.IsPresent())
                     {
-                        var type = jwtSecurityToken.Header.Typ;
+                        var type = jwtSecurityToken?.Header.Typ;
                         if (!string.Equals(type, _options.AccessTokenJwtType))
                         {
                             return new TokenValidationResult
@@ -295,7 +307,7 @@ namespace IdentityServer4.Validation
                 }
 
                 // load the client that belongs to the client_id claim
-                Client client = null;
+                Client? client = null;
                 var clientId = id.FindFirst(JwtClaimTypes.ClientId);
                 if (clientId != null)
                 {
@@ -356,7 +368,11 @@ namespace IdentityServer4.Validation
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
 
+#if NET7_0_OR_GREATER
+            if (token.CreationTime.HasExceeded(token.Lifetime, _clock.GetUtcNow().UtcDateTime))
+#else
             if (token.CreationTime.HasExceeded(token.Lifetime, _clock.UtcNow.UtcDateTime))
+#endif
             {
                 LogError("Token expired.");
 
@@ -365,13 +381,13 @@ namespace IdentityServer4.Validation
             }
 
             // load the client that is defined in the token
-            Client client = null;
-            if (token.ClientId != null)
+            Client? client = null;
+            if (token.ClientId is not null)
             {
                 client = await _clients.FindEnabledClientByIdAsync(token.ClientId);
             }
 
-            if (client == null)
+            if (client is null)
             {
                 LogError($"Client deleted or disabled: {token.ClientId}");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
@@ -388,7 +404,7 @@ namespace IdentityServer4.Validation
             };
         }
 
-        public async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client = null)
+        public async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client? client = null)
         {
             _logger.LogTrace("Start refresh token validation");
 
@@ -405,7 +421,11 @@ namespace IdentityServer4.Validation
             /////////////////////////////////////////////
             // check if refresh token has expired
             /////////////////////////////////////////////
+#if NET7_0_OR_GREATER
+            if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, _clock.GetUtcNow().UtcDateTime))
+#else
             if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, _clock.UtcNow.DateTime))
+#endif
             {
                 _logger.LogWarning("Refresh token has expired. Removing from store.");
 
@@ -481,7 +501,7 @@ namespace IdentityServer4.Validation
             return claims;
         }
 
-        private string GetClientIdFromJwt(string token)
+        private string? GetClientIdFromJwt(string token)
         {
             try
             {

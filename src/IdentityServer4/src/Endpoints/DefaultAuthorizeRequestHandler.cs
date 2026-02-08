@@ -198,7 +198,7 @@ namespace IdentityServer4.Endpoints
                 return;
             }
 
-            var clientId = $"{response.Request?.ClientId} ({response.Request?.Client.ClientName ?? "no name set"})";
+            var clientId = $"{response.Request?.ClientId} ({response.Request?.Client?.ClientName ?? "no name set"})";
             var subjectId = response.Request?.Subject.GetSubjectId();
 
             if (response.IdentityToken != null)

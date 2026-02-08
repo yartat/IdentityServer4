@@ -40,8 +40,11 @@ namespace IdentityServer4.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<Grant>> GetAllGrantsAsync(string subjectId)
         {
-            if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
-            
+            if (string.IsNullOrWhiteSpace(subjectId))
+            {
+                throw new ArgumentNullException(nameof(subjectId));
+            }
+
             var grants = (await _store.GetAllAsync(new PersistedGrantFilter { SubjectId = subjectId })).ToArray();
 
             try
@@ -147,9 +150,12 @@ namespace IdentityServer4.Services
         }
 
         /// <inheritdoc/>
-        public Task RemoveAllGrantsAsync(string subjectId, string clientId = null, string sessionId = null)
+        public Task RemoveAllGrantsAsync(string subjectId, string? clientId = null, string? sessionId = null)
         {
-            if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
+            if (string.IsNullOrWhiteSpace(subjectId))
+            {
+                throw new ArgumentNullException(nameof(subjectId));
+            }
 
             return _store.RemoveAllAsync(new PersistedGrantFilter {
                 SubjectId = subjectId,

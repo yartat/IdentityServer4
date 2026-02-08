@@ -45,7 +45,7 @@ namespace IdentityServer4.Stores
             GetItemAsync(code);
 
         /// <inheritdoc/>
-        public async Task<AuthorizationCode> GetAndRemoveAuthorizationCodeAsync(string code)
+        public async Task<AuthorizationCode?> GetAndRemoveAuthorizationCodeAsync(string code)
         {
             var grant = await Store.GetAndRemoveAsync(GetHashedKey(code));
             if (grant != null && grant.Type == GrantType)

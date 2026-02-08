@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.Models;
@@ -38,12 +38,12 @@ namespace IdentityServer4.Services
         /// <summary>
         /// Gets the subject identifier.
         /// </summary>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the session identifier.
         /// </summary>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the back channel logout URI.

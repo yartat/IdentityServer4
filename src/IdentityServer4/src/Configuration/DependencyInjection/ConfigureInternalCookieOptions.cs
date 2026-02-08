@@ -64,7 +64,7 @@ namespace IdentityServer4.Configuration
             }
         }
 
-        private static string? ExtractLocalUrl(string url)
+        private static string? ExtractLocalUrl(string? url)
         {
             if (url.IsLocalUrl())
             {

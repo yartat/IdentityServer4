@@ -53,7 +53,7 @@ namespace IdentityServer4.Validation
             _logger = logger;
         }
 
-        public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
+        public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal? subject = null)
         {
             _logger.LogDebug("Start authorize request protocol validation");
 
@@ -838,7 +838,7 @@ namespace IdentityServer4.Validation
             _logger.LogWarning(message + "\n{@requestDetails}", requestDetails);
         }
 
-        private void LogWarning(string message, string detail, ValidatedAuthorizeRequest request)
+        private void LogWarning(string message, string? detail, ValidatedAuthorizeRequest request)
         {
             var requestDetails = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
             _logger.LogWarning(message + ": {detail}\n{@requestDetails}", detail, requestDetails);

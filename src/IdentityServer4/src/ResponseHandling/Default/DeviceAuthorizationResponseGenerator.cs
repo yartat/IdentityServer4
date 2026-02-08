@@ -9,7 +9,10 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Validation;
+#if NET7_0_OR_GREATER
+#else
 using Microsoft.AspNetCore.Authentication;
+#endif
 using Microsoft.Extensions.Logging;
 
 namespace IdentityServer4.ResponseHandling
@@ -38,7 +41,11 @@ namespace IdentityServer4.ResponseHandling
         /// <summary>
         /// The clock
         /// </summary>
+#if NET7_0_OR_GREATER
+        protected readonly TimeProvider Clock;
+#else
         protected readonly ISystemClock Clock;
+#endif
 
         /// <summary>
         /// The logger
@@ -53,7 +60,16 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="deviceFlowCodeService">The device flow code service.</param>
         /// <param name="clock">The clock.</param>
         /// <param name="logger">The logger.</param>
-        public DeviceAuthorizationResponseGenerator(IdentityServerOptions options, IUserCodeService userCodeService, IDeviceFlowCodeService deviceFlowCodeService, ISystemClock clock, ILogger<DeviceAuthorizationResponseGenerator> logger)
+        public DeviceAuthorizationResponseGenerator(
+            IdentityServerOptions options,
+            IUserCodeService userCodeService,
+            IDeviceFlowCodeService deviceFlowCodeService,
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
+            ISystemClock clock,
+#endif
+            ILogger<DeviceAuthorizationResponseGenerator> logger)
         {
             Options = options;
             UserCodeService = userCodeService;
@@ -87,12 +103,14 @@ namespace IdentityServer4.ResponseHandling
             
             var retryCount = 0;
 
-            while (retryCount < userCodeGenerator.RetryLimit)
+            while (retryCount < (userCodeGenerator?.RetryLimit ?? 0))
             {
-                var userCode = await userCodeGenerator.GenerateAsync();
+                var userCode = userCodeGenerator is null ?
+                    string.Empty :
+                    await userCodeGenerator.GenerateAsync();
                 
                 var deviceCode = await DeviceFlowCodeService.FindByUserCodeAsync(userCode);
-                if (deviceCode == null)
+                if (deviceCode is null)
                 {
                     response.UserCode = userCode;
                     break;
@@ -133,7 +151,11 @@ namespace IdentityServer4.ResponseHandling
                 ClientId = validationResult.ValidatedRequest.Client.ClientId,
                 IsOpenId = validationResult.ValidatedRequest.IsOpenIdRequest,
                 Lifetime = response.DeviceCodeLifetime,
+#if NET7_0_OR_GREATER
+                CreationTime = Clock.GetUtcNow().UtcDateTime,
+#else
                 CreationTime = Clock.UtcNow.UtcDateTime,
+#endif
                 RequestedScopes = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues
             });
 

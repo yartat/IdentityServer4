@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -18,13 +18,13 @@ namespace IdentityServer4.Services
         private readonly IAuthorizeRequestValidator _validator;
         private readonly IUserSession _userSession;
         private readonly ILogger _logger;
-        private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+        private readonly IAuthorizationParametersMessageStore? _authorizationParametersMessageStore;
 
         public OidcReturnUrlParser(
             IAuthorizeRequestValidator validator,
             IUserSession userSession,
             ILogger<OidcReturnUrlParser> logger,
-            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+            IAuthorizationParametersMessageStore? authorizationParametersMessageStore = null)
         {
             _validator = validator;
             _userSession = userSession;
@@ -32,7 +32,7 @@ namespace IdentityServer4.Services
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
 
-        public async Task<AuthorizationRequest> ParseAsync(string returnUrl)
+        public async Task<AuthorizationRequest?> ParseAsync(string returnUrl)
         {
             if (IsValidReturnUrl(returnUrl))
             {
@@ -40,8 +40,16 @@ namespace IdentityServer4.Services
                 if (_authorizationParametersMessageStore != null)
                 {
                     var messageStoreId = parameters[Constants.AuthorizationParamsStore.MessageStoreIdParameterName];
-                    var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId);
-                    parameters = entry?.Data.FromFullDictionary() ?? new NameValueCollection();
+                    if (string.IsNullOrEmpty(messageStoreId))
+                    {
+                        _logger.LogWarning("No message store id found in returnUrl");
+                        parameters = [];
+                    }
+                    else
+                    {
+                        var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId);
+                        parameters = entry?.Data.FromFullDictionary() ?? [];
+                    }
                 }
 
                 var user = await _userSession.GetUserAsync();

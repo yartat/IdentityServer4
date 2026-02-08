@@ -1,6 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -42,19 +44,19 @@ namespace IdentityServer4.Models
         /// <value>
         /// The access token.
         /// </value>
-        public Token AccessToken { get; set; }
+        public required Token AccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets the client IP address.
         /// </summary>
         /// <value>The client IP address.</value>
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the client logged device.
         /// </summary>
         /// <value>The client logged device.</value>
-        public string Device { get; set; }
+        public string? Device { get; set; }
 
         /// <summary>
         /// Gets or sets the original subject that requested the token.

@@ -151,11 +151,11 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="request"></param>
         /// <param name="authorizationCode"></param>
         /// <returns></returns>
-        protected virtual async Task<AuthorizeResponse> CreateImplicitFlowResponseAsync(ValidatedAuthorizeRequest request, string authorizationCode = null)
+        protected virtual async Task<AuthorizeResponse> CreateImplicitFlowResponseAsync(ValidatedAuthorizeRequest request, string? authorizationCode = null)
         {
             Logger.LogDebug("Creating Implicit Flow response.");
 
-            string accessTokenValue = null;
+            string? accessTokenValue = null;
             int accessTokenLifetime = 0;
 
             var responseTypes = request.ResponseType.FromSpaceSeparatedString();
@@ -177,11 +177,11 @@ namespace IdentityServer4.ResponseHandling
                 accessTokenValue = await GetTokenValueAsync(request.Subject, accessToken, request.Client, request.ClientIp, request.Device);
             }
 
-            string jwt = null;
+            string? jwt = null;
             if (responseTypes.Contains(OidcConstants.ResponseTypes.IdToken))
             {
                 Logger.LogDebug("Creating id_token.");
-                string stateHash = null;
+                string? stateHash = null;
                 if (request.State.IsPresent())
                 {
                     Logger.LogDebug("Creating state hash.");
@@ -233,7 +233,7 @@ namespace IdentityServer4.ResponseHandling
         /// <param name="ip">The IP address.</param>
         /// <param name="device">The requested device.</param>
         /// <returns>Returns string token value.</returns>
-        protected virtual Task<string> GetTokenValueAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string ip, string device) =>
+        protected virtual Task<string> GetTokenValueAsync(ClaimsPrincipal claimsPrincipal, Token token, Client client, string? ip, string? device) =>
             TokenService.CreateSecurityTokenAsync(token);
 
         /// <summary>
@@ -245,12 +245,12 @@ namespace IdentityServer4.ResponseHandling
         {
             Logger.LogDebug("Creating Code response.");
 
-            string stateHash = null;
+            string? stateHash = null;
             if (request.State.IsPresent())
             {
                 Logger.LogDebug("Creating state hash.");
                 var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
-                if (credential == null)
+                if (credential is null)
                 {
                     throw new InvalidOperationException("No signing credential is configured.");
                 }

@@ -1,91 +1,79 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityModel;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
+using IdentityModel;
 
-namespace IdentityServer4.Extensions
+namespace IdentityServer4.Extensions;
+
+internal static class ClaimsExtensions
 {
-    internal static class ClaimsExtensions
+    private static readonly Dictionary<string, object> Empty = new();
+
+    public static Dictionary<string, object> ToClaimsDictionary(this IEnumerable<Claim>? claims)
     {
-        public static Dictionary<string, object> ToClaimsDictionary(this IEnumerable<Claim> claims)
+        if (claims is null)
         {
-            var d = new Dictionary<string, object>();
+            return Empty;
+        }
 
-            if (claims == null)
+        var result = new Dictionary<string, object>();
+        var distinctClaims = claims.Distinct(new ClaimComparer());
+
+        foreach (var claim in distinctClaims)
+        {
+            if (result.TryGetValue(claim.Type, out var existingValue))
             {
-                return d;
-            }
-
-            var distinctClaims = claims.Distinct(new ClaimComparer());
-
-            foreach (var claim in distinctClaims)
-            {
-                if (!d.ContainsKey(claim.Type))
+                if (existingValue is List<object> list)
                 {
-                    d.Add(claim.Type, GetValue(claim));
+                    list.Add(GetValue(claim));
                 }
                 else
                 {
-                    var value = d[claim.Type];
-
-                    if (value is List<object> list)
-                    {
-                        list.Add(GetValue(claim));
-                    }
-                    else
-                    {
-                        d.Remove(claim.Type);
-                        d.Add(claim.Type, new List<object> { value, GetValue(claim) });
-                    }
+                    result[claim.Type] = new List<object> { existingValue, GetValue(claim) };
                 }
             }
-
-            return d;
+            else
+            {
+                result.Add(claim.Type, GetValue(claim));
+            }
         }
 
-        private static object GetValue(Claim claim)
+        return result;
+    }
+
+    private static object GetValue(Claim claim) => 
+        claim.ValueType switch
         {
-            if (claim.ValueType == ClaimValueTypes.Integer ||
-                claim.ValueType == ClaimValueTypes.Integer32)
-            {
-                if (Int32.TryParse(claim.Value, out int value))
-                {
-                    return value;
-                }
-            }
+            ClaimValueTypes.Integer or ClaimValueTypes.Integer32 => ParseInt(claim.Value),
+            ClaimValueTypes.Integer64 => ParseLong(claim.Value),
+            ClaimValueTypes.Boolean => ParseBool(claim.Value),
+            IdentityServerConstants.ClaimValueTypes.Json => ParseJson(claim.Value),
+            _ => claim.Value
+        };
 
-            if (claim.ValueType == ClaimValueTypes.Integer64)
-            {
-                if (Int64.TryParse(claim.Value, out long value))
-                {
-                    return value;
-                }
-            }
+    private static object ParseInt(string value) =>
+        int.TryParse(value, out var result) ? result : (object)value;
 
-            if (claim.ValueType == ClaimValueTypes.Boolean)
-            {
-                if (bool.TryParse(claim.Value, out bool value))
-                {
-                    return value;
-                }
-            }
+    private static object ParseLong(string value) =>
+        long.TryParse(value, out var result) ? result : (object)value;
 
-            if (claim.ValueType == IdentityServerConstants.ClaimValueTypes.Json)
-            {
-                try
-                {
-                    return System.Text.Json.JsonSerializer.Deserialize<JsonElement>(claim.Value);
-                }
-                catch { }
-            }
+    private static object ParseBool(string value) =>
+        bool.TryParse(value, out var result) ? result : (object)value;
 
-            return claim.Value;
+    private static object ParseJson(string value)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(value)!;
+        }
+        catch
+        {
+            return value;
         }
     }
 }

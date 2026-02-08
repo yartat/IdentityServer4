@@ -1,4 +1,4 @@
-﻿using IdentityServer4.Extensions;
+using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using IdentityServer4.Validation;
@@ -16,7 +16,7 @@ namespace IdentityServer4.Services.Default
     /// <seealso cref="IAuthorizationParametersProcessor" />
     public class DefaultAuthorizationParametersProcessor : IAuthorizationParametersProcessor
     {
-        private readonly IAuthorizationParametersMessageStore _store;
+        private readonly IAuthorizationParametersMessageStore? _store;
         private readonly ILogger<DefaultAuthorizationParametersProcessor> _logger;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace IdentityServer4.Services.Default
         /// <exception cref="ArgumentNullException">logger</exception>
         public DefaultAuthorizationParametersProcessor(
             ILogger<DefaultAuthorizationParametersProcessor> logger,
-            IAuthorizationParametersMessageStore store = null)
+            IAuthorizationParametersMessageStore? store = null)
         {
             _store = store;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,9 +37,9 @@ namespace IdentityServer4.Services.Default
         public async Task<(string ReturnUrl, string OtherParameters)> StoreParametersAsync(ValidatedAuthorizeRequest request)
         {
             var otherParameters = string.Empty;
-            if (_store != null)
+            if (_store is not null)
             {
-                var msg = new Message<IDictionary<string, string[]>>(request.Raw.ToFullDictionary());
+                var msg = new Message<IDictionary<string, string[]?>>(request.Raw.ToFullDictionary());
                 var id = await _store.WriteAsync(msg);
                 otherParameters = otherParameters.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
             }

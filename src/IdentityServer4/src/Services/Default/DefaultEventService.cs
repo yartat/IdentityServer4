@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Http;
 using IdentityServer4.Configuration;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
+#if NET7_0_OR_GREATER
+#else
 using Microsoft.AspNetCore.Authentication;
+#endif
 
 namespace IdentityServer4.Events
 {
@@ -36,7 +39,11 @@ namespace IdentityServer4.Events
         /// <summary>
         /// The clock
         /// </summary>
+#if NET7_0_OR_GREATER
+        protected readonly TimeProvider Clock;
+#else
         protected readonly ISystemClock Clock;
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultEventService"/> class.
@@ -45,7 +52,15 @@ namespace IdentityServer4.Events
         /// <param name="context">The context.</param>
         /// <param name="sink">The sink.</param>
         /// <param name="clock">The clock.</param>
-        public DefaultEventService(IdentityServerOptions options, IHttpContextAccessor context, IEventSink sink, ISystemClock clock)
+        public DefaultEventService(
+            IdentityServerOptions options,
+            IHttpContextAccessor context,
+            IEventSink sink,
+#if NET7_0_OR_GREATER
+            TimeProvider clock)
+#else
+            ISystemClock clock)
+#endif
         {
             Options = options;
             Context = context;
@@ -59,9 +74,9 @@ namespace IdentityServer4.Events
         /// <param name="evt">The event.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">evt</exception>
-        public async Task RaiseAsync(Event evt)
+        public async Task RaiseAsync(Event? evt)
         {
-            if (evt == null) throw new ArgumentNullException(nameof(evt));
+            ArgumentNullException.ThrowIfNull(evt);
 
             if (CanRaiseEvent(evt))
             {
@@ -76,22 +91,15 @@ namespace IdentityServer4.Events
         /// <param name="evtType"></param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException"></exception>
-        public bool CanRaiseEventType(EventTypes evtType)
-        {
-            switch (evtType)
+        public bool CanRaiseEventType(EventTypes evtType) => 
+            evtType switch
             {
-                case EventTypes.Failure:
-                    return Options.Events.RaiseFailureEvents;
-                case EventTypes.Information:
-                    return Options.Events.RaiseInformationEvents;
-                case EventTypes.Success:
-                    return Options.Events.RaiseSuccessEvents;
-                case EventTypes.Error:
-                    return Options.Events.RaiseErrorEvents;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(evtType));
-            }
-        }
+                EventTypes.Failure => Options.Events.RaiseFailureEvents,
+                EventTypes.Information => Options.Events.RaiseInformationEvents,
+                EventTypes.Success => Options.Events.RaiseSuccessEvents,
+                EventTypes.Error => Options.Events.RaiseErrorEvents,
+                _ => throw new ArgumentOutOfRangeException(nameof(evtType)),
+            };
 
         /// <summary>
         /// Determines whether this event would be persisted.
@@ -100,10 +108,8 @@ namespace IdentityServer4.Events
         /// <returns>
         ///   <c>true</c> if this event would be persisted; otherwise, <c>false</c>.
         /// </returns>
-        protected virtual bool CanRaiseEvent(Event evt)
-        {
-            return CanRaiseEventType(evt.EventType);
-        }
+        protected virtual bool CanRaiseEvent(Event evt) =>
+            CanRaiseEventType(evt.EventType);
 
         /// <summary>
         /// Prepares the event.
@@ -112,11 +118,15 @@ namespace IdentityServer4.Events
         /// <returns></returns>
         protected virtual async Task PrepareEventAsync(Event evt)
         {
-            evt.ActivityId = Context.HttpContext.TraceIdentifier;
+            evt.ActivityId = Context.HttpContext?.TraceIdentifier;
+#if NET7_0_OR_GREATER
+            evt.TimeStamp = Clock.GetUtcNow().UtcDateTime;
+#else
             evt.TimeStamp = Clock.UtcNow.UtcDateTime;
+#endif
             evt.ProcessId = Process.GetCurrentProcess().Id;
 
-            if (Context.HttpContext.Connection.LocalIpAddress != null)
+            if (Context.HttpContext?.Connection.LocalIpAddress is not null)
             {
                 evt.LocalIpAddress = Context.HttpContext.Connection.LocalIpAddress.ToString() + ":" + Context.HttpContext.Connection.LocalPort;
             }
@@ -125,7 +135,7 @@ namespace IdentityServer4.Events
                 evt.LocalIpAddress = "unknown";
             }
 
-            if (Context.HttpContext.Connection.RemoteIpAddress != null)
+            if (Context.HttpContext?.Connection.RemoteIpAddress is not null)
             {
                 evt.RemoteIpAddress = Context.HttpContext.Connection.RemoteIpAddress.ToString();
             }

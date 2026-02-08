@@ -73,15 +73,6 @@ namespace IdentityServer4.Validation
         }
 
         /// <summary>
-        /// Instantiates an instance of private_key_jwt secret validator (used for testing)
-        /// </summary>
-        internal JwtRequestValidator(string audience, ILogger<JwtRequestValidator> logger)
-        {
-            _audienceUri = audience;
-            Logger = logger;
-        }
-
-        /// <summary>
         /// Validates a JWT request object
         /// </summary>
         /// <param name="client">The client</param>
@@ -89,8 +80,8 @@ namespace IdentityServer4.Validation
         /// <returns></returns>
         public virtual async Task<JwtRequestValidationResult> ValidateAsync(Client client, string jwtTokenString)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (String.IsNullOrWhiteSpace(jwtTokenString)) throw new ArgumentNullException(nameof(jwtTokenString));
+            ArgumentNullException.ThrowIfNull(client);
+            if (string.IsNullOrWhiteSpace(jwtTokenString)) throw new ArgumentNullException(nameof(jwtTokenString));
 
             var fail = new JwtRequestValidationResult { IsError = true };
 

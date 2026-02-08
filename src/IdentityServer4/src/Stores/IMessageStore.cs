@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -18,13 +18,13 @@ namespace IdentityServer4.Stores
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>An identifier for the message</returns>
-        Task<string> WriteAsync(Message<TModel> message);
+        Task<string?> WriteAsync(Message<TModel> message);
 
         /// <summary>
         /// Reads the message.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        Task<Message<TModel>> ReadAsync(string id);
+        Task<Message<TModel>?> ReadAsync(string id);
     }
 }

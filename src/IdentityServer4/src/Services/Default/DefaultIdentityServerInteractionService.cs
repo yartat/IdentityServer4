@@ -17,7 +17,11 @@ namespace IdentityServer4.Services
 {
     internal class DefaultIdentityServerInteractionService : IIdentityServerInteractionService
     {
+#if NET7_0_OR_GREATER
+        private readonly TimeProvider _clock;
+#else
         private readonly ISystemClock _clock;
+#endif
         private readonly IHttpContextAccessor _context;
         private readonly IMessageStore<LogoutMessage> _logoutMessageStore;
         private readonly IMessageStore<ErrorMessage> _errorMessageStore;
@@ -28,7 +32,11 @@ namespace IdentityServer4.Services
         private readonly ReturnUrlParser _returnUrlParser;
 
         public DefaultIdentityServerInteractionService(
+#if NET7_0_OR_GREATER
+            TimeProvider clock,
+#else
             ISystemClock clock,
+#endif
             IHttpContextAccessor context,
             IMessageStore<LogoutMessage> logoutMessageStore,
             IMessageStore<ErrorMessage> errorMessageStore,
@@ -49,11 +57,11 @@ namespace IdentityServer4.Services
             _logger = logger;
         }
 
-        public async Task<AuthorizationRequest> GetAuthorizationContextAsync(string returnUrl)
+        public async Task<AuthorizationRequest?> GetAuthorizationContextAsync(string returnUrl)
         {
             var result = await _returnUrlParser.ParseAsync(returnUrl);
 
-            if (result != null)
+            if (result is not null)
             {
                 _logger.LogTrace("AuthorizationRequest being returned");
             }
@@ -72,10 +80,10 @@ namespace IdentityServer4.Services
             return new LogoutRequest(iframeUrl, msg?.Data);
         }
 
-        public async Task<string> CreateLogoutContextAsync()
+        public async Task<string?> CreateLogoutContextAsync()
         {
             var user = await _userSession.GetUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var clientIds = await _userSession.GetClientListAsync();
                 if (clientIds.Any())
@@ -86,7 +94,12 @@ namespace IdentityServer4.Services
                         SubjectId = user.GetSubjectId(),
                         SessionId = sid,
                         ClientIds = clientIds
-                    }, _clock.UtcNow.UtcDateTime);
+                    },
+#if NET7_0_OR_GREATER
+                    _clock.GetUtcNow().UtcDateTime);
+#else
+                    _clock.UtcNow.UtcDateTime);
+#endif
                     var id = await _logoutMessageStore.WriteAsync(msg);
                     return id;
                 }
@@ -95,7 +108,7 @@ namespace IdentityServer4.Services
             return null;
         }
 
-        public async Task<ErrorMessage> GetErrorContextAsync(string errorId)
+        public async Task<ErrorMessage?> GetErrorContextAsync(string errorId)
         {
             if (errorId != null)
             { 
@@ -117,24 +130,28 @@ namespace IdentityServer4.Services
             return null;
         }
 
-        public async Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string subject = null)
+        public async Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string? subject = null)
         {
-            if (subject == null)
+            if (subject is null)
             {
                 var user = await _userSession.GetUserAsync();
                 subject = user?.GetSubjectId();
             }
 
-            if (subject == null && consent.Granted)
+            if (subject is null && consent.Granted)
             {
                 throw new ArgumentNullException(nameof(subject), "User is not currently authenticated, and no subject id passed");
             }
 
             var consentRequest = new ConsentRequest(request, subject);
+#if NET7_0_OR_GREATER
+            await _consentMessageStore.WriteAsync(consentRequest.Id, new Message<ConsentResponse>(consent, _clock.GetUtcNow().UtcDateTime));
+#else
             await _consentMessageStore.WriteAsync(consentRequest.Id, new Message<ConsentResponse>(consent, _clock.UtcNow.UtcDateTime));
+#endif
         }
 
-        public Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string errorDescription = null)
+        public Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string? errorDescription = null)
         {
             var response = new ConsentResponse 
             {
@@ -163,7 +180,7 @@ namespace IdentityServer4.Services
         public async Task<IEnumerable<Grant>> GetAllUserGrantsAsync()
         {
             var user = await _userSession.GetUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var subject = user.GetSubjectId();
                 return await _grants.GetAllGrantsAsync(subject);

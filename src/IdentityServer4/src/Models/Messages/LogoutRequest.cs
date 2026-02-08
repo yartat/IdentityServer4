@@ -33,7 +33,7 @@ namespace IdentityServer4.Models
             {
                 if (request.Raw != null)
                 {
-                    Parameters = request.Raw.ToFullDictionary();
+                    Parameters = request.Raw.ToFullDictionary()!;
                 }
 
                 // optimize params sent to logout page, since we'd like to send them in URL (not as cookie)
@@ -61,32 +61,32 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Gets or sets the client identifier.
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the client name.
         /// </summary>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the post logout redirect URI.
         /// </summary>
-        public string PostLogoutRedirectUri { get; set; }
+        public string? PostLogoutRedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the subject identifier for the user at logout time.
         /// </summary>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
         
         /// <summary>
         /// Gets or sets the session identifier for the user at logout time.
         /// </summary>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         /// <summary>
         ///  Ids of clients known to have an authentication session for user at end session time
         /// </summary>
-        public IEnumerable<string> ClientIds { get; set; }
+        public IEnumerable<string>? ClientIds { get; set; }
 
         /// <summary>
         /// Gets the entire parameter collection.
@@ -109,9 +109,9 @@ namespace IdentityServer4.Models
         /// </summary>
         /// <param name="iframeUrl">The iframe URL.</param>
         /// <param name="message">The message.</param>
-        public LogoutRequest(string iframeUrl, LogoutMessage message)
+        public LogoutRequest(string? iframeUrl, LogoutMessage? message)
         {
-            if (message != null)
+            if (message is not null)
             {
                 ClientId = message.ClientId;
                 ClientName = message.ClientName;
@@ -128,32 +128,32 @@ namespace IdentityServer4.Models
         /// <summary>
         /// Gets or sets the client identifier.
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the client name.
         /// </summary>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the post logout redirect URI.
         /// </summary>
-        public string PostLogoutRedirectUri { get; set; }
+        public string? PostLogoutRedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the subject identifier for the user at logout time.
         /// </summary>
-        public string SubjectId { get; set; }
+        public string? SubjectId { get; set; }
 
         /// <summary>
         /// Gets or sets the session identifier for the user at logout time.
         /// </summary>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         /// <summary>
         ///  Ids of clients known to have an authentication session for user at end session time
         /// </summary>
-        public IEnumerable<string> ClientIds { get; set; }
+        public IEnumerable<string>? ClientIds { get; set; }
 
         /// <summary>
         /// Gets the entire parameter collection.
@@ -166,7 +166,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The sign out iframe URL.
         /// </value>
-        public string SignOutIFrameUrl { get; set; }
+        public string? SignOutIFrameUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user should be prompted for signout.

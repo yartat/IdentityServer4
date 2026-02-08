@@ -19,7 +19,7 @@ namespace IdentityServer4.Services
         /// <param name="token">The refresh token.</param>
         /// <param name="client">The client.</param>
         /// <returns></returns>
-        Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client client);
+        Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client? client);
 
         /// <summary>
         /// Creates the refresh token.
@@ -32,7 +32,7 @@ namespace IdentityServer4.Services
         /// <returns>
         /// The refresh token handle
         /// </returns>
-        Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string ip, string device);
+        Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken, Client client, string? ip, string? device);
 
         /// <summary>
         /// Updates the refresh token.

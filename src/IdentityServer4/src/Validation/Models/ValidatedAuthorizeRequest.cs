@@ -1,9 +1,10 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using IdentityModel;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace IdentityServer4.Validation
@@ -52,7 +53,7 @@ namespace IdentityServer4.Validation
         /// The requested scopes.
         /// </value>
         // todo: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
-        public List<string> RequestedScopes { get; set; }
+        public required List<string> RequestedScopes { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether consent was shown.
@@ -68,7 +69,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The description.
         /// </value>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the state.
@@ -116,7 +117,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The authentication context reference classes.
         /// </value>
-        public List<string> AuthenticationContextReferenceClasses { get; set; }
+        public required List<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
         /// Gets or sets the display mode.
@@ -172,7 +173,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The request object values
         /// </value>
-        public Dictionary<string, string> RequestObjectValues { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> RequestObjectValues { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the request object (either passed by value or retrieved by reference)
@@ -180,7 +181,7 @@ namespace IdentityServer4.Validation
         /// <value>
         /// The request object
         /// </value>
-        public string RequestObject { get; set; }
+        public string? RequestObject { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether an access token was requested.
@@ -202,6 +203,7 @@ namespace IdentityServer4.Validation
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidatedAuthorizeRequest"/> class.
         /// </summary>
+        [SetsRequiredMembers]
         public ValidatedAuthorizeRequest()
         {
             RequestedScopes = new List<string>();

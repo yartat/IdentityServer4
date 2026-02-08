@@ -122,7 +122,7 @@ namespace IdentityServer4.Logging.Models
         /// Gets or sets the session identifier.
         /// </summary>
         /// <value>The session identifier.</value>
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the raw.
