@@ -1,18 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
 
   <PropertyGroup>
-    <DotNetLibrary3xx>3.1.21</DotNetLibrary3xx>
-    <DotNetLibrary50>5.0.0</DotNetLibrary50>
-    <DotNetLibrary60>6.0.0</DotNetLibrary60>
-    <DotNetLibrary5xx>5.0.12</DotNetLibrary5xx>
-    <DotNetLibrary6xx>6.0.0</DotNetLibrary6xx>
-    <OpenIdConnect>6.14.1</OpenIdConnect>
-    <JsonLib>6.0.0</JsonLib>
-    <IdentityModel>5.2.0</IdentityModel>
-    <NewtonJson>13.0.1</NewtonJson>
-    <AutoMapper>10.1.1</AutoMapper>
-    <TestSdk>16.11.0</TestSdk>
+    <DotNetLibrary10xx>10.0.12</DotNetLibrary10xx>
+    <OpenIdConnect>8.23.0</OpenIdConnect>
+    <DuendeIdentityModel>8.1.0</DuendeIdentityModel>
+    <Mapster>10.0.13</Mapster>
+    <TestSdk>18.10.1</TestSdk>
+    <XUnit>2.9.3</XUnit>
+    <XUnitRunner>4.0.0</XUnitRunner>
+    <FluentAssertions>7.2.2</FluentAssertions>
+  </PropertyGroup>
+
+  <!-- a known vulnerability in any package, direct or transitive, fails the build -->
+  <PropertyGroup>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
   </PropertyGroup>
 
 </Project>

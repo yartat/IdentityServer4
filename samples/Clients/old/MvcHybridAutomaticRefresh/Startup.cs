@@ -1,13 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
-using IdentityModel;
+using Duende.IdentityModel;
 using Clients;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using IdentityModel.AspNetCore;
+using MvcHybrid.AutomaticTokenManagement;
 
 namespace MvcHybrid
 {
@@ -20,7 +24,7 @@ namespace MvcHybrid
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddControllersWithViews();
             services.AddHttpClient();
 
             services.AddAuthentication(options =>
@@ -68,8 +72,15 @@ namespace MvcHybrid
         {
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
+
+            app.UseRouting();
             app.UseAuthentication();
-            app.UseMvcWithDefaultRoute();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
     }
 }

@@ -1,6 +1,10 @@
-﻿using IdentityServerHost;
-using Microsoft.AspNetCore;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using IdentityServerHost;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace SqlServer
 {
@@ -8,13 +12,12 @@ namespace SqlServer
     {
         public static void Main(string[] args)
         {
-            var host = BuildWebHost(args);
+            var host = CreateHostBuilder(args).Build();
             SeedData.EnsureSeedData(host.Services);
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
     }
 }

@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4;
@@ -13,6 +14,7 @@ using IdentityServer4.Models;
 using IdentityServer4.ResponseHandling;
 using IdentityServer4.Services;
 using IdentityServer4.Services.Default;
+using IdentityServer4.Services.KeyManagement;
 using IdentityServer4.Stores;
 using IdentityServer4.Stores.Serialization;
 using IdentityServer4.Validation;
@@ -21,6 +23,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
@@ -43,6 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services
                 .AddOptions()
                 .AddHttpContextAccessor()
+                .AddMemoryCache()
                 .AddSingleton(resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value)
                 .AddHttpClient();
 
@@ -183,6 +187,16 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
             builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
             builder.Services.TryAddTransient<IAuthorizationParametersProcessor, DefaultAuthorizationParametersProcessor>();
+
+            // automatic key management (used only when IdentityServerOptions.KeyManagement.Enabled is set)
+            builder.Services.TryAddSingleton(TimeProvider.System);
+            builder.Services.TryAddSingleton<ISigningKeyStoreCache, InMemoryKeyStoreCache>();
+            builder.Services.TryAddTransient<ISigningKeyProtector, DataProtectionKeyProtector>();
+            builder.Services.TryAddTransient<IKeyManager, KeyManager>();
+            builder.Services.TryAddTransient<IAutomaticKeyManagerKeyStore, AutomaticKeyManagerKeyStore>();
+            builder.Services.TryAddTransient<ISigningKeyStore>(provider => new FileSystemKeyStore(
+                provider.GetRequiredService<IdentityServerOptions>().KeyManagement.KeyPath,
+                provider.GetRequiredService<ILogger<FileSystemKeyStore>>()));
 
             builder.AddJwtRequestUriHttpClient();
             builder.AddBackChannelLogoutHttpClient();

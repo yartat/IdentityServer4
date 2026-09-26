@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -242,14 +243,14 @@ namespace IdentityServer.IntegrationTests.Clients.Setup
                     ClientId = "implicit",
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowedScopes = {"api1"},
-                    RedirectUris = { "http://implicit" }
+                    RedirectUris = { new Uri("http://implicit") }
                 },
                 new Client
                 {
                     ClientId = "implicit_and_client_creds",
                     AllowedGrantTypes = GrantTypes.ImplicitAndClientCredentials,
                     AllowedScopes = {"api1"},
-                    RedirectUris = { "http://implicit_and_client_creds" }
+                    RedirectUris = { new Uri("http://implicit_and_client_creds") }
                 }
             };
         }

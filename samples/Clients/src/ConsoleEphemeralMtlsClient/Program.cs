@@ -1,13 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Clients;
-using IdentityModel;
-using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
+using System.Text.Json.Nodes;
 
 namespace ConsoleEphemeralMtlsClient
 {
@@ -33,10 +37,7 @@ namespace ConsoleEphemeralMtlsClient
             var disco = await client.GetDiscoveryDocumentAsync(Constants.AuthorityMtls);
             if (disco.IsError) throw new Exception(disco.Error);
 
-            var endpoint = disco
-                .TryGetValue(OidcConstants.Discovery.MtlsEndpointAliases)
-                .Value<string>(OidcConstants.Discovery.TokenEndpoint)
-                .ToString();
+            var endpoint = disco.MtlsEndpointAliases.TokenEndpoint;
             
             var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
@@ -62,7 +63,7 @@ namespace ConsoleEphemeralMtlsClient
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(JArray.Parse(response));
+            Console.WriteLine(JsonNode.Parse(response));
         }
         
         static X509Certificate2 CreateClientCertificate(string name)

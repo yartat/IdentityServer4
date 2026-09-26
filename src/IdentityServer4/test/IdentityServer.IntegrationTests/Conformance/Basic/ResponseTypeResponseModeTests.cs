@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 using FluentAssertions;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4.Models;
@@ -82,7 +84,7 @@ namespace IdentityServer.IntegrationTests.Conformance.Basic
             var response = await _mockPipeline.BrowserClient.GetAsync(url);
             response.StatusCode.Should().Be(HttpStatusCode.Found);
 
-            var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+            var authorization = new Duende.IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
             authorization.IsError.Should().BeFalse();
             authorization.Code.Should().NotBeNull();
             authorization.State.Should().Be(state);
@@ -100,13 +102,15 @@ namespace IdentityServer.IntegrationTests.Conformance.Basic
             var state = Guid.NewGuid().ToString();
             var nonce = Guid.NewGuid().ToString();
 
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                clientId: "code_client",
-                responseType: null, // missing
-                scope: "openid",
-                redirectUri: "https://code_client/callback",
-                state: state,
-                nonce: nonce);
+            // built by hand: Duende.IdentityModel's CreateAuthorizeUrl refuses a missing response_type
+            var url = new RequestUrl(IdentityServerPipeline.AuthorizeEndpoint).Create(new Parameters
+            {
+                { "client_id", "code_client" },
+                { "scope", "openid" },
+                { "redirect_uri", "https://code_client/callback" },
+                { "state", state },
+                { "nonce", nonce }
+            });
 
             _mockPipeline.BrowserClient.AllowAutoRedirect = true;
             var response = await _mockPipeline.BrowserClient.GetAsync(url);

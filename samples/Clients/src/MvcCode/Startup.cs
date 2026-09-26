@@ -1,5 +1,9 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using Clients;
-using IdentityModel;
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -7,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 
 namespace MvcCode
 {

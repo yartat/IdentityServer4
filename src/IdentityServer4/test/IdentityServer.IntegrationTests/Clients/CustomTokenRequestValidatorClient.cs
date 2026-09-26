@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -6,11 +7,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Clients.Setup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
+using IdentityServer.IntegrationTests.Common;
 
 namespace IdentityServer.IntegrationTests.Clients
 {
@@ -119,7 +121,7 @@ namespace IdentityServer.IntegrationTests.Clients
 
         private Dictionary<string, object> GetFields(TokenResponse response)
         {
-            return response.Json.ToObject<Dictionary<string, object>>();
+            return JsonTestHelper.ParseObject(response.Raw);
         }
     }
 }

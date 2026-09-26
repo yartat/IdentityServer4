@@ -1,20 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonJson)" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 
-    <PackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4)" />
+    <ProjectReference Include="..\..\EntityFramework\src\IdentityServer4.EntityFramework.csproj" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(DotNetLibrary3xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetLibrary3xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.12" PrivateAssets="All" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.7.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(DotNetLibrary10xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetLibrary10xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(DotNetLibrary10xx)" PrivateAssets="All" />
     
     <ProjectReference Include="..\src\IdentityServer4.csproj" />
   </ItemGroup>

@@ -1,9 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Clients;
-using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
+using Duende.IdentityModel.Client;
+using System.Text.Json.Nodes;
 
 namespace ConsoleParameterizedScopeClient
 {
@@ -49,7 +53,7 @@ namespace ConsoleParameterizedScopeClient
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(JArray.Parse(response));
+            Console.WriteLine(JsonNode.Parse(response));
         }
     }
 }

@@ -1,5 +1,9 @@
-﻿using Clients;
-using IdentityModel;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Clients;
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -84,7 +88,7 @@ namespace MvcImplicit
 
         private static string CreateJwtRequest(string clientId, string audience, params Claim[] claims)
         {
-            var certificate = new X509Certificate2("client.pfx");
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile("client.pfx", null);
             var now = DateTime.UtcNow;
 
             var token = new JwtSecurityToken(

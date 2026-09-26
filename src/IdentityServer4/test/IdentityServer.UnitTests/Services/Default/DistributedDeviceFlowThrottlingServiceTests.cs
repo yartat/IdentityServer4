@@ -1,3 +1,7 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -98,7 +102,7 @@ namespace IdentityServer.UnitTests.Services.Default
             var dateTime = DateTime.Parse(dateTimeAsString);
             dateTime.Should().Be(testDate);
 
-            values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime));
+            values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime), TimeSpan.FromMilliseconds(20));
         }
     }
 

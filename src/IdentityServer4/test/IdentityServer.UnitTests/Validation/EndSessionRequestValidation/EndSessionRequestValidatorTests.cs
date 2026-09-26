@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -97,7 +98,7 @@ namespace IdentityServer.UnitTests.Validation.EndSessionRequestValidation
             {
                 IsError = false,
                 Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo") } }
+                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo", UriKind.Relative) } }
             };
             _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
@@ -116,7 +117,7 @@ namespace IdentityServer.UnitTests.Validation.EndSessionRequestValidation
             {
                 IsError = false,
                 Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo"), new Uri("bar") } }
+                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<Uri> { new Uri("foo", UriKind.Relative), new Uri("bar", UriKind.Relative) } }
             };
             _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 

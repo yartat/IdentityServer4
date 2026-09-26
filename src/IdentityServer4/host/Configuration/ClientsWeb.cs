@@ -1,6 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.using System.Collections.Generic;
 
+using System;
 using System.Collections.Generic;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -37,13 +39,13 @@ namespace IdentityServerHost.Configuration
                     
                     RedirectUris = 
                     {
-                        "https://localhost:44300/index.html",
-                        "https://localhost:44300/callback.html",
-                        "https://localhost:44300/silent.html",
-                        "https://localhost:44300/popup.html"
+                        new Uri("https://localhost:44300/index.html"),
+                        new Uri("https://localhost:44300/callback.html"),
+                        new Uri("https://localhost:44300/silent.html"),
+                        new Uri("https://localhost:44300/popup.html")
                     },
 
-                    PostLogoutRedirectUris = { "https://localhost:44300/index.html" },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:44300/index.html") },
                     AllowedCorsOrigins = { "https://localhost:44300" },
 
                     AllowedScopes = allowedScopes
@@ -66,9 +68,9 @@ namespace IdentityServerHost.Configuration
 
                     AccessTokenLifetime = 75,
 
-                    RedirectUris = { "https://localhost:44301/signin-oidc" },
+                    RedirectUris = { new Uri("https://localhost:44301/signin-oidc") },
                     FrontChannelLogoutUri = "https://localhost:44301/signout-oidc",
-                    PostLogoutRedirectUris = { "https://localhost:44301/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:44301/signout-callback-oidc") },
 
                     AllowOfflineAccess = true,
 
@@ -92,9 +94,9 @@ namespace IdentityServerHost.Configuration
                     RequireConsent = true,
                     AllowedGrantTypes = GrantTypes.Code,
 
-                    RedirectUris = { "https://localhost:44302/signin-oidc" },
+                    RedirectUris = { new Uri("https://localhost:44302/signin-oidc") },
                     FrontChannelLogoutUri = "https://localhost:44302/signout-oidc",
-                    PostLogoutRedirectUris = { "https://localhost:44302/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:44302/signout-callback-oidc") },
 
                     AllowOfflineAccess = true,
 
@@ -118,9 +120,9 @@ namespace IdentityServerHost.Configuration
                     AllowedGrantTypes = GrantTypes.Hybrid,
                     RequirePkce = false,
 
-                    RedirectUris = { "https://localhost:44303/signin-oidc" },
+                    RedirectUris = { new Uri("https://localhost:44303/signin-oidc") },
                     BackChannelLogoutUri = "https://localhost:44303/logout",
-                    PostLogoutRedirectUris = { "https://localhost:44303/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:44303/signout-callback-oidc") },
 
                     AllowOfflineAccess = true,
 

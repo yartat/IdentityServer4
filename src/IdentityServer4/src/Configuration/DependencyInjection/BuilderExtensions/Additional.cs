@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -166,6 +167,20 @@ namespace Microsoft.Extensions.DependencyInjection
             where T : class, IPersistedGrantStore
         {
             builder.Services.AddTransient<IPersistedGrantStore, T>();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a store for the signing keys created by automatic key management (replaces the default file system store).
+        /// </summary>
+        /// <typeparam name="T">The type of the concrete signing key store that is registered in DI.</typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns>The builder.</returns>
+        public static IIdentityServerBuilder AddSigningKeyStore<T>(this IIdentityServerBuilder builder)
+            where T : class, ISigningKeyStore
+        {
+            builder.Services.AddTransient<ISigningKeyStore, T>();
 
             return builder;
         }

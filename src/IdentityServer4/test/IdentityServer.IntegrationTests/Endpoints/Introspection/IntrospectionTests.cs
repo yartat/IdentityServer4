@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -9,13 +10,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Endpoints.Introspection.Setup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
+using IdentityServer.IntegrationTests.Common;
+using System.Text.Json;
 
 namespace IdentityServer.IntegrationTests.Endpoints.Introspection
 {
@@ -120,7 +121,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Introspection
                 client_secret = "secret",
                 token = tokenResponse.AccessToken
             };
-            var json = JsonConvert.SerializeObject(data);
+            var json = JsonSerializer.Serialize(data);
 
             var client = new HttpClient(_handler);
             var response = await client.PostAsync(IntrospectionEndpoint, new StringContent(json, Encoding.UTF8, "application/json"));
@@ -180,7 +181,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Introspection
                 Token = tokenResponse.AccessToken
             });
 
-            var values = introspectionResponse.Json.ToObject<Dictionary<string, object>>();
+            var values = JsonTestHelper.ParseObject(introspectionResponse.Raw);
 
             values["aud"].GetType().Name.Should().Be("String");
             values["iss"].GetType().Name.Should().Be("String");
@@ -219,7 +220,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Introspection
                 Token = tokenResponse.AccessToken
             });
 
-            var values = introspectionResponse.Json.ToObject<Dictionary<string, object>>();
+            var values = JsonTestHelper.ParseObject(introspectionResponse.Raw);
 
             values["aud"].GetType().Name.Should().Be("String");
             values["iss"].GetType().Name.Should().Be("String");
@@ -258,14 +259,14 @@ namespace IdentityServer.IntegrationTests.Endpoints.Introspection
                 Token = tokenResponse.AccessToken
             });
 
-            var values = introspectionResponse.Json.ToObject<Dictionary<string, object>>();
+            var values = JsonTestHelper.ParseObject(introspectionResponse.Raw);
 
-            values["aud"].GetType().Name.Should().Be("JArray");
+            values["aud"].Should().BeOfType<List<object>>();
 
-            var audiences = ((JArray)values["aud"]);
+            var audiences = ((List<object>)values["aud"]);
             foreach (var aud in audiences)
             {
-                aud.Type.Should().Be(JTokenType.String);
+                aud.Should().BeOfType<string>();
             }
 
             values["iss"].GetType().Name.Should().Be("String");
@@ -303,7 +304,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Introspection
                 Token = tokenResponse.AccessToken
             });
 
-            var values = introspectionResponse.Json.ToObject<Dictionary<string, object>>();
+            var values = JsonTestHelper.ParseObject(introspectionResponse.Raw);
 
             values["aud"].GetType().Name.Should().Be("String");
             values["iss"].GetType().Name.Should().Be("String"); 

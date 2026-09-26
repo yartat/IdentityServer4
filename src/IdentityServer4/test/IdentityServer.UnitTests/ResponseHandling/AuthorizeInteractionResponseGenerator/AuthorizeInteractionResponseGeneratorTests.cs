@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -12,7 +13,7 @@ using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
 using Xunit;
-using static IdentityModel.OidcConstants;
+using static Duende.IdentityModel.OidcConstants;
 
 namespace IdentityServer.UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
 {

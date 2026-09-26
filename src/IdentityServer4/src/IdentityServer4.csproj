@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <PackageId>IdentityServer4</PackageId>
-    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
     <Authors>Brock Allen;Dominick Baier</Authors>
     <AssemblyName>IdentityServer4</AssemblyName>
@@ -36,20 +36,12 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
-    <PackageReference Include="IdentityModel" Version="$(IdentityModel)" />
+    <PackageReference Include="Duende.IdentityModel" Version="$(DuendeIdentityModel)" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(OpenIdConnect)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(DotNetLibrary6xx)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(DotNetLibrary5xx)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(DotNetLibrary3xx)" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(DotNetLibrary10xx)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,8 @@
-﻿using IdentityModel.Client;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Duende.IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Logging;
@@ -6,8 +10,9 @@ using Microsoft.Extensions.Options;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityModel;
 
-namespace IdentityModel.AspNetCore
+namespace MvcHybrid.AutomaticTokenManagement
 {
     public class TokenEndpointService
     {

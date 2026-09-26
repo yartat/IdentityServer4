@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace MvcCode.Controllers
 {
@@ -27,7 +31,7 @@ namespace MvcCode.Controllers
             var client = _httpClientFactory.CreateClient("client");
 
             var response = await client.GetStringAsync("identity");
-            ViewBag.Json = JArray.Parse(response).ToString();
+            ViewBag.Json = JsonNode.Parse(response).ToString();
 
             return View();
         }

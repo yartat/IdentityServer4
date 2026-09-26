@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
 using System.Linq;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4;
 using IdentityServer4.AspNetIdentity;
 using IdentityServer4.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using IdentityConstants = Microsoft.AspNetCore.Identity.IdentityConstants;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

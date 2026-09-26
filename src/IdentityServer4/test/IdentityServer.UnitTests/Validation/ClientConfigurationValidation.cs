@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -379,6 +380,31 @@ namespace IdentityServer.UnitTests.Validation
 
             var result = await ValidateAsync(client);
             result.IsValid.Should().BeTrue();
+        }
+
+        [Theory]
+        [Trait("Category", Category)]
+        [InlineData("javascript:alert(document.cookie)")]
+        [InlineData("JavaScript:alert(1)")]
+        [InlineData("data:text/html,<script>alert(1)</script>")]
+        [InlineData("file:///etc/passwd")]
+        public async Task ValidateUriSchemesAsync_should_reject_default_dangerous_schemes(string redirectUri)
+        {
+            var client = new Client
+            {
+                ClientId = "id",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowedScopes = { "foo" },
+                RedirectUris = { new Uri("https://callback") },
+                PostLogoutRedirectUris = { new Uri(redirectUri) }
+            };
+
+            await ShouldFailAsync(client, $"PostLogoutRedirectUri '{redirectUri}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
+
+            client.PostLogoutRedirectUris.Clear();
+            client.RedirectUris.Add(new Uri(redirectUri));
+
+            await ShouldFailAsync(client, $"RedirectUri '{redirectUri}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
         }
 
         [Fact]

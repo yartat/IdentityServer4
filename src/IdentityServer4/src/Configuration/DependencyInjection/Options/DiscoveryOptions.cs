@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 
 namespace IdentityServer4.Configuration
@@ -73,6 +75,16 @@ namespace IdentityServer4.Configuration
         /// The cache interval in seconds.
         /// </value>
         public int? ResponseCacheInterval { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets how long the server keeps a generated discovery document and key set in memory before building them again.
+        /// A rotated signing key or changed configuration is published within this interval.
+        /// <see cref="TimeSpan.Zero"/> disables server-side caching. Defaults to 1 minute.
+        /// </summary>
+        /// <value>
+        /// The server-side cache duration.
+        /// </value>
+        public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Adds custom entries to the discovery document

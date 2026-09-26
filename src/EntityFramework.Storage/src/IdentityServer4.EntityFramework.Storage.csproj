@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>IdentityServer4.EntityFramework.Storage</PackageId>
-    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     
     <Description>EntityFramework persistence layer for IdentityServer4</Description>
     <Authors>Brock Allen;Dominick Baier;Scott Brady</Authors>
@@ -30,31 +30,39 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="$(AutoMapper)" />
+    <PackageReference Include="Mapster" Version="$(Mapster)" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary6xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary6xx)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary5xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary5xx)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary3xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary3xx)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary3xx)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary3xx)" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(DotNetLibrary10xx)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotNetLibrary10xx)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Storage\src\IdentityServer4.Storage.csproj" />
   </ItemGroup>
+
+  <!--
+    Mapster code generation. Run after changing Mappers\I*Mapper.cs or Mappers\*MapperRegister.cs:
+      dotnet build -t:GenerateMappers
+    The assembly is first built with MAPSTER_CODEGEN defined and without Mappers\Generated\*.g.cs,
+    so generation works even when the generated code is missing or stale. Commit the regenerated files.
+  -->
+  <PropertyGroup Condition="'$(MapsterCodeGen)' == 'true'">
+    <DefineConstants>$(DefineConstants);MAPSTER_CODEGEN</DefineConstants>
+    <OutputPath>bin\mapster-codegen\</OutputPath>
+    <IntermediateOutputPath>obj\mapster-codegen\</IntermediateOutputPath>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MapsterCodeGen)' == 'true'">
+    <Compile Remove="Mappers\Generated\**" />
+  </ItemGroup>
+
+  <Target Name="GenerateMappers">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" Properties="MapsterCodeGen=true" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="dotnet tool restore" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="dotnet mapster mapper -a &quot;$(MSBuildProjectDirectory)\bin\mapster-codegen\$(TargetFramework)\$(AssemblyName).dll&quot; -o Mappers\Generated -n IdentityServer4.EntityFramework.Mappers -p" />
+  </Target>
 
 </Project>

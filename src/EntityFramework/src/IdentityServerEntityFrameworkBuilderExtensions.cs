@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -88,6 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Configures EF implementation of IPersistedGrantStore with IdentityServer.
+        /// Also stores the signing keys of automatic key management in the database.
         /// </summary>
         /// <typeparam name="TContext">The IPersistedGrantDbContext to use.</typeparam>
         /// <param name="builder">The builder.</param>
@@ -102,6 +104,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
             builder.Services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
+            builder.AddSigningKeyStore<SigningKeyStore>();
             builder.Services.AddSingleton<IHostedService, TokenCleanupHost>();
 
             return builder;

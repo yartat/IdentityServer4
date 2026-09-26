@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using System.Collections.Specialized;
@@ -66,7 +67,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
             _stubAuthorizeRequestValidator.Result.IsError = true;
             _stubAuthorizeRequestValidator.Result.Error = "login_required";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -80,7 +81,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
             _stubAuthorizeRequestValidator.Result.IsError = true;
             _stubAuthorizeRequestValidator.Result.Error = "some_error";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -92,7 +93,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.IsConsent = true;
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<ConsentPageResult>();
         }
@@ -103,7 +104,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.Error = "error";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -118,7 +119,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
              _stubInteractionGenerator.Response.Error = "error";
             _stubInteractionGenerator.Response.ErrorDescription = errorDescription;
 
-             var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+             var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
              result.Should().BeOfType<AuthorizeResult>();
             var authorizeResult = ((AuthorizeResult)result);
@@ -132,7 +133,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.IsLogin = true;
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<LoginPageResult>();
         }
@@ -144,7 +145,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
             _mockUserSession.User = _user;
             _stubInteractionGenerator.Response.RedirectUrl = "http://foo.com";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<CustomRedirectResult>();
         }
@@ -153,7 +154,7 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
         [Trait("Category", Category)]
         public async Task successful_authorization_request_should_generate_authorize_result()
         {
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null, _context);
 
             result.Should().BeOfType<AuthorizeResult>();
         }

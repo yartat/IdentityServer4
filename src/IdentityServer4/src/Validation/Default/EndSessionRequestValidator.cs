@@ -1,8 +1,9 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Collections.Specialized;
@@ -141,7 +142,12 @@ namespace IdentityServer4.Validation
                 var redirectUri = parameters.Get(OidcConstants.EndSessionRequest.PostLogoutRedirectUri);
                 if (redirectUri.IsPresent())
                 {
-                    if (await UriValidator.IsPostLogoutRedirectUriValidAsync(redirectUri, validatedRequest.Client))
+                    if (redirectUri.Length > Options.InputLengthRestrictions.RedirectUri ||
+                        !Uri.TryCreate(redirectUri, UriKind.Absolute, out _))
+                    {
+                        Logger.LogWarning("Malformed PostLogoutRedirectUri");
+                    }
+                    else if (await UriValidator.IsPostLogoutRedirectUriValidAsync(redirectUri, validatedRequest.Client))
                     {
                         validatedRequest.PostLogOutUri = redirectUri;
                     }

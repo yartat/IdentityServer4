@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System.Linq;
 using FluentAssertions;
 using IdentityServer4.EntityFramework.Mappers;
+using Mapster;
 using Xunit;
 using ApiResource = IdentityServer4.Models.ApiResource;
 
@@ -13,9 +15,11 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
     public class ApiResourceMappersTests
     {
         [Fact]
-        public void AutomapperConfigurationIsValid()
+        public void MapsterConfigurationIsValid()
         {
-            ApiResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ApiResourceMapperProfile>();
+            var config = new TypeAdapterConfig { RequireDestinationMemberSource = true };
+            new ApiResourceMapperRegister().Register(config);
+            config.Compile();
         }
 
         [Fact]

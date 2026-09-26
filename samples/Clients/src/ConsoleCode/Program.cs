@@ -1,11 +1,15 @@
-﻿using Clients;
-using IdentityModel.Client;
-using IdentityModel.OidcClient;
-using Newtonsoft.Json.Linq;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Clients;
+using Duende.IdentityModel.Client;
+using Duende.IdentityModel.OidcClient;
 using Serilog;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace ConsoleClientWithBrowser
 {
@@ -123,7 +127,7 @@ namespace ConsoleClientWithBrowser
 
             if (response.IsSuccessStatusCode)
             {
-                var json = JArray.Parse(await response.Content.ReadAsStringAsync());
+                var json = JsonNode.Parse(await response.Content.ReadAsStringAsync());
                 Console.WriteLine("\n\n");
                 Console.WriteLine(json);
             }

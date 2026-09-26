@@ -1,10 +1,13 @@
-﻿using Clients;
-using IdentityModel;
-using IdentityModel.Client;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Clients;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,6 +15,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace MvcHybrid.Controllers
 {
@@ -28,8 +32,8 @@ namespace MvcHybrid.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(string logout_token)
         {
-            Response.Headers.Add("Cache-Control", "no-cache, no-store");
-            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers["Cache-Control"] = "no-cache, no-store";
+            Response.Headers["Pragma"] = "no-cache";
 
             try
             {
@@ -60,8 +64,8 @@ namespace MvcHybrid.Controllers
             var eventsJson = claims.FindFirst("events")?.Value;
             if (String.IsNullOrWhiteSpace(eventsJson)) throw new Exception("Invalid logout token");
 
-            var events = JObject.Parse(eventsJson);
-            var logoutEvent = events.TryGetValue("http://schemas.openid.net/event/backchannel-logout");
+            var events = JsonNode.Parse(eventsJson)?.AsObject();
+            var logoutEvent = events?["http://schemas.openid.net/event/backchannel-logout"];
             if (logoutEvent == null) throw new Exception("Invalid logout token");
 
             return claims;

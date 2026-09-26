@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -8,13 +9,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel;
-using IdentityModel.Client;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Xunit;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer.IntegrationTests.Conformance.Pkce
 {
@@ -64,6 +66,26 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
 
                 AllowedGrantTypes = GrantTypes.Code,
                 RequirePkce = true,
+
+                AllowedScopes = { "openid" },
+
+                RequireConsent = false,
+                RedirectUris = new List<Uri>
+                {
+                    new Uri(redirect_uri)
+                }
+            });
+            _pipeline.Clients.Add(new Client
+            {
+                Enabled = true,
+                ClientId = client_id_optional,
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret(client_secret.Sha256())
+                },
+
+                AllowedGrantTypes = GrantTypes.Code,
+                RequirePkce = false,
 
                 AllowedScopes = { "openid" },
 
@@ -510,11 +532,78 @@ namespace IdentityServer.IntegrationTests.Conformance.Pkce
             tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
         }
 
+        [Theory]
+        [InlineData(client_id)]
+        [InlineData(client_id_pkce)]
+        [Trait("Category", Category)]
+        public async Task Code_should_be_consumed_by_a_failed_token_request(string clientId)
+        {
+            await _pipeline.LoginAsync("bob");
+
+            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+                response_type,
+                IdentityServerConstants.StandardScopes.OpenId,
+                redirect_uri,
+                nonce: Guid.NewGuid().ToString(),
+                codeChallenge: Sha256OfCodeVerifier(code_verifier),
+                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Sha256);
+            authorizeResponse.IsError.Should().BeFalse();
+
+            var request = new AuthorizationCodeTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = clientId,
+                ClientSecret = client_secret,
+                Code = authorizeResponse.Code,
+                RedirectUri = redirect_uri,
+                CodeVerifier = "wrong_code_verifier_wrong_code_verifier_wrong_code_verifier"
+            };
+            (await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(request)).Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+
+            // guessing the verifier again must not work, even with the right one
+            request.CodeVerifier = code_verifier;
+            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(request);
+
+            tokenResponse.IsError.Should().BeTrue();
+            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Code_should_be_consumed_by_a_request_with_a_wrong_redirect_uri()
+        {
+            await _pipeline.LoginAsync("bob");
+
+            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(client_id,
+                response_type,
+                IdentityServerConstants.StandardScopes.OpenId,
+                redirect_uri,
+                nonce: Guid.NewGuid().ToString(),
+                codeChallenge: Sha256OfCodeVerifier(code_verifier),
+                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Sha256);
+
+            var request = new AuthorizationCodeTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = client_id,
+                ClientSecret = client_secret,
+                Code = authorizeResponse.Code,
+                RedirectUri = "https://code_client/other",
+                CodeVerifier = code_verifier
+            };
+            (await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(request)).IsError.Should().BeTrue();
+
+            request.RedirectUri = redirect_uri;
+            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(request);
+
+            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
         private static string Sha256OfCodeVerifier(string codeVerifier)
         {
             var codeVerifierBytes = Encoding.ASCII.GetBytes(codeVerifier);
             var hashedBytes = codeVerifierBytes.Sha256();
-            var transformedCodeVerifier = Base64Url.Encode(hashedBytes);
+            var transformedCodeVerifier = Base64UrlEncoder.Encode(hashedBytes);
 
             return transformedCodeVerifier;
         }

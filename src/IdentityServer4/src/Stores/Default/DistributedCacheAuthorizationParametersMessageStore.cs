@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.Extensions.Caching.Distributed;

@@ -1,7 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -219,6 +220,8 @@ namespace IdentityServer4.Validation
 
             _validatedRequest.AuthorizationCodeHandle = code;
 
+            // the code is single use (RFC 6749 4.1.2): it is removed before validation and never restored,
+            // so a failed attempt (e.g. a wrong PKCE code_verifier) cannot be retried with the same code
             var authZcode = await _authorizationCodeStore.GetAndRemoveAuthorizationCodeAsync(code);
             if (authZcode == null)
             {
@@ -232,8 +235,6 @@ namespace IdentityServer4.Validation
             if (authZcode.ClientId != _validatedRequest.Client.ClientId)
             {
                 LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
-                // restore code if client is incorrect
-                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
@@ -270,16 +271,12 @@ namespace IdentityServer4.Validation
             if (redirectUri.IsMissing())
             {
                 LogError("Redirect URI is missing");
-                // restore code if redirect URI is missing
-                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
             }
 
             if (!redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal))
             {
                 LogError("Invalid redirect_uri", new { redirectUri, expectedRedirectUri = _validatedRequest.AuthorizationCode.RedirectUri });
-                // restore code if redirect URI is invalid
-                await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
             }
 
@@ -303,8 +300,6 @@ namespace IdentityServer4.Validation
                 var proofKeyResult = ValidateAuthorizationCodeWithProofKeyParameters(codeVerifier, _validatedRequest.AuthorizationCode);
                 if (proofKeyResult.IsError)
                 {
-                    // restore code if proof key is invalid
-                    await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
                     return proofKeyResult;
                 }
 
@@ -314,9 +309,7 @@ namespace IdentityServer4.Validation
             {
                 if (codeVerifier.IsPresent())
                 {
-                    LogError("Unexpected code_verifier: {codeVerifier}. This happens when the client is trying to use PKCE, but it is not enabled. Set RequirePkce to true.", codeVerifier);
-                    // restore code if code verifier is present
-                    await _authorizationCodeStore.StoreAuthorizationCodeAsync(code, authZcode);
+                    LogError("Unexpected code_verifier. This happens when the client is trying to use PKCE, but it is not enabled. Set RequirePkce to true.");
                     return Invalid(OidcConstants.TokenErrors.InvalidGrant);
                 }
             }

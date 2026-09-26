@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
 
     <AssemblyOriginatorKeyFile>../../../../key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" Version="$(FluentAssertions)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdk)" />
+    <PackageReference Include="xunit" Version="$(XUnit)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunner)" />
     
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetLibrary10xx)" />
   </ItemGroup>
 
 </Project>

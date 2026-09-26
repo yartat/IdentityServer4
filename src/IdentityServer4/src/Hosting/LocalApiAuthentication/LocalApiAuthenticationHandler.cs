@@ -1,8 +1,10 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityModel;
+using IdentityServer4.Extensions;
+using Duende.IdentityModel;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -66,7 +68,7 @@ namespace IdentityServer4.Hosting.LocalApiAuthentication
                 return AuthenticateResult.Fail("No Access Token is sent.");
             }
 
-            _logger.LogTrace("Token found: {token}", token);
+            _logger.LogTrace("Token found: {token}", token.Obfuscate());
             var result = await _tokenValidator.ValidateAccessTokenAsync(token, Options.ExpectedScope);
             if (result.IsError)
             {

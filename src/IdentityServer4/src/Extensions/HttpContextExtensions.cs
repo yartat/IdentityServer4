@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using System.Collections.Generic;
 
@@ -233,37 +235,25 @@ namespace IdentityServer4.Extensions
         /// Extracts client IP address from context
         /// </summary>
         /// <param name="context">HTTP context object.</param>
-        /// <param name="tryUseXForwardHeader">Use X-Forwarded-For header</param>
+        /// <param name="tryUseXForwardHeader">
+        /// Use the first entry of the X-Forwarded-For header. The header is set by the caller and can not be trusted;
+        /// behind a reverse proxy use ForwardedHeadersMiddleware with KnownProxies/KnownNetworks instead, which sets
+        /// the connection's remote IP address from the proxy's header.
+        /// </param>
         /// <returns>Returns IP address of the specified HTTP context object.</returns>
         public static string GetRequestIp(this HttpContext context,
-            bool tryUseXForwardHeader = true)
+            bool tryUseXForwardHeader = false)
         {
-            string ip = null;
-
-            // todo support new "Forwarded" header (2014) https://en.wikipedia.org/wiki/X-Forwarded-For
-
-            // X-Forwarded-For (csv list):  Using the First entry in the list seems to work
-            // for 99% of cases however it has been suggested that a better (although tedious)
-            // approach might be to read each IP from right to left and use the first public IP.
-            // http://stackoverflow.com/a/43554000/538763
-            //
             if (tryUseXForwardHeader)
             {
-                ip = context.GetHeaderValueAs<string>("X-Forwarded-For").SplitCsv().FirstOrDefault();
+                var forwarded = context.GetHeaderValueAs<string>("X-Forwarded-For").SplitCsv().FirstOrDefault();
+                if (IPAddress.TryParse(forwarded, out var forwardedIp))
+                {
+                    return forwardedIp.ToString();
+                }
             }
 
-            // RemoteIpAddress is always null in DNX RC1 Update1 (bug).
-            if (string.IsNullOrWhiteSpace(ip) && context?.Connection?.RemoteIpAddress != null)
-            {
-                ip = context.Connection.RemoteIpAddress.ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(ip))
-            {
-                ip = context.GetHeaderValueAs<string>("REMOTE_ADDR");
-            }
-
-            return ip;
+            return context?.Connection?.RemoteIpAddress?.ToString();
         }
 
         public static T GetHeaderValueAs<T>(this HttpContext context, string headerName)

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -51,6 +52,14 @@ namespace IdentityServer4.EntityFramework.Options
         /// The device flow codes.
         /// </value>
         public TableConfiguration DeviceFlowCodes { get; set; } = new TableConfiguration("DeviceCodes");
+
+        /// <summary>
+        /// Gets or sets the table configuration of the signing keys created by automatic key management.
+        /// </summary>
+        /// <value>
+        /// The keys.
+        /// </value>
+        public TableConfiguration Keys { get; set; } = new TableConfiguration("Keys");
 
         /// <summary>
         /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
+using Duende.IdentityModel.Client;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace Client
 {
@@ -54,7 +55,7 @@ namespace Client
             else
             {
                 var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(JArray.Parse(content));
+                Console.WriteLine(JsonNode.Parse(content));
             }
         }
     }

@@ -1,5 +1,8 @@
-﻿using System;
-using System.Reflection;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using Microsoft.Win32;
 
 namespace WindowsConsoleSystemBrowser
@@ -32,7 +35,7 @@ namespace WindowsConsoleSystemBrowser
 
         const string CommandKeyValueName = "";
         const string CommandKeyValueFormat = "\"{0}\" \"%1\"";
-        static string CommandKeyValueValue => String.Format(CommandKeyValueFormat, Assembly.GetExecutingAssembly().Location);
+        static string CommandKeyValueValue => String.Format(CommandKeyValueFormat, Environment.ProcessPath);
 
         const string UrlProtocolValueName = "URL Protocol";
         const string UrlProtocolValueValue = "";

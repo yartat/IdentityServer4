@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -6,6 +7,7 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using IdentityServer4.EntityFramework.Mappers;
+using Mapster;
 using Xunit;
 using Client = IdentityServer4.Models.Client;
 
@@ -14,9 +16,11 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
     public class ClientMappersTests
     {
         [Fact]
-        public void AutomapperConfigurationIsValid()
+        public void MapsterConfigurationIsValid()
         {
-            ClientMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ClientMapperProfile>();
+            var config = new TypeAdapterConfig { RequireDestinationMemberSource = true };
+            new ClientMapperRegister().Register(config);
+            config.Compile();
         }
 
         [Fact]

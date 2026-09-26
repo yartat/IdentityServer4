@@ -38,8 +38,35 @@ In a nutshell, a rollover typically works like this:
 
 This requires that clients and APIs use the discovery document, and also have a feature to periodically refresh their configuration.
 
-Brock wrote a more detailed `blog post <https://brockallen.com/2019/08/09/identityserver-and-signing-key-rotation/>`_ about key rotation, and also
-created a `commercial component <https://www.identityserver.com/products/keymanagement>`_, that can automatically take care of all those details.
+Brock wrote a more detailed `blog post <https://brockallen.com/2019/08/09/identityserver-and-signing-key-rotation/>`_ about key rotation.
+Automatic key management (see below) takes care of all those details.
+
+Automatic key management
+^^^^^^^^^^^^^^^^^^^^^^^^
+IdentityServer can create, rotate and retire signing keys itself. It is disabled by default::
+
+    services.AddIdentityServer(options =>
+    {
+        options.KeyManagement.Enabled = true;
+    });
+
+For every algorithm in ``KeyManagement.SigningAlgorithms`` (default ``RS256``) a key goes through these stages:
+
+* a new key is published in the discovery document for ``PropagationTime`` (default 14 days) before it is used for signing
+* it signs tokens until it is ``RotationInterval`` old (default 90 days); its successor is created ``PropagationTime`` before that
+* it is published for validation for another ``RetentionDuration`` (default 14 days)
+* it is then retired and deleted from the store (``DeleteRetiredKeys``)
+
+When no usable key exists (first start, or the server was down past a rotation) a new key is used right away.
+Keys added with ``AddSigningCredential`` take precedence for signing; both kinds of keys are published.
+
+Keys are protected with ASP.NET Core data protection (``DataProtectKeys``), so data protection has to be configured
+with keys shared by all instances of a server farm. They are stored in the ``KeyPath`` directory by default;
+``AddOperationalStore`` of the EntityFramework integration stores them in the ``Keys`` table instead
+(add a migration for ``PersistedGrantDbContext``). Custom stores implement ``ISigningKeyStore`` and are registered with ``AddSigningKeyStore<T>()``.
+
+Loaded keys are cached for ``KeyCacheDuration`` (default 24 hours), which has to be shorter than ``PropagationTime``,
+so keys created by other instances are published before they are used.
 
 Data protection
 ^^^^^^^^^^^^^^^

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -8,7 +9,7 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer.UnitTests.Common;
 using IdentityServer.UnitTests.Validation.Setup;
 using IdentityServer4;
@@ -16,6 +17,7 @@ using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using Xunit;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer.UnitTests.Validation.TokenRequest_Validation
 {
@@ -321,7 +323,7 @@ namespace IdentityServer.UnitTests.Validation.TokenRequest_Validation
         {
             var codeVerifierBytes = Encoding.ASCII.GetBytes(codeVerifier);
             var hashedBytes = codeVerifierBytes.Sha256();
-            var transformedCodeVerifier = Base64Url.Encode(hashedBytes);
+            var transformedCodeVerifier = Base64UrlEncoder.Encode(hashedBytes);
 
             return transformedCodeVerifier;
         }

@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Api
 {
@@ -12,6 +16,9 @@ namespace Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            // OpenAPI document describing how to obtain a token from IdentityServer; rendered by Scalar in development
+            services.AddOpenApiWithClientCredentials("https://localhost:5001", new Dictionary<string, string> { ["api1"] = "My API" });
 
             // accepts any access token issued by identity server
             services.AddAuthentication("Bearer")
@@ -36,7 +43,7 @@ namespace Api
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseRouting();
 
@@ -47,6 +54,11 @@ namespace Api
             {
                 endpoints.MapControllers()
                     .RequireAuthorization("ApiScope");
+
+                if (env.IsDevelopment())
+                {
+                    endpoints.MapOpenApiWithScalar("client", ["api1"]);
+                }
             });
         }
     }

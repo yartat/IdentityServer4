@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.EntityFramework.Interfaces;
@@ -93,7 +94,18 @@ namespace IdentityServer4.EntityFramework.Stores
 
             var model = persistedGrant.ToModel();
             Context.PersistedGrants.Remove(persistedGrant);
-            await Context.SaveChangesAsync();
+
+            try
+            {
+                // the DELETE must affect the row: when requests race for the same grant (e.g. an authorization code),
+                // only one of them deletes it and gets the grant, the others see a concurrency conflict
+                await Context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Logger.LogWarning("{persistedGrantKey} was removed by a concurrent request: {error}", key, ex.Message);
+                return null;
+            }
 
             Logger.LogDebug("{persistedGrantKey} found in database", key);
 

@@ -1,16 +1,14 @@
-// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.DependencyInjection;
-using IdentityModel;
-using System.Linq;
 using System.IO;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace sample
@@ -19,53 +17,37 @@ namespace sample
     {
         public IWebHostEnvironment Environment { get; }
 
-        public Startup(IConfiguration config, IWebHostEnvironment environment)
+        public Startup(IWebHostEnvironment environment)
         {
             Environment = environment;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var name = "CN=test.dataprotection";
-            var cert = X509.LocalMachine.My.SubjectDistinguishedName.Find(name, false).FirstOrDefault();
-
+            // signing keys are protected with data protection; all instances of a farm must share these keys
             services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(Environment.ContentRootPath, "dataprotectionkeys")));
                 //.ProtectKeysWithCertificate(cert);
 
-            var builder = services.AddIdentityServer()
+            services.AddIdentityServer(options =>
+                {
+                    options.KeyManagement.Enabled = true;
+
+                    // all of these values are shortened for local testing, so rotation can be watched in the JWKS;
+                    // the defaults rotate every 90 days, announce new keys 14 days ahead and keep old keys 14 days
+                    options.KeyManagement.RotationInterval = TimeSpan.FromMinutes(6);
+                    options.KeyManagement.PropagationTime = TimeSpan.FromMinutes(2);
+                    options.KeyManagement.RetentionDuration = TimeSpan.FromMinutes(2);
+                    options.KeyManagement.KeyCacheDuration = TimeSpan.FromSeconds(30);
+                    options.KeyManagement.InitializationDuration = TimeSpan.FromSeconds(30);
+                    options.KeyManagement.InitializationKeyCacheDuration = TimeSpan.FromSeconds(10);
+                    options.KeyManagement.InitializationSynchronizationDelay = TimeSpan.FromSeconds(1);
+
+                    options.KeyManagement.KeyPath = Path.Combine(Environment.ContentRootPath, "signingkeys");
+                })
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis())
-                .AddInMemoryClients(Config.GetClients())
-                .AddSigningKeyManagement(
-                    options => // configuring options is optional :)
-                    {
-                        options.DeleteRetiredKeys = true;
-                        options.KeyType = IdentityServer4.KeyManagement.KeyType.RSA;
-
-                        // all of these values in here are changed for local testing
-                        options.InitializationDuration = TimeSpan.FromSeconds(5);
-                        options.InitializationSynchronizationDelay = TimeSpan.FromSeconds(1);
-
-                        options.KeyActivationDelay = TimeSpan.FromSeconds(10);
-                        options.KeyExpiration = options.KeyActivationDelay * 2;
-                        options.KeyRetirement = options.KeyActivationDelay * 3;
-
-                        // You can get your own license from:
-                        // https://www.identityserver.com/products/KeyManagement
-                        options.Licensee = "your licensee";
-                        options.License = "your license key";
-                    })
-                    //.EnableInMemoryCaching()
-                    .PersistKeysToFileSystem(Path.Combine(Environment.ContentRootPath, @"signingkeys"))
-                    .ProtectKeysWithDataProtection();
-
-                    // .PersistKeysWith<TYourStore>() // use this when you implement your own ISigningKeyStore
-                    //.EnableInMemoryCaching() // caching disabled unless explicitly enabled
-                    // run "..\cert\cert.ps1" from a powershell prompt to create new cert/pfx
-                    // put the pfx created in the local machine store
-                    //.ProtectKeysWithX509Certificate("CN=SigningKeysMasterKey")
-                ;
+                .AddInMemoryClients(Config.GetClients());
         }
 
         public void Configure(IApplicationBuilder app)

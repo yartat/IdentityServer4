@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -101,12 +102,15 @@ namespace IdentityServer.UnitTests.Endpoints.Authorize
             _stubAuthorizeRequestValidator.Result = new AuthorizeRequestValidationResult(_validatedAuthorizeRequest);
 
             _subject = new AuthorizeEndpoint(
-                _fakeEventService,
+                new DefaultAuthorizeRequestHandler(
+                    _fakeEventService,
+                    TestLogger.Create<DefaultAuthorizeRequestHandler>(),
+                    _stubAuthorizeRequestValidator,
+                    _stubInteractionGenerator,
+                    _stubAuthorizeResponseGenerator,
+                    _mockUserSession,
+                    Microsoft.Extensions.Options.Options.Create(_options)),
                 _fakeLogger,
-                _options,
-                _stubAuthorizeRequestValidator,
-                _stubInteractionGenerator,
-                _stubAuthorizeResponseGenerator,
                 _mockUserSession);
         }
     }

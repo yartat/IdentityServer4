@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -9,14 +10,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel;
-using IdentityModel.Client;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Clients.Setup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.IdentityModel.Tokens;
+using IdentityServer.IntegrationTests.Common;
 
 namespace IdentityServer.IntegrationTests.Clients
 {
@@ -175,7 +176,7 @@ namespace IdentityServer.IntegrationTests.Clients
             
             var payload = GetPayload(response);
 
-            var scopes = ((JArray)payload["scope"]).Select(x => x.ToString()).ToArray();
+            var scopes = ((List<object>)payload["scope"]).Select(x => x.ToString()).ToArray();
             scopes.Length.Should().Be(5);
             scopes.Should().Contain("openid");
             scopes.Should().Contain("email");
@@ -183,7 +184,7 @@ namespace IdentityServer.IntegrationTests.Clients
             scopes.Should().Contain("api4.with.roles");
             scopes.Should().Contain("roles");
 
-            var roles = ((JArray)payload["role"]).Select(x => x.ToString()).ToArray();
+            var roles = ((List<object>)payload["role"]).Select(x => x.ToString()).ToArray();
             roles.Length.Should().Be(2);
             roles.Should().Contain("Geek");
             roles.Should().Contain("Developer");
@@ -194,7 +195,7 @@ namespace IdentityServer.IntegrationTests.Clients
                 Token = response.AccessToken
             });
 
-            roles = ((JArray)userInfo.Json["role"]).Select(x => x.ToString()).ToArray();
+            roles = ((List<object>)JsonTestHelper.ParseObject(userInfo.Raw)["role"]).Select(x => x.ToString()).ToArray();
             roles.Length.Should().Be(2);
             roles.Should().Contain("Geek");
             roles.Should().Contain("Developer");
@@ -203,8 +204,8 @@ namespace IdentityServer.IntegrationTests.Clients
         private Dictionary<string, object> GetPayload(TokenResponse response)
         {
             var token = response.AccessToken.Split('.').Skip(1).Take(1).First();
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(
-                Encoding.UTF8.GetString(Base64Url.Decode(token)));
+            var dictionary = JsonTestHelper.ParseObject(
+                Encoding.UTF8.GetString(Base64UrlEncoder.DecodeBytes(token)));
 
             return dictionary;
         }

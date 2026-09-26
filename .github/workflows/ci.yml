@@ -3,11 +3,15 @@ name: 'CI'
 on:
   push:
     branches:
-    - main
-    - features/**
+    - master
+    - feature/**
     tags:
     - '*.*.*'
   pull_request:
+
+# the build only reads the repository
+permissions:
+  contents: read
 
 env:
   DOTNET_NOLOGO: true
@@ -21,16 +25,16 @@ jobs:
     name: ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-    - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: global.json
     - run: dotnet --info
-    
-    - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
+
+    # builds, runs the tests and packs every library (NuGet audit fails the build on vulnerable packages)
+    - if: runner.os != 'Windows'
       run: ./build.sh
-    - if: matrix.runs-on == 'windows-latest' && github.ref != 'refs/heads/main' && !contains(github.ref, 'refs/tags/')
+    - if: runner.os == 'Windows'
       run: ./build.ps1
-    - if: (matrix.runs-on == 'windows-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
-      env:
-        SignClientSecret: ${{ secrets.SIGNCLIENT }}
-      run: |
-        ./build.ps1 sign
-        dotnet nuget push .\nuget\*.nupkg -s https://www.myget.org/F/identity/api/v2/package -k ${{ secrets.MYGET }}

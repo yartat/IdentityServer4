@@ -1,6 +1,10 @@
-﻿using Clients;
-using IdentityModel;
-using IdentityModel.Client;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Clients;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -8,8 +12,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace ConsolePrivateKeyJwtClient
 {
@@ -22,7 +26,7 @@ namespace ConsolePrivateKeyJwtClient
             Console.Title = "Console Client Credentials Flow with JWT Assertion";
 
             // X.509 cert
-            var certificate = new X509Certificate2("client.p12", "changeit");
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile("client.p12", "changeit");
             var x509Credential = new X509SigningCredentials(certificate);
 
             var response = await RequestTokenAsync(x509Credential);
@@ -78,7 +82,7 @@ namespace ConsolePrivateKeyJwtClient
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(JArray.Parse(response));
+            Console.WriteLine(JsonNode.Parse(response));
         }
 
         private static string CreateClientToken(SigningCredentials credential, string clientId, string audience)
@@ -93,7 +97,7 @@ namespace ConsolePrivateKeyJwtClient
                     {
                         new Claim(JwtClaimTypes.JwtId, Guid.NewGuid().ToString()),
                         new Claim(JwtClaimTypes.Subject, clientId),
-                        new Claim(JwtClaimTypes.IssuedAt, now.ToEpochTime().ToString(), ClaimValueTypes.Integer64)
+                        new Claim(JwtClaimTypes.IssuedAt, new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
                     },
                     now,
                     now.AddMinutes(1),

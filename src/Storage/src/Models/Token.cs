@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityModel;
+using Duende.IdentityModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 namespace IdentityServer4.Models
 {
@@ -34,6 +36,7 @@ namespace IdentityServer4.Models
         /// <summary>
         /// A list of allowed algorithm for signing the token. If null or empty, will use the default algorithm.
         /// </summary>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public ICollection<string> AllowedSigningAlgorithms { get; set; } = new HashSet<string>();
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The audiences.
         /// </value>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public ICollection<string> Audiences { get; set; } = new HashSet<string>();
         
         /// <summary>
@@ -111,6 +115,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The claims.
         /// </value>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public ICollection<Claim> Claims { get; set; } = new HashSet<Claim>(new ClaimComparer());
 
         /// <summary>

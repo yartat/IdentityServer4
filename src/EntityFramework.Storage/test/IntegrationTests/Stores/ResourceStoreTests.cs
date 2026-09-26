@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -6,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.EntityFramework.Options;
@@ -21,7 +22,7 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
     {
         public ScopeStoreTests(DatabaseProviderFixture<ConfigurationDbContext> fixture) : base(fixture)
         {
-            foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
+            foreach (var options in TestDatabaseProviders.Cast<object[]>().SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
             {
                 using (var context = new ConfigurationDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
