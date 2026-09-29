@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- versions shared with the libraries come from the repository root Directory.Build.props -->
+  <ItemGroup>
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetLibrary10xx)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(DotNetLibrary10xx)" />
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(DotNetLibrary10xx)" />
+
+    <PackageReference Update="Serilog.AspNetCore" Version="$(SerilogAspNetCore)" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="$(SerilogConsole)" />
+  </ItemGroup>
+</Project>

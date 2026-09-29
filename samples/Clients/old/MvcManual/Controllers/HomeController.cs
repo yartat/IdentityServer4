@@ -1,20 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using System.Security.Claims;
 using System.Linq;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
-using IdentityModel;
+using Duende.IdentityModel;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Clients;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json.Linq;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 
 namespace MvcImplicit.Controllers
 {
@@ -60,8 +64,8 @@ namespace MvcImplicit.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> BackChannelLogout(string logout_token)
         {
-            Response.Headers.Add("Cache-Control", "no-cache, no-store");
-            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers["Cache-Control"] = "no-cache, no-store";
+            Response.Headers["Pragma"] = "no-cache";
 
             try
             {
@@ -138,8 +142,8 @@ namespace MvcImplicit.Controllers
             var eventsJson = claims.FindFirst("events")?.Value;
             if (String.IsNullOrWhiteSpace(eventsJson)) throw new Exception("Invalid logout token");
 
-            var events = JObject.Parse(eventsJson);
-            var logoutEvent = events.TryGetValue("http://schemas.openid.net/event/backchannel-logout");
+            var events = JsonNode.Parse(eventsJson)?.AsObject();
+            var logoutEvent = events?["http://schemas.openid.net/event/backchannel-logout"];
             if (logoutEvent == null) throw new Exception("Invalid logout token");
 
             return claims;
@@ -154,8 +158,8 @@ namespace MvcImplicit.Controllers
             var keys = new List<SecurityKey>();
             foreach (var webKey in disco.KeySet.Keys)
             {
-                var e = Base64Url.Decode(webKey.E);
-                var n = Base64Url.Decode(webKey.N);
+                var e = System.Buffers.Text.Base64Url.DecodeFromChars(webKey.E);
+                var n = System.Buffers.Text.Base64Url.DecodeFromChars(webKey.N);
 
                 var key = new RsaSecurityKey(new RSAParameters { Exponent = e, Modulus = n })
                 {

@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.Models;
@@ -26,7 +27,8 @@ namespace IdentityServer4.Stores
         Task<PersistedGrant> GetAsync(string key);
 
         /// <summary>
-        /// Gets and removes the grant as atomic operation.
+        /// Gets and removes the grant as atomic operation: when called concurrently for the same key, only one caller gets the grant,
+        /// the others get null (single use of authorization codes relies on this).
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>Returns persist grant</returns>

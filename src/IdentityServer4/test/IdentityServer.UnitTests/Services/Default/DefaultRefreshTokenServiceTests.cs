@@ -1,3 +1,7 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using FluentAssertions;
 using IdentityServer.UnitTests.Common;
 using IdentityServer4;
@@ -139,6 +143,77 @@ namespace IdentityServer.UnitTests.Services.Default
                 .Should().NotBeNull()
                 .And
                 .NotBe(handle);
+        }
+
+        private static RefreshToken CreateRefreshToken(string clientId, string subjectId) => new RefreshToken
+        {
+            CreationTime = DateTime.UtcNow,
+            Lifetime = 3600,
+            AccessToken = new Token
+            {
+                ClientId = clientId,
+                Audiences = { "aud" },
+                CreationTime = DateTime.UtcNow,
+                Claims = new List<Claim> { new Claim("sub", subjectId) }
+            }
+        };
+
+        [Fact]
+        public async Task ValidateRefreshToken_reused_one_time_token_should_revoke_all_refresh_tokens_of_the_grant()
+        {
+            var client = new Client
+            {
+                ClientId = "client1",
+                AllowOfflineAccess = true,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly
+            };
+
+            var stolen = await _store.StoreRefreshTokenAsync(CreateRefreshToken(client.ClientId, "123"));
+            var otherDevice = await _store.StoreRefreshTokenAsync(CreateRefreshToken(client.ClientId, "123"));
+            var otherClient = await _store.StoreRefreshTokenAsync(CreateRefreshToken("client2", "123"));
+            var otherUser = await _store.StoreRefreshTokenAsync(CreateRefreshToken(client.ClientId, "456"));
+
+            // the legitimate client uses the token and gets a successor
+            var validation = await _subject.ValidateRefreshTokenAsync(stolen, client);
+            validation.IsError.Should().BeFalse();
+            var successor = await _subject.UpdateRefreshTokenAsync(stolen, validation.RefreshToken, client);
+
+            // the attacker replays the consumed token
+            (await _subject.ValidateRefreshTokenAsync(stolen, client)).IsError.Should().BeTrue();
+
+            (await _store.GetRefreshTokenAsync(successor)).Should().BeNull();
+            (await _store.GetRefreshTokenAsync(otherDevice)).Should().BeNull();
+            (await _store.GetRefreshTokenAsync(otherClient)).Should().NotBeNull();
+            (await _store.GetRefreshTokenAsync(otherUser)).Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task ValidateRefreshToken_accepted_consumed_token_should_not_revoke()
+        {
+            var client = new Client
+            {
+                ClientId = "client1",
+                AllowOfflineAccess = true,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly
+            };
+            var subject = new GraceWindowRefreshTokenService(_store, _clock);
+
+            var handle = await _store.StoreRefreshTokenAsync(CreateRefreshToken(client.ClientId, "123"));
+            var validation = await subject.ValidateRefreshTokenAsync(handle, client);
+            var successor = await subject.UpdateRefreshTokenAsync(handle, validation.RefreshToken, client);
+
+            (await subject.ValidateRefreshTokenAsync(handle, client)).IsError.Should().BeFalse();
+            (await _store.GetRefreshTokenAsync(successor)).Should().NotBeNull();
+        }
+
+        private class GraceWindowRefreshTokenService : DefaultRefreshTokenService
+        {
+            public GraceWindowRefreshTokenService(IRefreshTokenStore store, StubClock clock)
+                : base(store, new TestProfileService(), clock, TestLogger.Create<DefaultRefreshTokenService>())
+            {
+            }
+
+            protected override Task<bool> AcceptConsumedTokenAsync(RefreshToken refreshToken) => Task.FromResult(true);
         }
 
         [Fact]

@@ -1,14 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Clients;
-using Newtonsoft.Json.Linq;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json.Nodes;
 
 namespace MvcHybrid.Controllers
 {
@@ -43,7 +47,7 @@ namespace MvcHybrid.Controllers
             client.SetBearerToken(token);
 
             var response = await client.GetStringAsync(Constants.SampleApi + "identity");
-            ViewBag.Json = JArray.Parse(response).ToString();
+            ViewBag.Json = JsonNode.Parse(response).ToString();
 
             return View();
         }

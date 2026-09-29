@@ -1,8 +1,10 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using IdentityServer4.Extensions;
+using System.Collections.Generic;
 
 namespace IdentityServer4.Configuration
 {
@@ -26,6 +28,16 @@ namespace IdentityServer4.Configuration
         /// The login return URL parameter.
         /// </value>
         public string LoginReturnUrlParameter { get; set; } //= Constants.UIConstants.DefaultRoutePathParams.Login;
+
+        /// <summary>
+        /// Gets or sets the origins (scheme, host and optional port, e.g. <c>https://login.example.com</c>) on which
+        /// an absolute return URL is accepted by <see cref="Services.IIdentityServerInteractionService.IsValidReturnUrl"/>.
+        /// Local return URLs and URLs on the origin of <see cref="IdentityServerOptions.BaseUri"/> are always accepted.
+        /// </summary>
+        /// <value>
+        /// The allowed return URL origins.
+        /// </value>
+        public ICollection<string> AllowedReturnUrlOrigins { get; set; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets the logout URL. If a local URL, the value must start with a leading slash.

@@ -1,3 +1,7 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using System;
@@ -184,10 +188,9 @@ namespace IdentityServer4.Validation
             {
                 foreach (var uri in context.Client.RedirectUris)
                 {
-                    if ((uri?.IsAbsoluteUri ?? true) && _options.Validation.InvalidRedirectUriPrefixes
-                            .Any(scheme => string.Equals(uri?.Scheme, scheme, StringComparison.OrdinalIgnoreCase)))
+                    if (HasInvalidPrefix(uri))
                     {
-                        context.SetError($"RedirectUri '{uri}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
+                        context.SetError($"RedirectUri '{uri.OriginalString}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
                     }
                 }
             }
@@ -196,16 +199,20 @@ namespace IdentityServer4.Validation
             {
                 foreach (var uri in context.Client.PostLogoutRedirectUris)
                 {
-                    if (uri.IsAbsoluteUri && _options.Validation.InvalidRedirectUriPrefixes
-                            .Any(scheme => string.Equals(uri.Scheme, scheme, StringComparison.OrdinalIgnoreCase)))
+                    if (HasInvalidPrefix(uri))
                     {
-                        context.SetError($"PostLogoutRedirectUri '{uri}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
+                        context.SetError($"PostLogoutRedirectUri '{uri.OriginalString}' uses invalid scheme. If this scheme should be allowed, then configure it via ValidationOptions.");
                     }
                 }
             }
 
             return Task.CompletedTask;
         }
+
+        // the configured values are prefixes of the URI as written (e.g. "javascript:"), not bare scheme names
+        private bool HasInvalidPrefix(Uri uri) =>
+            uri != null && _options.Validation.InvalidRedirectUriPrefixes
+                .Any(prefix => uri.OriginalString.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
         /// Validates secret related configuration.

@@ -1,4 +1,8 @@
-using IdentityModel;
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Duende.IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Events;
@@ -199,15 +203,15 @@ namespace IdentityServer4.Endpoints
 
             if (response.IdentityToken != null)
             {
-                _logger.LogTrace("Identity token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.IdentityToken);
+                _logger.LogTrace("Identity token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.IdentityToken.Obfuscate());
             }
             if (response.Code != null)
             {
-                _logger.LogTrace("Code issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.Code);
+                _logger.LogTrace("Code issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.Code.Obfuscate());
             }
             if (response.AccessToken != null)
             {
-                _logger.LogTrace("Access token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.AccessToken);
+                _logger.LogTrace("Access token issued for {clientId} / {subjectId}: {token}", clientId, subjectId, response.AccessToken.Obfuscate());
             }
         }
 

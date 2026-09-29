@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System.Linq;
 using FluentAssertions;
 using IdentityServer4.EntityFramework.Mappers;
+using Mapster;
 using IdentityServer4.Models;
 using Xunit;
 
@@ -13,9 +15,11 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
     public class ScopesMappersTests
     {
         [Fact]
-        public void ScopeAutomapperConfigurationIsValid()
+        public void ScopeMapsterConfigurationIsValid()
         {
-            ScopeMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ScopeMapperProfile>();
+            var config = new TypeAdapterConfig { RequireDestinationMemberSource = true };
+            new ScopeMapperRegister().Register(config);
+            config.Compile();
         }
 
         [Fact]

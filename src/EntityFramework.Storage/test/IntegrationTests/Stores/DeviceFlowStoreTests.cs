@@ -1,4 +1,8 @@
-﻿using FluentAssertions;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using FluentAssertions;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Options;
 using IdentityServer4.EntityFramework.Stores;
@@ -10,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Xunit;
@@ -23,7 +27,7 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
 
         public DeviceFlowStoreTests(DatabaseProviderFixture<PersistedGrantDbContext> fixture) : base(fixture)
         {
-            foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
+            foreach (var options in TestDatabaseProviders.Cast<object[]>().SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
             {
                 using (var context = new PersistedGrantDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
@@ -83,7 +87,7 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
                 foundDeviceFlowCodes.Should().NotBeNull();
                 var deserializedData = new PersistentGrantSerializer().Deserialize<DeviceCode>(foundDeviceFlowCodes?.Data);
 
-                deserializedData.CreationTime.Should().BeCloseTo(data.CreationTime);
+                deserializedData.CreationTime.Should().BeCloseTo(data.CreationTime, TimeSpan.FromMilliseconds(20));
                 deserializedData.ClientId.Should().Be(data.ClientId);
                 deserializedData.Lifetime.Should().Be(data.Lifetime);
             }

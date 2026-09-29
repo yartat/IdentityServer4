@@ -1,4 +1,9 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using Clients;
+using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +49,7 @@ namespace MvcCode
                     options.Events.OnSigningOut = async e =>
                     {
                         // automatically revoke refresh token at signout time
-                        await e.HttpContext.RevokeUserRefreshTokenAsync();
+                        await e.HttpContext.RevokeRefreshTokenAsync();
                     };
                 })
                 .AddOpenIdConnect("oidc", options =>
@@ -77,10 +82,10 @@ namespace MvcCode
                 });
 
             // add automatic token management
-            services.AddAccessTokenManagement();
+            services.AddOpenIdConnectAccessTokenManagement();
 
             // add HTTP client to call protected API
-            services.AddUserAccessTokenClient("client", client =>
+            services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });

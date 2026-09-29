@@ -1,9 +1,13 @@
+// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace IdentityServer.IntegrationTests.Clients.Setup
 {
@@ -23,7 +27,7 @@ namespace IdentityServer.IntegrationTests.Clients.Setup
                     var result = new SecretValidationResult
                     {
                         Success = true,
-                        Confirmation = JsonConvert.SerializeObject(cnf)
+                        Confirmation = JsonSerializer.Serialize(cnf)
                     };
 
                     return Task.FromResult(result);

@@ -1,7 +1,12 @@
-﻿using FluentAssertions;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using FluentAssertions;
 using IdentityServer.UnitTests.Common;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,9 +20,9 @@ namespace IdentityServer.UnitTests.Validation
         private Client clientWithValidLoopbackRedirectUri = new Client
         {
             RequirePkce = true,
-            RedirectUris = new List<string>
+            RedirectUris = new List<Uri>
             {
-                "http://127.0.0.1"
+                new Uri("http://127.0.0.1")
             }
         };
 

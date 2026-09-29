@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,14 +13,14 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace IdentityModel.AspNetCore
+namespace MvcHybrid.AutomaticTokenManagement
 {
     public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
     {
         private readonly TokenEndpointService _service;
         private readonly AutomaticTokenManagementOptions _options;
         private readonly ILogger _logger;
-        private readonly ISystemClock _clock;
+        private readonly TimeProvider _clock;
         
         private static readonly ConcurrentDictionary<string, bool> _pendingRefreshTokenRequests =
             new ConcurrentDictionary<string, bool>();
@@ -25,7 +29,7 @@ namespace IdentityModel.AspNetCore
             TokenEndpointService service,
             IOptions<AutomaticTokenManagementOptions> options,
             ILogger<AutomaticTokenManagementCookieEvents> logger,
-            ISystemClock clock)
+            TimeProvider clock)
         {
             _service = service;
             _options = options.Value;
@@ -59,7 +63,7 @@ namespace IdentityModel.AspNetCore
             var dtExpires = DateTimeOffset.Parse(expiresAt.Value, CultureInfo.InvariantCulture);
             var dtRefresh = dtExpires.Subtract(_options.RefreshBeforeExpiration);
 
-            if (dtRefresh < _clock.UtcNow)
+            if (dtRefresh < _clock.GetUtcNow())
             {
                 var shouldRefresh = _pendingRefreshTokenRequests.TryAdd(refreshToken.Value, true);
                 if (shouldRefresh)

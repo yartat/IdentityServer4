@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,13 +9,14 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="IdentityModel.AspNetCore.AccessTokenValidation" Version="1.0.0-preview.3" />
-    <PackageReference Include="IdentityModel.AspNetCore.OAuth2Introspection" Version="4.0.1" />
+    <PackageReference Include="Duende.AspNetCore.Authentication.OAuth2Introspection" />
       
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />  
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
     
-    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
 
 </Project>

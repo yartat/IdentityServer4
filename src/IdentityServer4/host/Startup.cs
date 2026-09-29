@@ -1,10 +1,11 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
 using IdentityServerHost.Configuration;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -137,14 +138,14 @@ namespace IdentityServerHost
             //builder.AddDeveloperSigningCredential();
 
             // use an RSA-based certificate with RS256
-            var rsaCert = new X509Certificate2("./keys/identityserver.test.rsa.p12", "changeit");
+            var rsaCert = X509CertificateLoader.LoadPkcs12FromFile("./keys/identityserver.test.rsa.p12", "changeit");
             builder.AddSigningCredential(rsaCert, "RS256");
 
             // ...and PS256
             builder.AddSigningCredential(rsaCert, "PS256");
 
             // or manually extract ECDSA key from certificate (directly using the certificate is not support by Microsoft right now)
-            var ecCert = new X509Certificate2("./keys/identityserver.test.ecdsa.p12", "changeit");
+            var ecCert = X509CertificateLoader.LoadPkcs12FromFile("./keys/identityserver.test.ecdsa.p12", "changeit");
             var key = new ECDsaSecurityKey(ecCert.GetECDsaPrivateKey())
             {
                 KeyId = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)
@@ -255,7 +256,7 @@ namespace IdentityServerHost
                     if(!string.IsNullOrWhiteSpace(headerValue))
                     {
                         byte[] bytes = Encoding.UTF8.GetBytes(Uri.UnescapeDataString(headerValue));
-                        clientCertificate = new X509Certificate2(bytes);
+                        clientCertificate = X509CertificateLoader.LoadCertificate(bytes);
                     }
 
                     return clientCertificate;

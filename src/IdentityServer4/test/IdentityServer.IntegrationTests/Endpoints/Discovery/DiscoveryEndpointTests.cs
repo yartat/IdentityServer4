@@ -1,20 +1,21 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using FluentAssertions;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4;
 using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using JsonWebKey = Microsoft.IdentityModel.Tokens.JsonWebKey;
+using System.Text.Json.Nodes;
 
 namespace IdentityServer.IntegrationTests.Endpoints.Discovery
 {
@@ -32,7 +33,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("HTTPS://SERVER/ROOT/.WELL-KNOWN/OPENID-CONFIGURATION");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonNode.Parse(json);
             var issuer = data["issuer"].ToString();
 
             issuer.Should().Be("https://server/root");
@@ -50,7 +51,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("HTTPS://SERVER/ROOT/.WELL-KNOWN/OPENID-CONFIGURATION");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonNode.Parse(json);
             var issuer = data["issuer"].ToString();
 
             issuer.Should().Be("https://server/ROOT");
@@ -80,13 +81,13 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonNode.Parse(json);
             var algorithmsSupported = data["id_token_signing_alg_values_supported"];
 
-            algorithmsSupported.Count().Should().Be(2);
+            algorithmsSupported.AsArray().Count.Should().Be(2);
 
-            algorithmsSupported.Values().Should().Contain(SecurityAlgorithms.RsaSha256);
-            algorithmsSupported.Values().Should().Contain(SecurityAlgorithms.EcdsaSha256);
+            algorithmsSupported.AsArray().Select(x => x.GetValue<string>()).Should().Contain(SecurityAlgorithms.RsaSha256);
+            algorithmsSupported.AsArray().Select(x => x.GetValue<string>()).Should().Contain(SecurityAlgorithms.EcdsaSha256);
         }
 
         [Fact]
@@ -122,7 +123,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration/jwks");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonNode.Parse(json);
 
             var keys = data["keys"];
             keys.Should().NotBeNull();
@@ -133,7 +134,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var crv = key["crv"];
             crv.Should().NotBeNull();
 
-            crv.Value<string>().Should().Be(JsonWebKeyECTypes.P256);
+            crv.GetValue<string>().Should().Be(JsonWebKeyECTypes.P256);
 
         }
 
@@ -147,7 +148,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration/jwks");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonNode.Parse(json);
 
             var keys = data["keys"];
             keys.Should().NotBeNull();
@@ -158,7 +159,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Discovery
             var alg = key["alg"];
             alg.Should().NotBeNull();
 
-            alg.Value<string>().Should().Be(Constants.SigningAlgorithms.RSA_SHA_256);
+            alg.GetValue<string>().Should().Be(Constants.SigningAlgorithms.RSA_SHA_256);
         }
 
         [Theory]

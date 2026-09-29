@@ -1,7 +1,13 @@
-﻿using IdentityModel.OidcClient.Browser;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Duende.IdentityModel.OidcClient.Browser;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -103,7 +109,7 @@ namespace ConsoleClientWithBrowser
     {
         const int DefaultTimeout = 60 * 5; // 5 mins (in seconds)
 
-        IWebHost _host;
+        WebApplication _app;
         TaskCompletionSource<string> _source = new TaskCompletionSource<string>();
         string _url;
 
@@ -116,12 +122,13 @@ namespace ConsoleClientWithBrowser
 
             _url = $"http://127.0.0.1:{port}/{path}";
 
-            _host = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls(_url)
-                .Configure(Configure)
-                .Build();
-            _host.Start();
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.Logging.ClearProviders();
+            builder.WebHost.UseUrls(_url);
+
+            _app = builder.Build();
+            Configure(_app);
+            _app.Start();
         }
 
         public void Dispose()
@@ -129,7 +136,7 @@ namespace ConsoleClientWithBrowser
             Task.Run(async () =>
             {
                 await Task.Delay(500);
-                _host.Dispose();
+                await _app.DisposeAsync();
             });
         }
 

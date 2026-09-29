@@ -1,7 +1,11 @@
-﻿using Clients;
-using IdentityModel.Client;
-using IdentityModel.OidcClient;
-using Microsoft.IdentityModel.Logging;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Clients;
+using Duende.IdentityModel.Client;
+using Duende.IdentityModel.OidcClient;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Diagnostics;
@@ -16,8 +20,6 @@ namespace WindowsConsoleSystemBrowser
     {
         static async Task Main(string[] args)
         {
-            IdentityModelEventSource.ShowPII = true;
-
             if (args.Any())
             {
                 await ProcessCallback(args[0]);
@@ -82,7 +84,7 @@ namespace WindowsConsoleSystemBrowser
                   .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message}{NewLine}{Exception}{NewLine}")
                   .CreateLogger();
 
-            options.LoggerFactory.AddSerilog(serilog);
+            options.LoggerFactory = LoggerFactory.Create(builder => builder.AddSerilog(serilog));
 
             var client = new OidcClient(options);
             var state = await client.PrepareLoginAsync();
@@ -92,7 +94,7 @@ namespace WindowsConsoleSystemBrowser
             var callbackManager = new CallbackManager(state.State);
 
             // open system browser to start authentication
-            Process.Start(state.StartUrl);
+            Process.Start(new ProcessStartInfo(state.StartUrl) { UseShellExecute = true });
 
             Console.WriteLine("Running callback manager");
             var response = await callbackManager.RunServer();

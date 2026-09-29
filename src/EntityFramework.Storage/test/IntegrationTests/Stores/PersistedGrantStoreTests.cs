@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -23,7 +24,7 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
     {
         public PersistedGrantStoreTests(DatabaseProviderFixture<PersistedGrantDbContext> fixture) : base(fixture)
         {
-            foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
+            foreach (var options in TestDatabaseProviders.Cast<object[]>().SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
             {
                 using (var context = new PersistedGrantDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
@@ -182,6 +183,71 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.Stores
                     SessionId = "s1",
                     Type = "t3"
                 })).ToList().Count.Should().Be(0);
+            }
+        }
+
+        [Theory, MemberData(nameof(TestDatabaseProviders))]
+        public async Task GetAndRemoveAsync_WhenKeyExists_ExpectGrantReturnedOnce(DbContextOptions<PersistedGrantDbContext> options)
+        {
+            var persistedGrant = CreateTestObject();
+
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
+            {
+                context.PersistedGrants.Add(persistedGrant.ToEntity());
+                context.SaveChanges();
+            }
+
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
+            {
+                var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create());
+
+                (await store.GetAndRemoveAsync(persistedGrant.Key))?.Data.Should().Be(persistedGrant.Data);
+                (await store.GetAndRemoveAsync(persistedGrant.Key)).Should().BeNull();
+            }
+        }
+
+        [Theory, MemberData(nameof(TestDatabaseProviders))]
+        public async Task GetAndRemoveAsync_WhenConcurrentRequestRemovedGrantFirst_ExpectNull(DbContextOptions<PersistedGrantDbContext> options)
+        {
+            var persistedGrant = CreateTestObject();
+
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
+            {
+                context.PersistedGrants.Add(persistedGrant.ToEntity());
+                context.SaveChanges();
+            }
+
+            // the other request deletes the grant after this one has read it, just before this one saves
+            var racingOptions = new DbContextOptionsBuilder<PersistedGrantDbContext>(options)
+                .AddInterceptors(new DeleteBeforeSaveInterceptor(() =>
+                {
+                    using var other = new PersistedGrantDbContext(options, StoreOptions);
+                    other.PersistedGrants.Remove(other.PersistedGrants.Single(x => x.Key == persistedGrant.Key));
+                    other.SaveChanges();
+                }))
+                .Options;
+
+            using (var context = new PersistedGrantDbContext(racingOptions, StoreOptions))
+            {
+                var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create());
+
+                (await store.GetAndRemoveAsync(persistedGrant.Key)).Should().BeNull();
+            }
+        }
+
+        private sealed class DeleteBeforeSaveInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesInterceptor
+        {
+            private readonly Action _action;
+
+            public DeleteBeforeSaveInterceptor(Action action) => _action = action;
+
+            public override System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> SavingChangesAsync(
+                Microsoft.EntityFrameworkCore.Diagnostics.DbContextEventData eventData,
+                Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result,
+                System.Threading.CancellationToken cancellationToken = default)
+            {
+                _action();
+                return base.SavingChangesAsync(eventData, result, cancellationToken);
             }
         }
 

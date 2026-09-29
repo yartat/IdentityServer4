@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -19,7 +20,7 @@ namespace IdentityServer.UnitTests.Validation
         public void empty_should_be_allowed()
         {
             var client = new Client();
-            client.AllowedGrantTypes = new List<string>();
+            client.AllowedGrantTypes = new HashSet<string>();
         }
 
         [Fact]
@@ -35,7 +36,7 @@ namespace IdentityServer.UnitTests.Validation
         public void custom_should_be_allowed()
         {
             var client = new Client();
-            client.AllowedGrantTypes = new[] { "custom" };
+            client.AllowedGrantTypes = new HashSet<string> { "custom" };
         }
 
         [Fact]
@@ -43,7 +44,7 @@ namespace IdentityServer.UnitTests.Validation
         public void custom_should_be_allowed_raw()
         {
             var client = new Client();
-            client.AllowedGrantTypes = new[] { "custom" };
+            client.AllowedGrantTypes = new HashSet<string> { "custom" };
         }
         
         [Theory]
@@ -55,7 +56,7 @@ namespace IdentityServer.UnitTests.Validation
         {
             var client = new Client();
 
-            Action act = () => client.AllowedGrantTypes = new[] { type1, type2 };
+            Action act = () => client.AllowedGrantTypes = new HashSet<string> { type1, type2 };
 
             act.Should().Throw<InvalidOperationException>();            
         }
@@ -69,7 +70,7 @@ namespace IdentityServer.UnitTests.Validation
         {
             var client = new Client();
 
-            Action act = () => client.AllowedGrantTypes = new[] { "custom1", type2, "custom2", type1 };
+            Action act = () => client.AllowedGrantTypes = new HashSet<string> { "custom1", type2, "custom2", type1 };
 
             act.Should().Throw<InvalidOperationException>();
         }
@@ -79,7 +80,7 @@ namespace IdentityServer.UnitTests.Validation
         {
             var client = new Client();
 
-            Action act = () => client.AllowedGrantTypes = new[] { "custom1", "custom2", "custom1" };
+            Action act = () => Client.ValidateGrantTypes(new[] { "custom1", "custom2", "custom1" });
 
             act.Should().Throw<InvalidOperationException>();
         }
@@ -99,7 +100,7 @@ namespace IdentityServer.UnitTests.Validation
         {
             var client = new Client();
 
-            Action act = () => client.AllowedGrantTypes = new[] { "custo m2" };
+            Action act = () => client.AllowedGrantTypes = new HashSet<string> { "custo m2" };
 
             act.Should().Throw<InvalidOperationException>();
         }
@@ -109,7 +110,7 @@ namespace IdentityServer.UnitTests.Validation
         {
             var client = new Client();
 
-            Action act = () => client.AllowedGrantTypes = new[] { "custom1", "custo m2", "custom1" };
+            Action act = () => client.AllowedGrantTypes = new HashSet<string> { "custom1", "custo m2", "custom1" };
 
             act.Should().Throw<InvalidOperationException>();
         }

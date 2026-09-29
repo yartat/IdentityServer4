@@ -1,7 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
@@ -114,6 +115,10 @@ namespace IdentityServer4.Services
             if (refreshToken.ConsumedTime.HasValue && !await AcceptConsumedTokenAsync(refreshToken))
             {
                 Logger.LogWarning("Rejecting refresh token because it has been consumed already.");
+
+                // a consumed one-time refresh token presented again means it leaked: either the attacker or the legitimate
+                // client already holds its successor, so the whole grant is revoked (RFC 9700 4.14.2)
+                await RevokeRefreshTokensOnReuseAsync(refreshToken);
                 return invalidGrant;
             }
 
@@ -153,6 +158,19 @@ namespace IdentityServer4.Services
             // change the behavior here to implement a time window
             // you can also implement additional revocation logic here
             return Task.FromResult(false);
+        }
+
+        /// <summary>
+        /// Called when a consumed refresh token is presented again (and <see cref="AcceptConsumedTokenAsync"/> rejected it).
+        /// Removes all refresh tokens of the subject for the client.
+        /// </summary>
+        /// <param name="refreshToken">The reused refresh token.</param>
+        protected virtual async Task RevokeRefreshTokensOnReuseAsync(RefreshToken refreshToken)
+        {
+            Logger.LogWarning("Refresh token reuse detected: revoking all refresh tokens of {subjectId} for {clientId}",
+                refreshToken.SubjectId, refreshToken.ClientId);
+
+            await RefreshTokenStore.RemoveRefreshTokensAsync(refreshToken.SubjectId, refreshToken.ClientId);
         }
 
         /// <summary>

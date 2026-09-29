@@ -1,7 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using IdentityModel;
+using Duende.IdentityModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -56,7 +57,7 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         [DebuggerStepThrough]
         public static string GetSubjectId(this IPrincipal principal) =>
-            principal?.Identity.GetSubjectId();
+            principal?.Identity?.GetSubjectId();
 
         /// <summary>
         /// Gets the subject identifier.
@@ -65,7 +66,7 @@ namespace IdentityServer4.Extensions
         /// <returns></returns>
         [DebuggerStepThrough]
         public static string TryGetSubjectId(this IPrincipal principal) =>
-            principal?.Identity.TryGetSubjectId();
+            principal?.Identity?.TryGetSubjectId();
 
         /// <summary>
         /// Gets the subject identifier.

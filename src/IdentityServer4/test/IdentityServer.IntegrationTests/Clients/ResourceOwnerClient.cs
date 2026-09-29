@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -9,14 +10,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel;
-using IdentityModel.Client;
+using Duende.IdentityModel;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Clients.Setup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.IdentityModel.Tokens;
+using IdentityServer.IntegrationTests.Common;
 
 namespace IdentityServer.IntegrationTests.Clients
 {
@@ -67,11 +68,11 @@ namespace IdentityServer.IntegrationTests.Clients
             
             payload["aud"].Should().Be("api");
 
-            var scopes = ((JArray)payload["scope"]).Select(x => x.ToString());
+            var scopes = ((List<object>)payload["scope"]).Select(x => x.ToString());
             scopes.Count().Should().Be(1);
             scopes.Should().Contain("api1");
 
-            var amr = payload["amr"] as JArray;
+            var amr = payload["amr"] as List<object>;
             amr.Count().Should().Be(1);
             amr.First().ToString().Should().Be("pwd");
         }
@@ -104,11 +105,11 @@ namespace IdentityServer.IntegrationTests.Clients
 
             payload["aud"].Should().Be("api");
 
-            var amr = payload["amr"] as JArray;
+            var amr = payload["amr"] as List<object>;
             amr.Count().Should().Be(1);
             amr.First().ToString().Should().Be("pwd");
 
-            var scopes = ((JArray)payload["scope"]).Select(x => x.ToString());
+            var scopes = ((List<object>)payload["scope"]).Select(x => x.ToString());
             scopes.Count().Should().Be(8);
 
             // {[  "address",  "api1",  "api2", "api4.with.roles", "email",  "offline_access",  "openid", "role"]}
@@ -155,11 +156,11 @@ namespace IdentityServer.IntegrationTests.Clients
 
             payload["aud"].Should().Be("api");
 
-            var amr = payload["amr"] as JArray;
+            var amr = payload["amr"] as List<object>;
             amr.Count().Should().Be(1);
             amr.First().ToString().Should().Be("pwd");
 
-            var scopes = ((JArray)payload["scope"]).Select(x=>x.ToString());
+            var scopes = ((List<object>)payload["scope"]).Select(x=>x.ToString());
             scopes.Count().Should().Be(3);
             scopes.Should().Contain("api1");
             scopes.Should().Contain("email");
@@ -198,11 +199,11 @@ namespace IdentityServer.IntegrationTests.Clients
 
             payload["aud"].Should().Be("api");
 
-            var amr = payload["amr"] as JArray;
+            var amr = payload["amr"] as List<object>;
             amr.Count().Should().Be(1);
             amr.First().ToString().Should().Be("pwd");
 
-            var scopes = ((JArray)payload["scope"]).Select(x => x.ToString());
+            var scopes = ((List<object>)payload["scope"]).Select(x => x.ToString());
             scopes.Count().Should().Be(4);
             scopes.Should().Contain("api1");
             scopes.Should().Contain("email");
@@ -231,8 +232,9 @@ namespace IdentityServer.IntegrationTests.Clients
         }
         
         [Fact]
-        public async Task User_with_empty_password_should_succeed()
+        public async Task User_without_password_should_fail()
         {
+            // TestUserStore only accepts the password the user has; a user without a password can not sign in
             var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = TokenEndpoint,
@@ -243,7 +245,8 @@ namespace IdentityServer.IntegrationTests.Clients
                 UserName = "bob_no_password"
             });
 
-            response.IsError.Should().Be(false);
+            response.IsError.Should().Be(true);
+            response.Error.Should().Be("invalid_grant");
         }
 
         [Theory]
@@ -269,11 +272,11 @@ namespace IdentityServer.IntegrationTests.Clients
         }
 
 
-        private static Dictionary<string, object> GetPayload(IdentityModel.Client.TokenResponse response)
+        private static Dictionary<string, object> GetPayload(Duende.IdentityModel.Client.TokenResponse response)
         {
             var token = response.AccessToken.Split('.').Skip(1).Take(1).First();
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(
-                Encoding.UTF8.GetString(Base64Url.Decode(token)));
+            var dictionary = JsonTestHelper.ParseObject(
+                Encoding.UTF8.GetString(Base64UrlEncoder.DecodeBytes(token)));
 
             return dictionary;
         }

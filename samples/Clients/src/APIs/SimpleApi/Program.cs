@@ -1,6 +1,10 @@
-﻿using System;
-using Microsoft.AspNetCore;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -13,10 +17,10 @@ namespace SampleApi
         {
             Console.Title = "Sample API";
 
-            BuildWebHost(args).Run();
+            BuildHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IHost BuildHost(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
@@ -27,9 +31,9 @@ namespace SampleApi
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
                 .CreateLogger();
 
-            return WebHost.CreateDefaultBuilder(args)
-                    .UseStartup<Startup>()
+            return Host.CreateDefaultBuilder(args)
                     .UseSerilog()
+                    .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
                     .Build();
         }
     }

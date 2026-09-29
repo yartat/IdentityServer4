@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,6 +24,17 @@ namespace IdentityServer4.Validation
         /// </summary>
         /// <param name="logger">The logger.</param>
         public StrictRedirectUriValidatorAppAuth(ILogger<StrictRedirectUriValidatorAppAuth> logger)
+            : this(logger, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StrictRedirectUriValidatorAppAuth"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="options">The options.</param>
+        public StrictRedirectUriValidatorAppAuth(ILogger<StrictRedirectUriValidatorAppAuth> logger, IdentityServerOptions options)
+            : base(options)
         {
             _logger = logger;
         }

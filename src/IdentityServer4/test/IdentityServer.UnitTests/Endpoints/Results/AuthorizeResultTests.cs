@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -7,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer.UnitTests.Common;
 using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
@@ -17,6 +18,7 @@ using IdentityServer4.ResponseHandling;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace IdentityServer.UnitTests.Endpoints.Results
@@ -34,6 +36,8 @@ namespace IdentityServer.UnitTests.Endpoints.Results
 
         public AuthorizeResultTests()
         {
+            // the results resolve the logger and options from the request services
+            _context.RequestServices = new ServiceCollection().AddLogging().AddSingleton(_options).BuildServiceProvider();
             _context.SetIdentityServerOrigin("https://server");
             _context.SetIdentityServerBasePath("/");
             _context.Response.Body = new MemoryStream();

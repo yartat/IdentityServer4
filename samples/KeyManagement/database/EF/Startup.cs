@@ -1,11 +1,9 @@
-// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
-using System.Linq;
-using IdentityModel;
-using IdentityServer4.KeyManagement.EntityFramework;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -13,67 +11,55 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace sample
 {
     public class Startup
     {
+        // the "migrations" project holds the migrations of both contexts; run its builddb.bat to create the database
+        public const string MigrationsAssembly = "migrations";
+
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
-        public ILoggerFactory LoggerFactory { get; set; }
 
-        public Startup(IConfiguration config, IWebHostEnvironment environment, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration config, IWebHostEnvironment environment)
         {
             Configuration = config;
             Environment = environment;
-            LoggerFactory = loggerFactory;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //var name = "CN=test.dataprotection";
-            //var cert = X509.LocalMachine.My.SubjectDistinguishedName.Find(name, false).FirstOrDefault();
-
             var cn = Configuration.GetConnectionString("db");
 
+            // signing keys are protected with data protection; storing its keys in the database shares them with all instances
+            services.AddDbContext<DataProtectionKeysDbContext>(b => b.UseSqlServer(cn, sql => sql.MigrationsAssembly(MigrationsAssembly)));
             services.AddDataProtection()
-                .PersistKeysToDatabase(new DatabaseKeyManagementOptions
-                {
-                    ConfigureDbContext = b => b.UseSqlServer(cn),
-                    LoggerFactory = LoggerFactory,
-                });
+                .PersistKeysToDbContext<DataProtectionKeysDbContext>();
                 //.ProtectKeysWithCertificate(cert);
 
-            var builder = services.AddIdentityServer()
+            services.AddIdentityServer(options =>
+                {
+                    options.KeyManagement.Enabled = true;
+
+                    // all of these values are shortened for local testing, so rotation can be watched in the JWKS;
+                    // the defaults rotate every 90 days, announce new keys 14 days ahead and keep old keys 14 days
+                    options.KeyManagement.RotationInterval = TimeSpan.FromMinutes(6);
+                    options.KeyManagement.PropagationTime = TimeSpan.FromMinutes(2);
+                    options.KeyManagement.RetentionDuration = TimeSpan.FromMinutes(2);
+                    options.KeyManagement.KeyCacheDuration = TimeSpan.FromSeconds(30);
+                    options.KeyManagement.InitializationDuration = TimeSpan.FromSeconds(30);
+                    options.KeyManagement.InitializationKeyCacheDuration = TimeSpan.FromSeconds(10);
+                    options.KeyManagement.InitializationSynchronizationDelay = TimeSpan.FromSeconds(1);
+                })
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis())
                 .AddInMemoryClients(Config.GetClients())
-                .AddSigningKeyManagement(
-                    options => // configuring options is optional :)
-                    {
-                        options.DeleteRetiredKeys = true;
-                        options.KeyType = IdentityServer4.KeyManagement.KeyType.RSA;
-
-                        // all of these values in here are changed for local testing
-                        options.InitializationDuration = TimeSpan.FromSeconds(5);
-                        options.InitializationSynchronizationDelay = TimeSpan.FromSeconds(1);
-
-                        options.KeyActivationDelay = TimeSpan.FromSeconds(10);
-                        options.KeyExpiration = options.KeyActivationDelay * 2;
-                        options.KeyRetirement = options.KeyActivationDelay * 3;
-
-                        // You can get your own license from:
-                        // https://www.identityserver.com/products/KeyManagement
-                        options.Licensee = "your licensee";
-                        options.License = "your license key";
-                    })
-                    .PersistKeysToDatabase(new DatabaseKeyManagementOptions {
-                        ConfigureDbContext = b => b.UseSqlServer(cn),
-                    })
-                    .ProtectKeysWithDataProtection()
-                    //.EnableInMemoryCaching() // caching disabled unless explicitly enabled
-                ;
+                // the operational store also stores the signing keys (Keys table)
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = b => b.UseSqlServer(cn, sql => sql.MigrationsAssembly(MigrationsAssembly));
+                });
         }
 
         public void Configure(IApplicationBuilder app)

@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 namespace IdentityServer4.Models
 {
@@ -132,6 +134,7 @@ namespace IdentityServer4.Models
         /// <value>
         /// The properties
         /// </value>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 }

@@ -1,4 +1,8 @@
-﻿using IdentityServer4.Hosting;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using IdentityServer4.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Specialized;
 using System.Security.Claims;

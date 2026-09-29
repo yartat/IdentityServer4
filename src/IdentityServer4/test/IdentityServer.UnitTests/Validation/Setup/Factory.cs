@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -36,7 +37,6 @@ namespace IdentityServer.UnitTests.Validation.Setup
             IDeviceCodeValidator deviceCodeValidator = null,
             IEnumerable<IExtensionGrantValidator> extensionGrantValidators = null,
             ICustomTokenRequestValidator customRequestValidator = null,
-            ITokenValidator tokenValidator = null,
             IRefreshTokenService refreshTokenService = null,
             IResourceValidator resourceValidator = null)
         {
@@ -95,11 +95,6 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 resourceValidator = CreateResourceValidator(resourceStore);
             }
             
-            if (tokenValidator == null)
-            {
-                tokenValidator = CreateTokenValidator(refreshTokenStore: refreshTokenStore, profile: profile);
-            }
-
             if (refreshTokenService == null)
             {
                 refreshTokenService = CreateRefreshTokenService(
@@ -117,7 +112,6 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 customRequestValidator,
                 resourceValidator,
                 resourceStore,
-                tokenValidator,
                 refreshTokenService,
                 new TestEventService(), 
                 new StubClock(), 
@@ -287,7 +281,7 @@ namespace IdentityServer.UnitTests.Validation.Setup
                 clock: clock,
                 profile: profile,
                 referenceTokenStore: store,
-                refreshTokenStore: refreshTokenStore,
+                refreshTokenService: CreateRefreshTokenService(refreshTokenStore, profile),
                 customValidator: new DefaultCustomTokenValidator(),
                     keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
                 logger: logger,

@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -6,16 +7,15 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace IdentityServer4.Validation
 {
@@ -205,11 +205,9 @@ namespace IdentityServer4.Validation
                         case string s:
                             payload.Add(key, s);
                             break;
-                        case JObject jobj:
-                            payload.Add(key, jobj.ToString(Formatting.None));
-                            break;
-                        case JArray jarr:
-                            payload.Add(key, jarr.ToString(Formatting.None));
+                        // Microsoft.IdentityModel 7+ reads JSON objects and arrays as JsonElement
+                        case JsonElement element when element.ValueKind is JsonValueKind.Object or JsonValueKind.Array:
+                            payload.Add(key, JsonSerializer.Serialize(element));
                             break;
                     }
                 }

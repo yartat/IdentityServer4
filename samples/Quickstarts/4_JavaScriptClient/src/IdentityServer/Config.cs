@@ -1,7 +1,9 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using IdentityServer4;
 using IdentityServer4.Models;
 using System.Collections.Generic;
@@ -35,7 +37,10 @@ namespace IdentityServer
 
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     // scopes that client has access to
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = { "api1" },
+
+                    // Scalar UI of the sample API requests tokens from the browser
+                    AllowedCorsOrigins = { "https://localhost:6001" }
                 },
                 
                 // interactive ASP.NET Core MVC client
@@ -47,10 +52,10 @@ namespace IdentityServer
                     AllowedGrantTypes = GrantTypes.Code,
                     
                     // where to redirect to after login
-                    RedirectUris = { "https://localhost:5002/signin-oidc" },
+                    RedirectUris = { new Uri("https://localhost:5002/signin-oidc") },
 
                     // where to redirect to after logout
-                    PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:5002/signout-callback-oidc") },
 
                     AllowedScopes = new List<string>
                     {
@@ -68,8 +73,8 @@ namespace IdentityServer
                     AllowedGrantTypes = GrantTypes.Code,
                     RequireClientSecret = false,
 
-                    RedirectUris =           { "https://localhost:5003/callback.html" },
-                    PostLogoutRedirectUris = { "https://localhost:5003/index.html" },
+                    RedirectUris =           { new Uri("https://localhost:5003/callback.html") },
+                    PostLogoutRedirectUris = { new Uri("https://localhost:5003/index.html") },
                     AllowedCorsOrigins =     { "https://localhost:5003" },
 
                     AllowedScopes =

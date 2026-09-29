@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -69,6 +70,11 @@ namespace IdentityServer4.EntityFramework.DbContexts
         /// The device codes.
         /// </value>
         public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signing keys created by automatic key management.
+        /// </summary>
+        public DbSet<Key> Keys { get; set; }
 
         /// <summary>
         /// Saves the changes.

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -110,14 +111,14 @@ namespace IdentityServer.UnitTests.Services.Default
         }
 
         [Fact]
-        public void GrantConsentAsync_should_throw_if_granted_and_no_subject()
+        public async Task GrantConsentAsync_should_throw_if_granted_and_no_subject()
         {
             Func<Task> act = () => _subject.GrantConsentAsync(
                 new AuthorizationRequest(), 
                 new ConsentResponse() { ScopesValuesConsented = new[] { "openid" } }, 
                 null);
 
-            act.Should().Throw<ArgumentNullException>()
+            (await act.Should().ThrowAsync<ArgumentNullException>())
                 .And.Message.Should().Contain("subject");
         }
 

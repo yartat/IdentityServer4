@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.WebUtilities;
@@ -8,6 +9,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 
 namespace IdentityServer4.Extensions
@@ -18,7 +20,14 @@ namespace IdentityServer4.Extensions
     public static class StringExtensions
     {
         /// <summary>
+        /// Maximum length of the device name taken from the user agent.
+        /// </summary>
+        public const int MaxDeviceLength = 200;
+
+        /// <summary>
         /// Gets the device by user agent string.
+        /// The user agent is set by the caller: only printable ASCII is kept and the result is at most <see cref="MaxDeviceLength"/> characters,
+        /// since it ends up in tokens, sessions and logs.
         /// </summary>
         /// <param name="userAgent">The user agent string.</param>
         /// <returns>Returns device name.</returns>
@@ -29,7 +38,22 @@ namespace IdentityServer4.Extensions
                 return null;
             }
 
-            return userAgent;
+            var device = new StringBuilder(Math.Min(userAgent.Length, MaxDeviceLength));
+            foreach (var c in userAgent)
+            {
+                if (device.Length == MaxDeviceLength)
+                {
+                    break;
+                }
+
+                if (c >= ' ' && c <= '~')
+                {
+                    device.Append(c);
+                }
+            }
+
+            var result = device.ToString().Trim();
+            return result.Length == 0 ? null : result;
         }
 
         /// <summary>

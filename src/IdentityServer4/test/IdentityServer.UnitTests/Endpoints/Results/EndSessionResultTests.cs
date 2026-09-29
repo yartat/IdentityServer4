@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -14,6 +15,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace IdentityServer.UnitTests.Endpoints.Results
@@ -30,6 +32,8 @@ namespace IdentityServer.UnitTests.Endpoints.Results
 
         public EndSessionResultTests()
         {
+            // the results resolve the logger and options from the request services
+            _context.RequestServices = new ServiceCollection().AddLogging().AddSingleton(_options).BuildServiceProvider();
             _context.SetIdentityServerOrigin("https://server");
             _context.SetIdentityServerBasePath("/");
 

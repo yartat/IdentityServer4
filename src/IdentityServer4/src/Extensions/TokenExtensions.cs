@@ -1,16 +1,17 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using IdentityModel;
+using Duende.IdentityModel;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using IdentityServer4.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
@@ -108,9 +109,9 @@ namespace IdentityServer4.Extensions
             // collection identity comparisons work for the anonymous type
             try
             {
-                var jsonTokens = jsonClaims.Select(x => new { x.Type, JsonValue = JRaw.Parse(x.Value) }).ToArray();
+                var jsonTokens = jsonClaims.Select(x => new { x.Type, JsonValue = ParseJson(x.Value) }).ToArray();
 
-                var jsonObjects = jsonTokens.Where(x => x.JsonValue.Type == JTokenType.Object).ToArray();
+                var jsonObjects = jsonTokens.Where(x => x.JsonValue.ValueKind == JsonValueKind.Object).ToArray();
                 var jsonObjectGroups = jsonObjects.GroupBy(x => x.Type).ToArray();
                 foreach (var group in jsonObjectGroups)
                 {
@@ -131,7 +132,7 @@ namespace IdentityServer4.Extensions
                     }
                 }
 
-                var jsonArrays = jsonTokens.Where(x => x.JsonValue.Type == JTokenType.Array).ToArray();
+                var jsonArrays = jsonTokens.Where(x => x.JsonValue.ValueKind == JsonValueKind.Array).ToArray();
                 var jsonArrayGroups = jsonArrays.GroupBy(x => x.Type).ToArray();
                 foreach (var group in jsonArrayGroups)
                 {
@@ -141,11 +142,10 @@ namespace IdentityServer4.Extensions
                             $"Can't add two claims where one is a JSON array and the other is not a JSON array ({group.Key})");
                     }
 
-                    var newArr = new List<JToken>();
+                    var newArr = new List<JsonElement>();
                     foreach (var arrays in group)
                     {
-                        var arr = (JArray)arrays.JsonValue;
-                        newArr.AddRange(arr);
+                        newArr.AddRange(arrays.JsonValue.EnumerateArray());
                     }
 
                     // add just one array for the group/key/claim type
@@ -167,6 +167,14 @@ namespace IdentityServer4.Extensions
                 logger.LogCritical(ex, "Error creating a JSON valued claim");
                 throw;
             }
+        }
+
+        // JwtPayload is serialized with System.Text.Json (Microsoft.IdentityModel 7+),
+        // so JSON valued claims must be added as JsonElement rather than Newtonsoft JToken.
+        private static JsonElement ParseJson(string json)
+        {
+            using var document = JsonDocument.Parse(json);
+            return document.RootElement.Clone();
         }
     }
 }

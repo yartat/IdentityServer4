@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using System;
@@ -78,7 +79,7 @@ namespace IdentityServer4.Models
         }
 
         // setting grant types should be atomic
-        private ISet<string> _allowedGrantTypes = new HashSet<string>();
+        private ISet<string> _allowedGrantTypes = new GrantTypeValidatingHashSet();
 
         private string DebuggerDisplay => ClientId ?? $"{{{typeof(Client)}}}";
 
@@ -149,7 +150,7 @@ namespace IdentityServer4.Models
             set
             {
                 ValidateGrantTypes(value);
-                _allowedGrantTypes = new HashSet<string>(value);
+                _allowedGrantTypes = new GrantTypeValidatingHashSet(value);
             }
         }
 
@@ -422,6 +423,84 @@ namespace IdentityServer4.Models
             {
                 throw new InvalidOperationException($"Grant types list cannot contain both {value1} and {value2}");
             }
+        }
+
+        /// <summary>
+        /// Validates the grant type combination on every change, not only when the whole collection is assigned
+        /// (e.g. <c>client.AllowedGrantTypes.Add(GrantType.Implicit)</c> on a code flow client).
+        /// </summary>
+        internal class GrantTypeValidatingHashSet : ISet<string>
+        {
+            private readonly HashSet<string> _inner;
+
+            public GrantTypeValidatingHashSet()
+            {
+                _inner = new HashSet<string>();
+            }
+
+            public GrantTypeValidatingHashSet(IEnumerable<string> values)
+            {
+                _inner = new HashSet<string>(values);
+            }
+
+            // applies the change to a copy, validates the copy and only then changes this set
+            private bool Change(Func<HashSet<string>, bool> change)
+            {
+                var copy = new HashSet<string>(_inner);
+                var result = change(copy);
+                ValidateGrantTypes(copy);
+                change(_inner);
+                return result;
+            }
+
+            public int Count => _inner.Count;
+
+            public bool IsReadOnly => false;
+
+            public bool Add(string item) => Change(set => set.Add(item));
+
+            void ICollection<string>.Add(string item) => Add(item);
+
+            public void UnionWith(IEnumerable<string> other)
+            {
+                var items = other.ToList();
+                Change(set => { set.UnionWith(items); return true; });
+            }
+
+            public void SymmetricExceptWith(IEnumerable<string> other)
+            {
+                var items = other.ToList();
+                Change(set => { set.SymmetricExceptWith(items); return true; });
+            }
+
+            // removing grant types can not create an invalid combination
+            public void ExceptWith(IEnumerable<string> other) => _inner.ExceptWith(other);
+
+            public void IntersectWith(IEnumerable<string> other) => _inner.IntersectWith(other);
+
+            public bool Remove(string item) => _inner.Remove(item);
+
+            public void Clear() => _inner.Clear();
+
+            public bool Contains(string item) => _inner.Contains(item);
+
+            public void CopyTo(string[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+
+            public bool IsProperSubsetOf(IEnumerable<string> other) => _inner.IsProperSubsetOf(other);
+
+            public bool IsProperSupersetOf(IEnumerable<string> other) => _inner.IsProperSupersetOf(other);
+
+            public bool IsSubsetOf(IEnumerable<string> other) => _inner.IsSubsetOf(other);
+
+            public bool IsSupersetOf(IEnumerable<string> other) => _inner.IsSupersetOf(other);
+
+            public bool Overlaps(IEnumerable<string> other) => _inner.Overlaps(other);
+
+            public bool SetEquals(IEnumerable<string> other) => _inner.SetEquals(other);
+
+            public IEnumerator<string> GetEnumerator() => _inner.GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _inner.GetEnumerator();
         }
     }
 }

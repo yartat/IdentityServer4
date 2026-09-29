@@ -1,6 +1,8 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -144,7 +146,7 @@ namespace IdentityServerHost.Configuration
                     RequireClientSecret = false,
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = true,
-                    RedirectUris = {"http://127.0.0.1"},
+                    RedirectUris = {new Uri("http://127.0.0.1")},
                     AllowOfflineAccess = true,
                     AllowedScopes =
                     {
@@ -164,7 +166,7 @@ namespace IdentityServerHost.Configuration
                     RequireClientSecret = false,
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = true,
-                    RedirectUris = {"sample-windows-client://callback"},
+                    RedirectUris = {new Uri("sample-windows-client://callback")},
                     RequireConsent = false,
                     AllowOfflineAccess = true,
                     AllowedIdentityTokenSigningAlgorithms = {"ES256"},

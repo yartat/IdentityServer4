@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -8,7 +9,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using IdentityServer.IntegrationTests.Common;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
@@ -160,7 +161,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
             _mockPipeline.ConsentRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
             _mockPipeline.ConsentRequest.Parameters.AllKeys.Should().Contain("custom_foo");
             _mockPipeline.ConsentRequest.Parameters["custom_foo"].Should().Be("foo_value");
-            _mockPipeline.ConsentRequest.ValidatedResources.ScopeValues.Should().BeEquivalentTo(new string[] { "api2", "openid", "api1" });
+            _mockPipeline.ConsentRequest.ValidatedResources.RawScopeValues.Should().BeEquivalentTo(new string[] { "api2", "openid", "api1" });
         }
 
         [Theory]
@@ -199,7 +200,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://client2/callback");
 
-            var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+            var authorization = new Duende.IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
             authorization.IsError.Should().BeFalse();
             authorization.IdentityToken.Should().NotBeNull();
             authorization.State.Should().Be("123_state");
@@ -267,7 +268,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.Authorize
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://client2/callback");
 
-            var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+            var authorization = new Duende.IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
             authorization.IsError.Should().BeTrue();
             authorization.Error.Should().Be("access_denied");
             authorization.State.Should().Be("123_state");

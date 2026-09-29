@@ -1,4 +1,5 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -11,7 +12,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using IdentityServer4;
 using IdentityServer4.Configuration;
 using IdentityServer4.Extensions;
@@ -332,7 +333,7 @@ namespace IdentityServer.IntegrationTests.Common
                 responseMode: responseMode,
                 codeChallenge: codeChallenge,
                 codeChallengeMethod: codeChallengeMethod,
-                extra: extra);
+                extra: extra == null ? null : extra as Parameters ?? Parameters.FromObject(extra));
             return url;
         }
 

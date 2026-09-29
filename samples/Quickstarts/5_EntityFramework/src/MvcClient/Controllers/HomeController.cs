@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Copyright (c) Yaroslav Tatarenko. All rights reserved.
+// Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MvcClient.Models;
 using System.Diagnostics;
@@ -6,7 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace MvcClient.Controllers
 {
@@ -32,7 +36,7 @@ namespace MvcClient.Controllers
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             var content = await client.GetStringAsync("https://localhost:6001/identity");
 
-            ViewBag.Json = JArray.Parse(content).ToString();
+            ViewBag.Json = JsonNode.Parse(content).ToString();
             return View("json");
         }
 
