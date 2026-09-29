@@ -232,8 +232,9 @@ namespace IdentityServer.IntegrationTests.Clients
         }
         
         [Fact]
-        public async Task User_with_empty_password_should_succeed()
+        public async Task User_without_password_should_fail()
         {
+            // TestUserStore only accepts the password the user has; a user without a password can not sign in
             var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = TokenEndpoint,
@@ -244,7 +245,8 @@ namespace IdentityServer.IntegrationTests.Clients
                 UserName = "bob_no_password"
             });
 
-            response.IsError.Should().Be(false);
+            response.IsError.Should().Be(true);
+            response.Error.Should().Be("invalid_grant");
         }
 
         [Theory]

@@ -18,6 +18,7 @@ using IdentityServer4.ResponseHandling;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace IdentityServer.UnitTests.Endpoints.Results
@@ -35,6 +36,8 @@ namespace IdentityServer.UnitTests.Endpoints.Results
 
         public AuthorizeResultTests()
         {
+            // the results resolve the logger and options from the request services
+            _context.RequestServices = new ServiceCollection().AddLogging().AddSingleton(_options).BuildServiceProvider();
             _context.SetIdentityServerOrigin("https://server");
             _context.SetIdentityServerBasePath("/");
             _context.Response.Body = new MemoryStream();

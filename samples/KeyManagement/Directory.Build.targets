@@ -6,7 +6,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(DotNetLibrary10xx)" />
     <PackageReference Update="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(DotNetLibrary10xx)" />
 
-    <PackageReference Update="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Update="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Update="Serilog.AspNetCore" Version="$(SerilogAspNetCore)" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="$(SerilogConsole)" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
     <!-- versions shared with the libraries come from the repository root Directory.Build.props -->
     <PropertyGroup>
         <AspNetVersion>$(DotNetLibrary10xx)</AspNetVersion>
-        <SerilogVersion>10.0.0</SerilogVersion>
+        <SerilogVersion>$(SerilogAspNetCore)</SerilogVersion>
         <ScalarVersion>2.17.10</ScalarVersion>
     </PropertyGroup>
 

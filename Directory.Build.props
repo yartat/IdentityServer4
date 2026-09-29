@@ -2,7 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <DotNetLibrary10xx>10.0.12</DotNetLibrary10xx>
+    <DotNetLibrary10xx>10.0.*</DotNetLibrary10xx>
     <OpenIdConnect>8.23.0</OpenIdConnect>
     <DuendeIdentityModel>8.1.0</DuendeIdentityModel>
     <Mapster>10.0.13</Mapster>
@@ -10,6 +10,14 @@
     <XUnit>2.9.3</XUnit>
     <XUnitRunner>4.0.0</XUnitRunner>
     <FluentAssertions>7.2.2</FluentAssertions>
+    <Bullseye>6.2.0</Bullseye>
+    <SimpleExec>13.1.0</SimpleExec>
+    <Serilog>4.3.1</Serilog>
+    <SerilogAspNetCore>10.0.*</SerilogAspNetCore>
+    <SerilogConsole>6.1.1</SerilogConsole>
+    <SerilogFile>7.0.0</SerilogFile>
+    <DuendeOpenIdConnect>4.2.0</DuendeOpenIdConnect>
+    <DuendeOAuth2Introspection>7.0.1</DuendeOAuth2Introspection>
   </PropertyGroup>
 
   <!-- a known vulnerability in any package, direct or transitive, fails the build -->

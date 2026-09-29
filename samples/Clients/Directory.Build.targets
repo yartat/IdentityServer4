@@ -3,7 +3,7 @@
   <!-- versions shared with the libraries come from the repository root Directory.Build.props -->
   <PropertyGroup>
     <AspNetVersion>$(DotNetLibrary10xx)</AspNetVersion>
-    <SerilogVersion>10.0.0</SerilogVersion>
+    <SerilogVersion>$(SerilogAspNetCore)</SerilogVersion>
     <ScalarVersion>2.17.10</ScalarVersion>
     <DuendeFossVersion>7.1.0</DuendeFossVersion>
   </PropertyGroup>
@@ -11,8 +11,8 @@
   <ItemGroup>
     <PackageReference Update="Duende.IdentityModel" Version="$(DuendeIdentityModel)" />
     <PackageReference Update="Duende.IdentityModel.OidcClient" Version="$(DuendeFossVersion)" />
-    <PackageReference Update="Duende.AspNetCore.Authentication.OAuth2Introspection" Version="7.0.1" />
-    <PackageReference Update="Duende.AccessTokenManagement.OpenIdConnect" Version="4.2.0" />
+    <PackageReference Update="Duende.AspNetCore.Authentication.OAuth2Introspection" Version="$(DuendeOAuth2Introspection)" />
+    <PackageReference Update="Duende.AccessTokenManagement.OpenIdConnect" Version="$(DuendeOpenIdConnect)" />
 
     <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(AspNetVersion)" />
@@ -24,6 +24,6 @@
     <PackageReference Update="Scalar.AspNetCore" Version="$(ScalarVersion)" />
     <PackageReference Update="Serilog.AspNetCore" Version="$(SerilogVersion)" />
     <PackageReference Update="Serilog.Extensions.Logging" Version="$(SerilogVersion)" />
-    <PackageReference Update="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="$(SerilogConsole)" />
   </ItemGroup>
 </Project>
