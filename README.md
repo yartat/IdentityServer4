@@ -1,65 +1,134 @@
-# Important update
-As of Oct 1st 2020, we started a new [company](https://duendesoftware.com/). All new feature work will happen in our new [organization](https://github.com/duendesoftware).
-The new Duende IdentityServer is available under both a FOSS (RPL) and a commercial license. Development and testing is always free. [Contact](https://duendesoftware.com/contact) us for more information. This repo will be maintained with bug fixes and security updates until November 2022.
+# IdentityServer4 fork — OpenID Connect and OAuth 2.0 for ASP.NET Core on .NET 10
 
-## About IdentityServer4
-[<img align="right" width="100px" src="https://dotnetfoundation.org/img/logo_big.svg" />](https://dotnetfoundation.org/projects?searchquery=IdentityServer&type=project)
+[![CI](https://github.com/yartat/IdentityServer4/actions/workflows/ci.yml/badge.svg)](https://github.com/yartat/IdentityServer4/actions/workflows/ci.yml)
 
-IdentityServer is a free, open source [OpenID Connect](http://openid.net/connect/) and [OAuth 2.0](https://tools.ietf.org/html/rfc6749) framework for ASP.NET Core.
-Founded and maintained by [Dominick Baier](https://twitter.com/leastprivilege) and [Brock Allen](https://twitter.com/brocklallen), IdentityServer4 incorporates all the protocol implementations and extensibility points needed to integrate token-based authentication, single-sign-on and API access control in your applications.
-IdentityServer4 is officially [certified](https://openid.net/certification/) by the [OpenID Foundation](https://openid.net) and thus spec-compliant and interoperable.
-It is part of the [.NET Foundation](https://www.dotnetfoundation.org/), and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [Apache 2](https://opensource.org/licenses/Apache-2.0) (an OSI approved license).
+This repository is a maintained fork of [IdentityServer4](https://github.com/IdentityServer/IdentityServer4) 4.x, the
+[OpenID Connect](https://openid.net/connect/) and [OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc6749) framework for
+ASP.NET Core created by [Dominick Baier](https://twitter.com/leastprivilege) and [Brock Allen](https://twitter.com/brocklallen).
+It is maintained by [Yaroslav Tatarenko](https://github.com/yartat) and developed as a general-purpose library.
 
-For project documentation, please visit [readthedocs](https://identityserver4.readthedocs.io).
+Upstream ended its free maintenance in November 2022. This fork keeps the IdentityServer4 programming model
+(so existing applications migrate by changing a package reference and recompiling) and adds what a long-lived
+deployment needs: a current .NET, current dependencies, security fixes and automatic signing key management.
 
-## Branch structure
-Active development happens on the main branch. This always contains the latest version. Each (pre-) release is tagged with the corresponding version. The [aspnetcore1](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore1) and [aspnetcore2](https://github.com/IdentityServer/IdentityServer4/tree/aspnetcore2) branches contain the latest versions of the older ASP.NET Core based versions.
+> **Status:** the packages are **not published to nuget.org yet** (see [Packages](#packages)).
+> Build them from source — see [Getting started](#getting-started). What changed in the first release: [RELEASE_NOTES.md](RELEASE_NOTES.md).
 
-## How to build
+## Read this before you adopt it
 
-* [Install](https://www.microsoft.com/net/download/core#/current) the latest .NET Core 3.1 SDK
-* Install Git
-* Clone this repo
-* Run `build.ps1` or `build.sh` in the root of the cloned repo
+- **Not certified.** IdentityServer4 was certified by the OpenID Foundation at specific upstream versions. This fork has not been
+  re-certified; it is covered by its own automated tests (1,200 tests: unit, integration and EF Core store tests), not by conformance suites.
+- **Not affiliated** with Duende Software, the .NET Foundation or the original authors, and **not commercially supported**.
+  If you need a vendor-backed, certified product, use [Duende IdentityServer](https://duendesoftware.com/products/identityserver) or
+  [OpenIddict](https://documentation.openiddict.com/). If you are happy to own an Apache-2.0 library, this fork is for you.
+- **.NET 10 only** (`net10.0`). Earlier frameworks are not supported.
+- Names and namespaces are still `IdentityServer4.*`, so the fork cannot be referenced together with the original
+  `IdentityServer4` assemblies (see [RELEASE_NOTES.md](RELEASE_NOTES.md#known-limitations)).
+
+## Packages
+
+| Project | NuGet id | What it is |
+|---|---|---|
+| [`src/IdentityServer4`](src/IdentityServer4) | `OidcForge` | The framework: protocol endpoints, validators, stores, automatic key management |
+| [`src/Storage`](src/Storage) | `OidcForge.Storage` | Models and store interfaces (for custom stores and UI layers) |
+| [`src/EntityFramework.Storage`](src/EntityFramework.Storage) | `OidcForge.EntityFramework.Storage` | EF Core entities, DbContexts and stores |
+| [`src/EntityFramework`](src/EntityFramework) | `OidcForge.EntityFramework` | `AddConfigurationStore` / `AddOperationalStore` for the framework |
+| [`src/AspNetIdentity`](src/AspNetIdentity) | `OidcForge.AspNetIdentity` | ASP.NET Core Identity integration |
+
+Namespaces and assembly names are unchanged (`IdentityServer4.*`). The packages are built by the [Release workflow](.github/workflows/release.yml);
+see [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the release process.
+
+## What is different from IdentityServer4 4.x
+
+- **.NET 10**, ASP.NET Core / EF Core 10, Microsoft.IdentityModel 8.x; [Duende.IdentityModel](https://github.com/DuendeSoftware/foss) (Apache-2.0)
+  instead of `IdentityModel`; `System.Text.Json` instead of Newtonsoft.Json; Mapster (generated code) instead of AutoMapper.
+- **Automatic signing key management** (opt-in): keys are created, announced, rotated and retired for you; stored in files or in the
+  EF operational store. See [docs/topics/crypto.rst](docs/topics/crypto.rst).
+- **Security fixes** found in an audit of the fork: single-use authorization codes, strict `redirect_uri` matching,
+  race-safe grant removal, refresh token reuse detection, no trust in client-supplied `X-Forwarded-For`, redaction of secrets in logs and more.
+- Samples (Quickstarts, Clients) run on .NET 10 and reference the projects of this repository; the sample APIs expose OpenAPI and a Scalar UI.
+
+The complete list, including breaking changes and a migration guide, is in [RELEASE_NOTES.md](RELEASE_NOTES.md).
+
+## Getting started
+
+Install the [.NET 10 SDK](https://dotnet.microsoft.com/download) (the exact version is pinned in [`global.json`](global.json)), then:
+
+```powershell
+git clone https://github.com/yartat/IdentityServer4.git
+cd IdentityServer4
+./build.ps1        # or ./build.sh — builds, runs all tests, packs to ./nuget
+dotnet nuget add source ./nuget --name identityserver4-fork
+```
+
+A minimal token service (client credentials), as in [Quickstart 1](samples/Quickstarts/1_ClientCredentials):
+
+```csharp
+services.AddIdentityServer()
+    .AddInMemoryApiScopes(new[] { new ApiScope("api1", "My API") })
+    .AddInMemoryClients(new[]
+    {
+        new Client
+        {
+            ClientId = "client",
+            AllowedGrantTypes = GrantTypes.ClientCredentials,
+            ClientSecrets = { new Secret("secret".Sha256()) },
+            AllowedScopes = { "api1" }
+        }
+    })
+    .AddDeveloperSigningCredential();   // development only
+
+app.UseIdentityServer();
+```
+
+For production, let the framework manage the signing keys instead of `AddDeveloperSigningCredential`:
+
+```csharp
+services.AddIdentityServer(options => options.KeyManagement.Enabled = true);
+```
+
+### Build and test
+
+```powershell
+dotnet test src/IdentityServer4/test/IdentityServer.UnitTests
+dotnet test src/IdentityServer4/test/IdentityServer.IntegrationTests
+dotnet test src/EntityFramework.Storage/test/IntegrationTests
+```
+
+`IdentityServer4.Library.sln` builds the libraries; every area (`src/*`, `samples/*`) also has its own solution.
+NuGet audit is on: a package with a known vulnerability fails the build.
+
+## Samples
+
+| Sample | What it shows |
+|---|---|
+| [`samples/Quickstarts`](samples/Quickstarts) | The six classic quickstarts: client credentials, interactive MVC, APIs, JavaScript client, EF Core stores, ASP.NET Core Identity |
+| [`samples/Clients`](samples/Clients) | Console, MVC and API clients for every grant type |
+| [`samples/KeyManagement`](samples/KeyManagement) | Automatic signing key management with file and database stores |
+
+The sample APIs serve `/openapi/v1.json` and a [Scalar](https://scalar.com/) UI at `/scalar/v1` in the Development environment.
+The HTTPS development certificate must be trusted (`dotnet dev-certs https --trust`).
 
 ## Documentation
-For project documentation, please visit [readthedocs](https://identityserver4.readthedocs.io).
 
-See [here](http://docs.identityserver.io/en/aspnetcore1/) for the 1.x docs, and [here](http://docs.identityserver.io/en/aspnetcore2/) for the 2.x docs.
+The Sphinx sources are in [`docs/`](docs). The hosted site [identityserver4.readthedocs.io](https://identityserver4.readthedocs.io)
+documents the upstream project; it is a good guide to the concepts, but where it differs from this fork
+(target framework, key management, options listed in the release notes), this repository is authoritative.
 
-## Bug reports and feature requests
-Please use the [issue tracker](https://github.com/IdentityServer/IdentityServer4/issues) for that. We only support the latest version for free. For older versions, you can get a commercial support agreement with us.
+## Security
 
-## Commercial and Community Support
-If you need help with implementing IdentityServer4 or your security architecture in general, there are both free and commercial support options.
-See [here](https://identityserver4.readthedocs.io/en/latest/intro/support.html) for more details.
+Please report vulnerabilities privately — see [SECURITY.MD](SECURITY.MD). Do not open public issues for them.
 
-## Sponsorship
-If you are a fan of the project or a company that relies on IdentityServer, you might want to consider sponsoring.
-This will help us devote more time to answering questions and doing feature development. If you are interested please head to our [Patreon](https://www.patreon.com/identityserver) page which has further details.
+## Contributing
 
-### Platinum Sponsors
-[<img src="https://user-images.githubusercontent.com/1454075/62819413-39550c00-bb55-11e9-8f2f-a268c3552c71.png" width="200">](https://udelt.no)
+Open an issue to discuss a change first, then send a pull request. Before you do: `./build.ps1` must pass (all tests green, no
+vulnerable packages), and the security fixes listed in [RELEASE_NOTES.md](RELEASE_NOTES.md#security-fixes) must keep their regression tests.
 
-[<img src="https://user-images.githubusercontent.com/1454075/66454740-fb973580-ea68-11e9-9993-6c1014881528.png" width="200">](https://github.com/dotnet-at-microsoft)
+## License and attribution
 
-### Corporate Sponsors
-[Ritter Insurance Marketing](https://www.ritterim.com)  
-[ExtraNetUserManager](https://www.extranetusermanager.com/)  
-[Knab](https://www.knab.nl/)
+Licensed under [Apache 2.0](LICENSE). Copyright (c) Brock Allen & Dominick Baier for the original IdentityServer4 code;
+modifications copyright (c) Yaroslav Tatarenko, co-author and maintainer of this fork. Source files carry both notices.
 
-You can see a list of our current sponsors [here](https://github.com/IdentityServer/IdentityServer4/blob/main/SPONSORS.md) - and for companies we have some nice advertisement options as well.
-
-## Acknowledgements
-IdentityServer4 is built using the following great open source projects and free services:
-
-* [ASP.NET Core](https://github.com/dotnet/aspnetcore)
-* [Bullseye](https://github.com/adamralph/bullseye)
-* [SimpleExec](https://github.com/adamralph/simple-exec)
-* [MinVer](https://github.com/adamralph/minver)
-* [Json.Net](http://www.newtonsoft.com/json)
-* [XUnit](https://xunit.github.io/)
-* [Fluent Assertions](http://www.fluentassertions.com/)
-* [GitReleaseManager](https://github.com/GitTools/GitReleaseManager)
-
-..and last but not least a big thanks to all our [contributors](https://github.com/IdentityServer/IdentityServer4/graphs/contributors)!
+Built with [ASP.NET Core](https://github.com/dotnet/aspnetcore), [Duende.IdentityModel](https://github.com/DuendeSoftware/foss),
+[Mapster](https://github.com/MapsterMapper/Mapster), [Bullseye](https://github.com/adamralph/bullseye) and
+[SimpleExec](https://github.com/adamralph/simple-exec).
