@@ -4,7 +4,7 @@ Release notes of the package `OidcForge.EntityFramework` (original id `IdentityS
 The overview of the whole release, the upgrade guide and the known limitations are in the
 [release notes of the repository](../../RELEASE_NOTES.md). The baseline of the comparisons is IdentityServer4 4.1.2.
 
-## 4.2.0 (unreleased)
+## 4.2.0
 
 ### Dependencies
 

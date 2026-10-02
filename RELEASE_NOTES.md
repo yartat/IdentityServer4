@@ -17,7 +17,7 @@ Every package has its own release notes with the changes, the breaking changes a
 | `OidcForge.EntityFramework` | [src/EntityFramework/RELEASE_NOTES.md](src/EntityFramework/RELEASE_NOTES.md) |
 | `OidcForge.AspNetIdentity` | [src/AspNetIdentity/RELEASE_NOTES.md](src/AspNetIdentity/RELEASE_NOTES.md) |
 
-## 4.2.0 (unreleased)
+## 4.2.0
 
 First release of the OidcForge packages. The version continues the numbering of IdentityServer4 4.x and of the fork's own
 `4.x-ideals` builds; because the package ids are new, 4.2.0 is the first version of these packages. All five packages have the same version.

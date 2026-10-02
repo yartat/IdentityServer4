@@ -34,7 +34,7 @@ Contributions are licensed under [Apache 2.0](../LICENSE), like the project itse
 One-time setup in the repository settings:
 
 1. **Environments → New environment `nuget`**: add yourself as a required reviewer (this is the approval gate in front of nuget.org)
-   and the secret `NUGET_API_KEY` — a nuget.org API key with the *Push* scope, restricted to the glob pattern `OidcForge*`.
+   and the secret `NUGET_USER` — your nuget.org profile name (not an email). Publishing uses nuget.org Trusted Publishing, so no API key is stored: add a trusted publishing policy on nuget.org (repository owner `yartat`, repository `IdentityServer4`, workflow file `release.yml`, environment `nuget`).
 2. Optionally reserve the `OidcForge` ID prefix on nuget.org: there is no form, send an email to `account@nuget.org` with your nuget.org
    display name and the prefix ([criteria and process](https://learn.microsoft.com/nuget/nuget-org/id-prefix-reservation)). Do it after the first
    release, so the reviewers see packages that clearly belong to you; the package ids themselves are taken at the first push.

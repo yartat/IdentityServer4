@@ -4,7 +4,7 @@ Release notes of the package `OidcForge.AspNetIdentity` (original id `IdentitySe
 The overview of the whole release, the upgrade guide and the known limitations are in the
 [release notes of the repository](../../RELEASE_NOTES.md). The baseline of the comparisons is IdentityServer4 4.1.2.
 
-## 4.2.0 (unreleased)
+## 4.2.0
 
 The package has **no API changes**: `AddAspNetIdentity<TUser>()`, `ProfileService<TUser>`, `ResourceOwnerPasswordValidator<TUser>`,
 `UserClaimsFactory<TUser>` and `SecurityStampValidatorCallback` keep their signatures and behavior. Recompile against the new packages.
