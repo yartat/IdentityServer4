@@ -69,7 +69,8 @@ services.AddIdentityServer(options =>
 - Custom `IPersistedGrantStore` and `IAuthorizationCodeStore` implementations need the new atomic `GetAndRemove…` members.
 
 The complete list with a step-by-step guide is in the
-[release notes](https://github.com/yartat/IdentityServer4/blob/master/RELEASE_NOTES.md).
+[release notes of the release](https://github.com/yartat/IdentityServer4/blob/master/RELEASE_NOTES.md);
+the changes of this package are in its own [release notes](https://github.com/yartat/IdentityServer4/blob/master/src/IdentityServer4/RELEASE_NOTES.md).
 
 ## Status
 

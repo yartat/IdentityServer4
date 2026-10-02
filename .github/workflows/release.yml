@@ -1,6 +1,6 @@
 name: 'Release'
 
-# Pushing a tag vMAJOR.MINOR.PATCH[-prerelease] (for example v1.0.0 or v1.1.0-rc.1) builds the packages, publishes them to
+# Pushing a tag vMAJOR.MINOR.PATCH[-prerelease] (for example v4.2.0 or v4.3.0-rc.1) builds the packages, publishes them to
 # nuget.org after a manual approval and creates a GitHub release. See .github/CONTRIBUTING.md ("Releasing").
 # Running the workflow by hand only builds and uploads the packages (a dry run): nothing is published.
 on:
@@ -79,6 +79,16 @@ jobs:
       if: github.event_name == 'push'
       shell: bash
       run: bash .github/scripts/release-notes.sh "${{ steps.version.outputs.version }}" > release-notes.md
+
+    # every package has its own notes for the version (src/<area>/RELEASE_NOTES.md): fail before building when one is missing
+    - name: Check the release notes of the packages
+      if: github.event_name == 'push'
+      shell: bash
+      run: |
+        for area in Storage IdentityServer4 EntityFramework.Storage EntityFramework AspNetIdentity; do
+          bash .github/scripts/release-notes.sh "${{ steps.version.outputs.version }}" --file "src/$area/RELEASE_NOTES.md" > /dev/null
+          echo "ok  src/$area/RELEASE_NOTES.md"
+        done
 
     - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:

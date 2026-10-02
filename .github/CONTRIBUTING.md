@@ -25,7 +25,7 @@ Contributions are licensed under [Apache 2.0](../LICENSE), like the project itse
 
 | Event | Workflow | Result |
 |---|---|---|
-| Push to `master` or `feature/**`, pull request to `master` | [`ci.yml`](workflows/ci.yml) | Build, all tests and packaging on Linux, Windows and macOS; packages `1.0.0-ci.<run>` of the Windows build are attached to the run for 7 days |
+| Push to `master` or `feature/**`, pull request to `master` | [`ci.yml`](workflows/ci.yml) | Build, all tests and packaging on Linux, Windows and macOS; packages `4.2.0-ci.<run>` of the Windows build are attached to the run for 7 days |
 | Tag `vMAJOR.MINOR.PATCH[-prerelease]` | [`release.yml`](workflows/release.yml) | Build, tests, packaging; publishing to nuget.org after a manual approval; GitHub release with the release notes |
 | Manual run of `release.yml` | [`release.yml`](workflows/release.yml) | Dry run: builds `X.Y.Z-manual.<run>` packages, publishes nothing |
 
@@ -43,22 +43,23 @@ One-time setup in the repository settings:
 For every release:
 
 1. Set `VersionPrefix` in [`Directory.Build.props`](../Directory.Build.props) if the version changes.
-2. In [`RELEASE_NOTES.md`](../RELEASE_NOTES.md) replace `(unreleased)` in the heading of the version with the date
-   (`## 1.0.0 - 2026-10-15`). The release workflow refuses notes that are still marked unreleased.
+2. In [`RELEASE_NOTES.md`](../RELEASE_NOTES.md) **and in the `RELEASE_NOTES.md` of every package** (`src/<area>/RELEASE_NOTES.md`) replace
+   `(unreleased)` in the heading of the version with the date (`## 4.2.0 - 2026-10-15`). The release workflow refuses notes that are still
+   marked unreleased or missing in any of the six files.
 3. Merge to `master` and wait for a green CI run.
 4. Optional dry run: *Actions → Release → Run workflow* on `master`; download the `packages` artifact and try it from a local feed
    (`dotnet nuget add source <folder>`).
 5. Tag the commit on `master` and push the tag:
 
    ```powershell
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag v4.2.0
+   git push origin v4.2.0
    ```
 
-   A pre-release is `v1.0.0-rc.1` (the number before the dash must equal `VersionPrefix`). The workflow fails when the tag does not
+   A pre-release is `v4.2.0-rc.1` (the number before the dash must equal `VersionPrefix`). Tags are prefixed with `v`; the old bare tags (`4.2.0-ideals` … `4.2.8-ideals`) belong to the fork's earlier builds and are not release tags. The workflow fails when the tag does not
    match `VersionPrefix`, is not on `master`, or has no release notes.
 6. Approve the **publish** job. After it succeeds the workflow creates the GitHub release with the packages and the release notes attached.
-7. Open the next section in `RELEASE_NOTES.md` (`## 1.0.1 (unreleased)`) and bump `VersionPrefix`.
+7. Open the next section in `RELEASE_NOTES.md` (`## 4.2.1 (unreleased)`) and bump `VersionPrefix`.
 
 A published NuGet version cannot be changed or re-published. If something is wrong, unlist it on nuget.org and release the next patch version.
 If only the publish job failed (for example a network error), re-run the failed jobs: pushing is idempotent (`--skip-duplicate`).

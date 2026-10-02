@@ -215,3 +215,4 @@ src/IdentityServer4/host/identityserver.db
 tempkey.jwk
 # output of "dotnet pack" by the build scripts (copied to ./nuget)
 src/*/artifacts/
+/nuget

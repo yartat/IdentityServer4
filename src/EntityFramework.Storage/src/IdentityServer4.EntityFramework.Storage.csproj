@@ -11,7 +11,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/yartat/IdentityServer4</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/yartat/IdentityServer4/blob/master/RELEASE_NOTES.md</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/yartat/IdentityServer4/blob/master/src/EntityFramework.Storage/RELEASE_NOTES.md</PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
