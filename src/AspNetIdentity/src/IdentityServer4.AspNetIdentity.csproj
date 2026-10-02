@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>IdentityServer4.AspNetIdentity</PackageId>
+    <PackageId>OidcForge.AspNetIdentity</PackageId>
     <TargetFramework>net10.0</TargetFramework>
     
-    <Description>ASP.NET Core Identity Integration for IdentityServer4</Description>
-    <Authors>Brock Allen;Dominick Baier</Authors>
+    <Description>ASP.NET Core Identity integration (maintained fork of IdentityServer4)</Description>
+    <Authors>Brock Allen;Dominick Baier;Yaroslav Tatarenko</Authors>
     <AssemblyName>IdentityServer4.AspNetIdentity</AssemblyName>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;ASP.NET Identity</PackageTags>
     <PackageIcon>icon.jpg</PackageIcon>
-    <PackageProjectUrl>https://github.com/IdentityServer/IdentityServer4</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/yartat/IdentityServer4</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/IdentityServer/IdentityServer4/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/yartat/IdentityServer4/blob/master/RELEASE_NOTES.md</PackageReleaseNotes>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -32,6 +33,7 @@
 
   <ItemGroup>
     <None Include="../../../icon.jpg" Pack="true" Visible="false" PackagePath="" />
+    <None Include="../README.md" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>

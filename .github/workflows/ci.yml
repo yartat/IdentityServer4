@@ -1,13 +1,21 @@
 name: 'CI'
 
+# Builds, tests and packs the libraries on every commit to master or a feature branch and on every pull request.
+# Releases are built by release.yml.
 on:
   push:
     branches:
     - master
     - feature/**
-    tags:
-    - '*.*.*'
   pull_request:
+    branches:
+    - master
+  workflow_dispatch:
+
+# a newer run for the same branch or pull request replaces the older one
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 # the build only reads the repository
 permissions:
@@ -15,26 +23,56 @@ permissions:
 
 env:
   DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # deterministic builds (normalized source paths in the PDBs)
+  ContinuousIntegrationBuild: true
+  # CI packages get a unique pre-release version: 1.0.0-ci.<run number>
+  VersionSuffix: ci.${{ github.run_number }}
 
 jobs:
   build:
+    name: build and test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [macOS-latest, ubuntu-latest, windows-latest]
-    name: ${{ matrix.runs-on }}
-    runs-on: ${{ matrix.runs-on }}
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+
     - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: global.json
+
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'global.json', '.config/dotnet-tools.json') }}
+        restore-keys: nuget-${{ runner.os }}-
+
     - run: dotnet --info
 
-    # builds, runs the tests and packs every library (NuGet audit fails the build on vulnerable packages)
-    - if: runner.os != 'Windows'
+    # build + all tests + pack; NuGet audit fails the build on vulnerable packages
+    - name: Build, test and pack
+      if: runner.os != 'Windows'
       run: ./build.sh
-    - if: runner.os == 'Windows'
+    - name: Build, test and pack
+      if: runner.os == 'Windows'
       run: ./build.ps1
+
+    - name: Verify packages
+      shell: pwsh
+      run: ./.github/scripts/verify-packages.ps1
+
+    # packages of a pull request can be tried out from the run page; Windows builds are fully strong-name signed
+    - name: Upload packages
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: packages-${{ github.run_number }}
+        path: nuget/
+        if-no-files-found: error
+        retention-days: 7

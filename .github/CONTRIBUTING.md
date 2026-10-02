@@ -1,35 +1,64 @@
-# How to contribute
+# Contributing
 
-The easiest way to contribute is to open an issue and start a discussion. 
-Then we can decide if and how a feature or a change could be implemented and if you should submit a pull requests with code changes.
+Thank you for helping. The project is maintained on a best-effort basis; the fastest way to get a change in is a small, focused pull request
+with tests. For anything larger, discuss it first (an issue or a draft pull request).
 
-Also read this first: [Being a good open source citizen](https://hackernoon.com/being-a-good-open-source-citizen-9060d0ab9732#.x3hocgw85)
+Contributions are licensed under [Apache 2.0](../LICENSE), like the project itself. There is no CLA.
 
-## Found an issue or a bug?
-Please start a discussion on the [core repo issue tracker](https://github.com/IdentityServer/IdentityServer4/issues).
+## Before you send a pull request
 
-## Filing issues
-The best way to get your bug fixed is to be as detailed as you can be about the problem.
-Providing a minimal project with steps to reproduce the problem is ideal.
-Here are questions you can answer before you file a bug to make sure you're not missing any important information.
+- `./build.ps1` (or `./build.sh`) must pass: it builds, runs **all** tests and packs. NuGet audit is on — a package with a known
+  vulnerability fails the build.
+- Add tests for what you change. Security-relevant behavior (see "Security fixes" in [RELEASE_NOTES.md](../RELEASE_NOTES.md)) keeps its regression tests.
+- Add an entry to [RELEASE_NOTES.md](../RELEASE_NOTES.md) under the unreleased version; a breaking change also gets a row in the table of breaking changes.
+- New `.cs` files start with the fork header; files taken from upstream keep their header plus the modification line:
 
-1. Did you read the [documentation](https://identityserver4.readthedocs.io/en/release/)?
-2. Did you include the snippet of broken code in the issue?
-3. What are the *EXACT* steps to reproduce this problem?
-4. Did you enable [logging](https://identityserver4.readthedocs.io/en/release/topics/logging.html)?
+  ```
+  // Copyright (c) Yaroslav Tatarenko. All rights reserved.
+  // Part of a fork of IdentityServer4 (Copyright (c) Brock Allen & Dominick Baier).
+  // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+  ```
+- Code samples in READMEs must compile.
+- Report vulnerabilities privately — see [SECURITY.MD](../SECURITY.MD).
 
-GitHub supports [markdown](http://github.github.com/github-flavored-markdown/), so when filing bugs make sure you check the formatting before clicking submit.
+## What the CI does
 
-## Contributing code and content
-You will need to sign a contributor license agreement (CLA) before submitting your pull request. The first time you submit a PR, a bot will take you through that process.
+| Event | Workflow | Result |
+|---|---|---|
+| Push to `master` or `feature/**`, pull request to `master` | [`ci.yml`](workflows/ci.yml) | Build, all tests and packaging on Linux, Windows and macOS; packages `1.0.0-ci.<run>` of the Windows build are attached to the run for 7 days |
+| Tag `vMAJOR.MINOR.PATCH[-prerelease]` | [`release.yml`](workflows/release.yml) | Build, tests, packaging; publishing to nuget.org after a manual approval; GitHub release with the release notes |
+| Manual run of `release.yml` | [`release.yml`](workflows/release.yml) | Dry run: builds `X.Y.Z-manual.<run>` packages, publishes nothing |
 
-Please make sure to include tests, that cover the changes/additions you made to the code base.
+## Releasing (maintainers)
 
-Make sure you can build the code. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests.
+One-time setup in the repository settings:
 
-Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. Here's a list of blog posts that are worth reading before doing a pull request:
+1. **Environments → New environment `nuget`**: add yourself as a required reviewer (this is the approval gate in front of nuget.org)
+   and the secret `NUGET_API_KEY` — a nuget.org API key with the *Push* scope, restricted to the glob pattern `OidcForge*`.
+2. Optionally reserve the `OidcForge` ID prefix on nuget.org: there is no form, send an email to `account@nuget.org` with your nuget.org
+   display name and the prefix ([criteria and process](https://learn.microsoft.com/nuget/nuget-org/id-prefix-reservation)). Do it after the first
+   release, so the reviewers see packages that clearly belong to you; the package ids themselves are taken at the first push.
+3. Enable *Private vulnerability reporting* (Security) and, if you want issues, *Issues* (Settings → Features).
 
-* [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza
-* [Don't "Push" Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
-* [10 tips for better Pull Requests](http://blog.ploeh.dk/2015/01/15/10-tips-for-better-pull-requests/) by Mark Seemann
-* [How to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request) by GitHub
+For every release:
+
+1. Set `VersionPrefix` in [`Directory.Build.props`](../Directory.Build.props) if the version changes.
+2. In [`RELEASE_NOTES.md`](../RELEASE_NOTES.md) replace `(unreleased)` in the heading of the version with the date
+   (`## 1.0.0 - 2026-10-15`). The release workflow refuses notes that are still marked unreleased.
+3. Merge to `master` and wait for a green CI run.
+4. Optional dry run: *Actions → Release → Run workflow* on `master`; download the `packages` artifact and try it from a local feed
+   (`dotnet nuget add source <folder>`).
+5. Tag the commit on `master` and push the tag:
+
+   ```powershell
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+   A pre-release is `v1.0.0-rc.1` (the number before the dash must equal `VersionPrefix`). The workflow fails when the tag does not
+   match `VersionPrefix`, is not on `master`, or has no release notes.
+6. Approve the **publish** job. After it succeeds the workflow creates the GitHub release with the packages and the release notes attached.
+7. Open the next section in `RELEASE_NOTES.md` (`## 1.0.1 (unreleased)`) and bump `VersionPrefix`.
+
+A published NuGet version cannot be changed or re-published. If something is wrong, unlist it on nuget.org and release the next patch version.
+If only the publish job failed (for example a network error), re-run the failed jobs: pushing is idempotent (`--skip-duplicate`).

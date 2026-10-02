@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
 
+  <!-- version of all packages of this fork; see RELEASE_NOTES.md -->
   <PropertyGroup>
-    <DotNetLibrary10xx>10.0.*</DotNetLibrary10xx>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <!-- nuget.org accepts only the snupkg symbol package format -->
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Copyright>Copyright (c) Brock Allen &amp; Dominick Baier; modifications copyright (c) Yaroslav Tatarenko</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DotNetLibrary10xx>10.0.12</DotNetLibrary10xx>
     <OpenIdConnect>8.23.0</OpenIdConnect>
     <DuendeIdentityModel>8.1.0</DuendeIdentityModel>
     <Mapster>10.0.13</Mapster>
