@@ -45,7 +45,7 @@ public class MyGrantStore : IPersistedGrantStore
 ## Status and license
 
 Not certified, not affiliated with Duende Software or the .NET Foundation, no commercial support.
-See the [release notes](https://github.com/yartat/IdentityServer4/blob/master/RELEASE_NOTES.md) and the
+See the [release notes](https://github.com/yartat/IdentityServer4/blob/master/src/Storage/RELEASE_NOTES.md) and the
 [issue tracker](https://github.com/yartat/IdentityServer4/issues). Report vulnerabilities privately
 ([SECURITY.MD](https://github.com/yartat/IdentityServer4/blob/master/SECURITY.MD)).
 

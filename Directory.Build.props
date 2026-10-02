@@ -3,7 +3,7 @@
 
   <!-- version of all packages of this fork; see RELEASE_NOTES.md -->
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>4.2.0</VersionPrefix>
     <!-- nuget.org accepts only the snupkg symbol package format -->
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Copyright>Copyright (c) Brock Allen &amp; Dominick Baier; modifications copyright (c) Yaroslav Tatarenko</Copyright>

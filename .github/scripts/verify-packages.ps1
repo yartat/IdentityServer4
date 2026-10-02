@@ -1,8 +1,8 @@
 # Checks the packages produced by build.ps1 / build.sh: every package of the family exists exactly once and carries its README.
 #
-#   verify-packages.ps1 [-Directory nuget] [-Version 1.0.0]
+#   verify-packages.ps1 [-Directory nuget] [-Version 4.2.0]
 #
-# Without -Version any version is accepted (CI builds are 1.0.0-ci.<run>); a release passes the exact version.
+# Without -Version any version is accepted (CI builds are 4.2.0-ci.<run>); a release passes the exact version.
 param(
     [string]$Directory = 'nuget',
     [string]$Version

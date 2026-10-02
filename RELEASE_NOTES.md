@@ -7,21 +7,44 @@ Packages are published as `OidcForge*`. The original ids were `IdentityServer4`,
 `IdentityServer4.EntityFramework.Storage`, `IdentityServer4.EntityFramework` and `IdentityServer4.AspNetIdentity`;
 namespaces and assembly names are unchanged.
 
-## 1.0.0 (unreleased)
+Every package has its own release notes with the changes, the breaking changes and the dependencies of that package:
 
-First release under its own package ids. It is based on IdentityServer4 4.1.2 (the last upstream 4.x) plus the changes of the
-fork's own 4.x line (`4.0.1` … `4.2.2-ideals`, 2020–2021), modernized for .NET 10 and hardened after a security audit.
-Everything below is verified by the test suite: 1,200 tests (835 unit, 298 integration, 67 EF Core store tests), all passing.
+| Package | Release notes |
+|---|---|
+| `OidcForge` | [src/IdentityServer4/RELEASE_NOTES.md](src/IdentityServer4/RELEASE_NOTES.md) |
+| `OidcForge.Storage` | [src/Storage/RELEASE_NOTES.md](src/Storage/RELEASE_NOTES.md) |
+| `OidcForge.EntityFramework.Storage` | [src/EntityFramework.Storage/RELEASE_NOTES.md](src/EntityFramework.Storage/RELEASE_NOTES.md) |
+| `OidcForge.EntityFramework` | [src/EntityFramework/RELEASE_NOTES.md](src/EntityFramework/RELEASE_NOTES.md) |
+| `OidcForge.AspNetIdentity` | [src/AspNetIdentity/RELEASE_NOTES.md](src/AspNetIdentity/RELEASE_NOTES.md) |
+
+## 4.2.0 (unreleased)
+
+First release of the OidcForge packages. The version continues the numbering of IdentityServer4 4.x and of the fork's own
+`4.x-ideals` builds; because the package ids are new, 4.2.0 is the first version of these packages. All five packages have the same version.
+
+Comparisons below use **IdentityServer4 4.1.2**, the last upstream 4.x, as the baseline. For breaking changes the last column says whether
+the change was already part of the fork's `4.2.x-ideals` builds, so you can see what is new if you come from those.
+
+All changes are verified by the test suite: 1,200 tests on Windows (835 unit, 298 integration, 67 EF Core store tests) and
+1,243 on Linux, where the EF Core store tests also run against SQLite; all passing.
+
+### What this release is built from
+
+- **Included:** IdentityServer4 4.1.2 (merged into the fork on 2021-09-14) plus the fork's changes up to `4.2.6-ideals`
+  (everything on `master`), the migration to .NET 10 and the changes listed below.
+- **Not included:** the builds tagged `4.2.7`/`4.2.8-ideals` (commits `002d37ee`, `e4745067`, `5a79deed`, 2021-11 … 2022-02). They are not
+  part of any branch of the repository: nullable reference type annotations, a different removal of Newtonsoft.Json with a versioned
+  envelope for persisted grants, a different JWT payload creation and the removal of the GitHub lock-threads workflow. See
+  [Known limitations](#known-limitations) and [Upgrading](#upgrading).
 
 ### Highlights
 
-- **.NET 10** with current dependencies: ASP.NET Core / EF Core 10, Microsoft.IdentityModel 8.23,
-  Duende.IdentityModel 8.1, `System.Text.Json`, Mapster.
+- **.NET 10** with current dependencies: ASP.NET Core / EF Core 10.0.12, Microsoft.IdentityModel 8.23, Duende.IdentityModel 8.1,
+  `System.Text.Json`, Mapster.
 - **Automatic signing key management** — opt-in, file or EF store, data-protected keys, rotation without downtime.
 - **Security fixes** for the authorization code flow, redirect URI validation, refresh tokens, caching and logging
   ([details](#security-fixes)).
-- **Drop-in migration** from IdentityServer4 4.x: same namespaces and programming model
-  ([upgrade guide](#upgrading-from-identityserver4-4x)).
+- **Drop-in migration** from IdentityServer4 4.x: same namespaces and programming model ([upgrade guide](#upgrading)).
 
 ### Added
 
@@ -35,15 +58,19 @@ Everything below is verified by the test suite: 1,200 tests (835 unit, 298 integ
 - `Validation.AllowedRelativeRedirectUriOrigins` — origins on which a registered *relative* redirect URI (for example `/signin-oidc`) matches.
 - `UserInteraction.AllowedReturnUrlOrigins` — origins on which an absolute return URL is accepted by `IsValidReturnUrl`.
 - `Discovery.CacheDuration` (default 1 minute) — server-side cache lifetime of the discovery document and JWKS.
-- `IPersistedGrantStore.GetAndRemoveAsync` and `IAuthorizationCodeStore.GetAndRemoveAuthorizationCodeAsync` — atomic redemption of grants.
 - `IPersistedGrantDbContext.Keys` and the `Keys` table (EF Core operational store).
 - `DefaultRefreshTokenService.RevokeRefreshTokensOnReuseAsync` — overridable reaction to refresh token reuse.
 - Samples run on .NET 10; the sample APIs expose OpenAPI (`/openapi/v1.json`) and a Scalar UI (`/scalar/v1`) in Development.
 
-### Fork features carried over from the 4.x line
+### Fork features carried over from the 4.x-ideals line
+
+These were already part of the `4.2.x-ideals` builds; relative to upstream 4.1.2 they are additions or changes.
 
 - `ip` and `device` claims in access tokens; refresh tokens record the client IP and device
   (the values are now sanitized — see [Security fixes](#security-fixes)).
+- Atomic redemption of grants: `IPersistedGrantStore.GetAndRemoveAsync`, `IAuthorizationCodeStore.GetAndRemoveAuthorizationCodeAsync`
+  (the EF implementation is now race-safe).
+- Redirect URIs of a client are `Uri` values and `Client.AllowedGrantTypes` is an `ISet<string>`.
 - Session cookies are issued `Secure`; `SameSite` fixes; `IUserSession` integration and a reworked authorize callback handler.
 - Optimized data stores, discovery endpoints and decorators; faster complete-sign-in.
 - `TokenValidationResult.RefreshTokenHandle`; `GetSignOutCalled` is public.
@@ -63,23 +90,24 @@ Everything below is verified by the test suite: 1,200 tests (835 unit, 298 integ
 
 ### Breaking changes
 
-| Area | Change | What to do |
-|---|---|---|
-| Framework | `net10.0` only | Retarget the application; install the .NET 10 SDK |
-| Packages | New package ids; assembly and namespace names unchanged | Replace the package references ([map](#package-map)) |
-| `IdentityModel` | Replaced by `Duende.IdentityModel` | `using IdentityModel;` → `using Duende.IdentityModel;` where your code uses its types |
-| `Client.RedirectUris`, `Client.PostLogoutRedirectUris` | `ICollection<Uri>` (was `ICollection<string>`) | `new Uri("https://app/callback")`; relative: `new Uri("/signin-oidc", UriKind.Relative)` |
-| `Client.AllowedGrantTypes` | `ISet<string>` (was `ICollection<string>`) that validates every change | Adding an illegal combination now throws `InvalidOperationException` |
-| Redirect URI matching | Exact string comparison, no fragments; relative registered URIs need `AllowedRelativeRedirectUriOrigins` | Register every URI exactly as clients send it |
-| Custom `IPersistedGrantStore` / `IAuthorizationCodeStore` | New members: `GetAndRemoveAsync`, `GetAndRemoveAuthorizationCodeAsync`, `StoreAuthorizationCodeAsync(handle, code)` | Implement them (`GetAndRemoveAsync` must be atomic) |
-| EF Core operational store | New `Keys` table | Add a migration for `PersistedGrantDbContext` |
-| Authorization codes | Single use, even after a failed exchange | Clients must not retry a failed exchange with the same code |
-| Refresh tokens | Reuse of a consumed one-time token revokes all refresh tokens of the user for that client | Override `AcceptConsumedTokenAsync` for a grace window if your clients retry |
-| Client IP | Taken from the connection only; `X-Forwarded-For` is ignored | Behind a reverse proxy call `UseForwardedHeaders` with `KnownProxies` / `KnownNetworks` |
-| Custom `StrictRedirectUriValidator` | `StringCollectionContainsString` takes `IEnumerable<Uri>`; new `IsRegistered`; options constructor | Adapt overrides |
-| `TestUserStore` | A user without a password can no longer sign in | Give test users a password |
-| JSON claims | Claims of type `ClaimValueTypes.Json` are written as `JsonElement` | Only relevant if you post-process JWT payloads |
-| Request objects | Invalid request objects (missing `client_id` …) return `invalid_request_object` | Adjust client error handling |
+| Area | Change | What to do | Already in 4.2.x-ideals |
+|---|---|---|---|
+| Framework | `net10.0` only | Retarget the application; install the .NET 10 SDK | no |
+| Packages | New package ids; assembly and namespace names unchanged | Replace the package references ([map](#package-map)) | no |
+| `IdentityModel` | Replaced by `Duende.IdentityModel` | `using IdentityModel;` → `using Duende.IdentityModel;` where your code uses its types | no |
+| `Client.RedirectUris`, `Client.PostLogoutRedirectUris` | `ICollection<Uri>` (was `ICollection<string>`) | `new Uri("https://app/callback")`; relative: `new Uri("/signin-oidc", UriKind.Relative)` | yes |
+| `Client.AllowedGrantTypes` | `ISet<string>` (was `ICollection<string>`) that validates every change | Adding an illegal combination now throws `InvalidOperationException` | type: yes, validation on change: no |
+| Redirect URI matching | Exact string comparison, no fragments; relative registered URIs need `AllowedRelativeRedirectUriOrigins` | Register every URI exactly as clients send it | no |
+| Custom `IPersistedGrantStore` / `IAuthorizationCodeStore` | New members: `GetAndRemoveAsync`, `GetAndRemoveAuthorizationCodeAsync`, `StoreAuthorizationCodeAsync(handle, code)` | Implement them (`GetAndRemoveAsync` must be atomic) | yes |
+| EF Core operational store | New `Keys` table | Add a migration for `PersistedGrantDbContext` | no |
+| Authorization codes | Single use, even after a failed exchange | Clients must not retry a failed exchange with the same code | no |
+| Refresh tokens | Reuse of a consumed one-time token revokes all refresh tokens of the user for that client | Override `AcceptConsumedTokenAsync` for a grace window if your clients retry | no |
+| Client IP | Taken from the connection only; `X-Forwarded-For` is ignored | Behind a reverse proxy call `UseForwardedHeaders` with `KnownProxies` / `KnownNetworks` | no |
+| Custom `StrictRedirectUriValidator` | `StringCollectionContainsString` takes `IEnumerable<Uri>`; new `IsRegistered`; options constructor | Adapt overrides | no |
+| `OidcForge.Storage` serialization | `CustomContractResolver` removed; `ClaimConverter` and `ClaimsPrincipalConverter` are `System.Text.Json` converters | Only relevant if you used these types | no |
+| `TestUserStore` | A user without a password can no longer sign in | Give test users a password | yes |
+| JSON claims | Claims of type `ClaimValueTypes.Json` are written as `JsonElement` | Only relevant if you post-process JWT payloads | no |
+| Request objects | Invalid request objects (missing `client_id` …) return `invalid_request_object` | Adjust client error handling | no |
 
 ### Security fixes
 
@@ -105,15 +133,22 @@ Everything below is verified by the test suite: 1,200 tests (835 unit, 298 integ
 
 ### Known limitations
 
-- **Names.** Assemblies and namespaces are still `IdentityServer4.*`. The fork cannot be used in the same application as the original
-  `IdentityServer4` assemblies, and third-party packages that depend on the `IdentityServer4` NuGet id (for example `IdentityServer4.Contrib.*`)
-  will pull the original assemblies in — reference the fork's projects or rebuild such packages against it.
+- **Names and assembly identity.** Assemblies and namespaces are still `IdentityServer4.*`, signed with the same key as upstream, and the assembly
+  version is `4.2.0.0` — higher than upstream's last `4.1.2.0`. .NET therefore binds any assembly built against upstream IdentityServer4 4.x
+  to this one, even though its API differs (see the breaking changes); such a mix fails at run time with `MissingMethodException` /
+  `TypeLoadException`. Third-party packages that depend on the `IdentityServer4` NuGet id (for example `IdentityServer4.Contrib.*`)
+  pull the original assemblies in — reference the fork's projects or rebuild such packages against it.
+- **Builds `4.2.7` / `4.2.8-ideals`** store persisted grants in an envelope (`{"version":1,"protected":…,"payload":…}`, optionally data-protected).
+  This release reads the plain JSON format of IdentityServer4 4.x and of `4.2.0` … `4.2.6-ideals` and cannot read such rows ([upgrade notes](#upgrading)).
 - **Obsolete API.** `ISystemClock` (obsolete in ASP.NET Core) is still part of many constructors; the build reports about 60 warnings for it.
   Moving the public API to `TimeProvider` is a planned breaking change.
+- **No nullable annotations** in the public API (they exist only in the tag-only `4.2.7`/`4.2.8-ideals` builds).
 - **Not certified** by the OpenID Foundation and not commercially supported; conformance suites have not been run.
 - The hosted documentation (identityserver4.readthedocs.io) describes upstream and lags behind the fork.
 
-### Upgrading from IdentityServer4 4.x
+### Upgrading
+
+#### From IdentityServer4 4.1.x (upstream)
 
 1. Install the .NET 10 SDK and retarget the project to `net10.0`.
 2. Replace the package references ([map](#package-map)). Namespaces stay the same; remove references to `IdentityModel` and switch to `Duende.IdentityModel`.
@@ -125,6 +160,18 @@ Everything below is verified by the test suite: 1,200 tests (835 unit, 298 integ
 6. If clients use relative redirect URIs, list their origins in `Validation.AllowedRelativeRedirectUriOrigins`.
 7. Optionally turn on `KeyManagement.Enabled`; configure shared data protection keys first when you run several instances.
 8. Run your integration tests; pay attention to clients that retry a failed token request.
+
+#### From the fork's own builds (`4.0.x` … `4.2.6-ideals`)
+
+Steps 1–2 and 4–8 above apply; step 3 is limited to what [the last column](#breaking-changes) marks as new. Persisted grants and the database schema
+of the configuration store are unchanged, so existing rows keep working; only the `Keys` table is new.
+
+#### From `4.2.7` / `4.2.8-ideals`
+
+As above, and: persisted grants written by these builds use the envelope format and cannot be read — users have to sign in again and
+clients have to obtain new refresh tokens (or let the old grants expire while both versions run side by side). If grants were stored with
+`PersistentGrantOptions.ProtectData`, they additionally depend on the data protection keys of that deployment. The JWT payload is created by
+a different implementation in these builds; compare the tokens of your APIs after the upgrade.
 
 ### Package map
 
